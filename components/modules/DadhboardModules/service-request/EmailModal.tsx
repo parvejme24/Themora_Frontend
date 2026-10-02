@@ -184,7 +184,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
                       setEmailData(prev => ({
                         ...prev,
                         subject: 'Service Request Update',
-                        message: `Dear ${clientName},\n\nThank you for your service request. We are currently reviewing your project requirements and will get back to you with a detailed proposal soon.\n\nBest regards,\nTechFynite Team`
+                        message: `Dear ${clientName},\n\nThank you for your service request. We are currently reviewing your project requirements and will get back to you with a detailed proposal soon.\n\nBest regards,\nThemora Team`
                       }));
                     }}
                     className="text-xs"
@@ -199,7 +199,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
                       setEmailData(prev => ({
                         ...prev,
                         subject: 'Project Proposal',
-                        message: `Dear ${clientName},\n\nWe have prepared a detailed proposal for your project. Please find the attached document with our recommendations and pricing.\n\nWe look forward to discussing this with you.\n\nBest regards,\nTechFynite Team`
+                        message: `Dear ${clientName},\n\nWe have prepared a detailed proposal for your project. Please find the attached document with our recommendations and pricing.\n\nWe look forward to discussing this with you.\n\nBest regards,\nThemora Team`
                       }));
                     }}
                     className="text-xs"
@@ -214,7 +214,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
                       setEmailData(prev => ({
                         ...prev,
                         subject: 'Additional Information Required',
-                        message: `Dear ${clientName},\n\nTo better understand your project requirements, we need some additional information:\n\n1. Project timeline\n2. Specific features needed\n3. Budget constraints\n\nPlease provide these details so we can serve you better.\n\nBest regards,\nTechFynite Team`
+                        message: `Dear ${clientName},\n\nTo better understand your project requirements, we need some additional information:\n\n1. Project timeline\n2. Specific features needed\n3. Budget constraints\n\nPlease provide these details so we can serve you better.\n\nBest regards,\nThemora Team`
                       }));
                     }}
                     className="text-xs"

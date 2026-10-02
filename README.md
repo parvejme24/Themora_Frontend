@@ -1,8 +1,8 @@
-# 🚀 TechFynite - Modern Template Marketplace
+# 🚀 Themora - Modern Template Marketplace
 
 <div align="center">
 
-![TechFynite Logo](https://img.shields.io/badge/TechFynite-Template%20Marketplace-blue?style=for-the-badge&logo=react)
+![Themora Logo](https://img.shields.io/badge/Themora-Template%20Marketplace-blue?style=for-the-badge&logo=react)
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.3.5-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -17,7 +17,7 @@
 
 ## 🎯 Overview
 
-**TechFynite** is a modern, full-stack template marketplace built with cutting-edge technologies. It provides a seamless platform for developers to discover, purchase, and download premium web templates. The application features a comprehensive admin dashboard, user authentication, payment processing, and a beautiful responsive design.
+**Themora** is a modern, full-stack template marketplace built with cutting-edge technologies. It provides a seamless platform for developers to discover, purchase, and download premium web templates. The application features a comprehensive admin dashboard, user authentication, payment processing, and a beautiful responsive design.
 
 ### 🎯 Key Highlights
 

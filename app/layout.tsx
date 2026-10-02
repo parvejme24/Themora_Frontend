@@ -21,9 +21,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TechFynite - Premium Template Collections",
+  title: "Themora - Premium Template Collections",
   description:
-    "TechFynite is a platform for selling premium templates and plugins.",
+    "Themora is a platform for selling premium templates and plugins.",
 };
 
 export default function RootLayout({

@@ -25,13 +25,13 @@ export const AuthBanner = () => {
       className={`hidden lg:flex h-full relative before:content-[''] before:absolute before:inset-0 before:bg-[linear-gradient(to_right,#0F5BBD_1px,transparent_1px),linear-gradient(to_bottom,#0F5BBD_1px,transparent_1px)] before:bg-[size:60px_60px] before:opacity-10 transition-all duration-300 ${
         mounted && isDark
           ? 'bg-gradient-to-tl from-[#010102] via-[#111A39] to-[#010102]'
-          : 'bg-gradient-to-tl from-[#FDFEFF] via-[#D4E3FF] to-[#FDFEFF]'
+          : 'bg-gradient-to-tl from-[#F5F7FB] via-[#D4E3FF] to-[#F5F7FB]'
       }`}
     >
       <div className="flex flex-col items-center justify-center w-full relative z-10">
         <div className="max-w-[430px] mb-5">
           <h2 className="text-[30px] text-center dark:text-white leading-tight">
-            TechFynite Provide Website templates for creative entrepreneurs
+            Themora provides website templates for creative entrepreneurs
           </h2>
           <p className="text-center mt-2 dark:text-gray-300 text-[14px]">
             Explore the best premium themes and Templates <br /> available for

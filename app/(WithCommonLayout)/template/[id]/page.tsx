@@ -1,7 +1,9 @@
 import TemplateDetailsContainer from "@/components/modules/CommonModules/template/TemplateDetails/TemplateDetailsContainer";
 import type { Metadata } from "next";
 import React from "react";
-import apiClient from "@/lib/api-client";
+
+// Server-side: call the backend directly (the client's dev proxy path is relative)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tech-fynite-backend.vercel.app/api/v1";
 
 // Generate metadata for SEO
 export async function generateMetadata({
@@ -12,13 +14,13 @@ export async function generateMetadata({
   try {
     const resolvedParams = params instanceof Promise ? await params : params;
     const { id } = resolvedParams;
-    const response = await apiClient.get(`/templates/${id}`);
-    const template = response.data.data;
+    const response = await fetch(`${API_URL}/templates/${id}`, { next: { revalidate: 300 } });
+    const template = response.ok ? (await response.json()).data : null;
 
     if (template) {
       return {
-        title: `${template.title} - TechFynite`,
-        description: template.shortDescription || `Premium ${template.title} template available at TechFynite`,
+        title: `${template.title} - Themora`,
+        description: template.shortDescription || `Premium ${template.title} template available at Themora`,
         openGraph: {
           title: template.title,
           description: template.shortDescription || `Premium ${template.title} template`,
@@ -36,13 +38,13 @@ export async function generateMetadata({
   } catch (error) {
     // Fallback metadata if template fetch fails
     return {
-      title: "Template Details - TechFynite",
+      title: "Template Details - Themora",
       description: "View template details and purchase premium templates",
     };
   }
 
   return {
-    title: "Template Details - TechFynite",
+    title: "Template Details - Themora",
     description: "View template details and purchase premium templates",
   };
 }
