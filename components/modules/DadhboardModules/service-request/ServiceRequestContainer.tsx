@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import EmailModal from "./EmailModal";
 import { UserRole } from "@/types/user";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 // Skeleton Components
 const ServiceRequestSkeleton = () => (
@@ -269,33 +270,9 @@ export default function ServiceRequestContainer({
   }
 
   if (error) {
-    console.error("Service Request Error:", error);
     return (
-      <div className="min-h-screen py-8">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="text-center py-12">
-            <div className="text-red-500 text-lg mb-4">
-              Error loading service requests
-            </div>
-            <div className="text-gray-600 dark:text-gray-400 mb-4">
-              {error instanceof Error
-                ? error.message
-                : "An unknown error occurred"}
-            </div>
-            <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Check browser console for more details
-              </p>
-            </div>
-            <Button
-              onClick={handleRefresh}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <FiRefreshCw className="w-4 h-4 mr-2" />
-              Try Again
-            </Button>
-          </div>
-        </div>
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
+        <ErrorState error={error} subject="service requests" onRetry={refetch} />
       </div>
     );
   }

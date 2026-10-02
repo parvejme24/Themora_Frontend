@@ -47,6 +47,7 @@ import {
   useChangeUserRoleMutation,
 } from "@/redux/services/authApi";
 import { IUser, IUserStats, UserRole } from "@/types/auth";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 // Skeleton Components
 const StatsCardSkeleton = () => (
@@ -557,21 +558,8 @@ export default function UsersContainer() {
   // Show error state
   if (usersError || statsError) {
     return (
-      <div className="min-h-screen py-8">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="text-center py-12">
-            <div className="text-red-500 text-lg mb-4">
-              Error loading users data
-            </div>
-            <Button
-              onClick={handleRefresh}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <FiRefreshCw className="w-4 h-4 mr-2" />
-              Try Again
-            </Button>
-          </div>
-        </div>
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
+        <ErrorState error={usersError || statsError} subject="users" onRetry={handleRefresh} />
       </div>
     );
   }

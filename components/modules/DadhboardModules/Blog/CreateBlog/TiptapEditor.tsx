@@ -9,6 +9,7 @@ import PlaceholderExtension from "@tiptap/extension-placeholder";
 import { FiImage, FiUpload, FiX } from "react-icons/fi";
 import { toast } from "sonner";
 import apiClient from "@/lib/api-client";
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 
 interface TiptapEditorProps {
   content: string;
@@ -197,7 +198,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   if (!editor) {
     return (
       <div className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 min-h-[400px] flex items-center justify-center">
-        <div className="text-gray-500">Loading editor...</div>
+        <Spinner />
       </div>
     );
   }

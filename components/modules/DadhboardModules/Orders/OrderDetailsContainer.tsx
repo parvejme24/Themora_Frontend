@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { AuthContext } from "@/Providers/AuthProvider";
 import { useContext } from "react";
 import { UserRole } from "@/types/user";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 interface OrderDetailsContainerProps {
   orderId: string;
@@ -135,37 +136,8 @@ export default function OrderDetailsContainer({
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FAFCFF] dark:from-[#000424] to-[#FAFCFF] dark:to-[#000424] flex items-center justify-center">
-        <div className="container mx-auto max-w-7xl px-4 lg:px-0 py-10">
-          <div className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl p-8 lg:p-12 text-center max-w-2xl mx-auto">
-            <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FiAlertCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Error Loading Order
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-              {error instanceof Error ? error.message : "Failed to load order details. Please try again."}
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Button
-                onClick={() => refetch()}
-                className="cursor-pointer bg-gradient-to-r from-[#0F35A7] to-[#0F59BC] hover:from-[#0F35A7]/90 hover:to-[#0F59BC]/90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                <FiRefreshCw className="w-5 h-5 mr-2" />
-                Try Again
-              </Button>
-              <Button
-                onClick={() => router.back()}
-                variant="outline"
-                className="cursor-pointer px-8 py-6 text-lg font-semibold"
-              >
-                <FiArrowLeft className="w-5 h-5 mr-2" />
-                Go Back
-              </Button>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
+        <ErrorState error={error ?? { response: { status: 404 } }} subject="this order" onRetry={refetch} backHref="/dashboard/orders" backLabel="All orders" />
       </div>
     );
   }

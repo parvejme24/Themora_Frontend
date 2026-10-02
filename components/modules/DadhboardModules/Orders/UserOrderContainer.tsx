@@ -23,6 +23,8 @@ import { toast } from "sonner";
 import { useGetUserOrders } from "@/hooks/useOrderApi";
 import { Order, OrderQuery } from "@/types/order";
 import { useRouter } from "next/navigation";
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 export default function UserOrderContainer() {
   const router = useRouter();
@@ -90,12 +92,8 @@ export default function UserOrderContainer() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-red-500 mb-4">Error loading orders</p>
-        <Button onClick={() => refetch()}>
-          <FiRefreshCw className="mr-2" />
-          Try Again
-        </Button>
+      <div className="py-12">
+        <ErrorState error={error} subject="your orders" onRetry={refetch} compact />
       </div>
     );
   }
@@ -162,8 +160,7 @@ export default function UserOrderContainer() {
       <div className="bg-white dark:bg-[#1A1D37] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#0F5BBD] border-t-transparent"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading orders...</p>
+            <Spinner size="lg" />
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="p-8 text-center">

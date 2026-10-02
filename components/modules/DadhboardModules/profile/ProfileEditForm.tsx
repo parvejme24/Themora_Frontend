@@ -23,6 +23,7 @@ import {
   useCurrentUser,
 } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 interface ProfileFormValues {
   fullName: string;
@@ -236,12 +237,8 @@ const ProfileEditForm: React.FC = () => {
   // Show error state if user data couldn't be fetched
   if (!user) {
     return (
-      <div className="shadow p-6 flex-1 bg-white dark:bg-[#1A1D37] rounded-md">
-        <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-red-500 text-center">
-            Failed to load user data. Please try again.
-          </p>
-        </div>
+      <div className="flex flex-1 items-center justify-center p-6">
+        <ErrorState subject="your profile" onRetry={refetchCurrentUser} compact />
       </div>
     );
   }

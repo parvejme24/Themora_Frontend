@@ -10,6 +10,7 @@ import { useAuth, useCurrentUser } from "@/hooks/useAuth";
 import { useGetTemplateById } from "@/hooks/useTemplateApi";
 import { useCreateOrder } from "@/hooks/useOrderApi";
 import { FiUser, FiMail, FiPhone, FiMapPin, FiCheckCircle, FiAlertCircle, FiArrowLeft } from "react-icons/fi";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 interface Template {
   id: string;
@@ -39,7 +40,7 @@ export default function CheckoutContainer({ templateId }: { templateId: string }
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const { data: currentUserData } = useCurrentUser();
-  const { data: templateData, isLoading: templateLoading, error: templateError } = useGetTemplateById(templateId);
+  const { data: templateData, isLoading: templateLoading, error: templateError, refetch: refetchTemplate } = useGetTemplateById(templateId);
   const createOrderMutation = useCreateOrder();
   
   const [processing, setProcessing] = useState(false);
@@ -264,27 +265,18 @@ export default function CheckoutContainer({ templateId }: { templateId: string }
 
   if (templateError || !template) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FAFCFF] dark:from-[#000424] to-[#FAFCFF] dark:to-[#000424] flex items-center justify-center">
-        <div className="container mx-auto max-w-7xl px-4 lg:px-0 py-10">
-          <div className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl p-8 lg:p-12 text-center max-w-2xl mx-auto">
-            <div className="w-20 h-20 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FiAlertCircle className="w-10 h-10 text-yellow-600 dark:text-yellow-400" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Template Not Found
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-              {templateError ? "Failed to load template. Please try again." : "The template you're looking for doesn't exist or has been removed."}
-            </p>
-            <Button
-              onClick={() => router.push('/template')}
-              className="cursor-pointer bg-gradient-to-r from-[#0F35A7] to-[#0F59BC] hover:from-[#0F35A7]/90 hover:to-[#0F59BC]/90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <FiArrowLeft className="w-5 h-5 mr-2" />
-              Back to Templates
-            </Button>
-          </div>
-        </div>
+      <div className="flex min-h-[70vh] items-center justify-center px-4 py-16">
+        {templateError ? (
+          <ErrorState error={templateError} subject="this template" onRetry={refetchTemplate} backHref="/template" backLabel="Browse templates" />
+        ) : (
+          <ErrorState
+            title="Template not found"
+            message="The template you're looking for doesn't exist or has been removed."
+            error={{ response: { status: 404 } }}
+            backHref="/template"
+            backLabel="Browse templates"
+          />
+        )}
       </div>
     );
   }

@@ -18,6 +18,7 @@ import { FiPlus, FiDollarSign } from "react-icons/fi";
 import Link from "next/link";
 import PricingCard from "./PricingCard/PricingCard";
 import DashboardPricingCardSkeleton from "../../CommonModules/pricing/pricingList/DashboardPricingCardSkeleton";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 export default function DashboardPricingList() {
   const { data: pricingPlans = [], isLoading, error } = usePricing();
@@ -59,8 +60,8 @@ export default function DashboardPricingList() {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg text-red-600">Error loading pricing plans</div>
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
+        <ErrorState error={error} subject="pricing plans" />
       </div>
     );
   }

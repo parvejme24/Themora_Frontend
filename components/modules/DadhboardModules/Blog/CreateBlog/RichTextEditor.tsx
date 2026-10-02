@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import React, { useState, useEffect } from "react";
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 
 interface RichTextEditorProps {
   content: string;
@@ -19,7 +20,7 @@ if (typeof window !== "undefined") {
       ssr: false,
       loading: () => (
         <div className="border border-gray-300 dark:border-none rounded-lg bg-white dark:bg-gray-900 min-h-[400px] flex items-center justify-center">
-          <div className="text-gray-500">Loading editor...</div>
+          <Spinner />
         </div>
       ),
     }
@@ -36,7 +37,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
   if (!isClient || !TiptapEditor) {
     return (
       <div className="border border-gray-300 dark:border-none rounded-lg bg-white dark:bg-gray-950 min-h-[400px] flex items-center justify-center">
-        <div className="text-gray-500">Loading editor...</div>
+        <Spinner />
       </div>
     );
   }

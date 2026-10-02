@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { useUpdateTemplate, useGetTemplateById } from "@/hooks/useTemplateApi";
 import { useGetAllTemplateCategoriesForStats } from "@/hooks/useTemplateCategoryApi";
 import { UpdateTemplateInput } from "@/types/template";
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 interface EditTemplateContainerProps {
   templateId: string;
@@ -284,21 +286,8 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
   // Error state
   if (templateError) {
     return (
-      <div className="min-h-screen py-8">
-        <div className="container mx-auto max-w-6xl px-4">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Error Loading Template
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Failed to load template data. Please try again.
-            </p>
-            <Button onClick={() => router.push("/dashboard/templates")} className="cursor-pointer">
-              <FiArrowLeft className="w-4 h-4 mr-2" />
-              Back to Templates
-            </Button>
-          </div>
-        </div>
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
+        <ErrorState error={templateError} subject="this template" backHref="/dashboard/templates" backLabel="Back to templates" />
       </div>
     );
   }
@@ -389,7 +378,8 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                       </Select>
                     ) : (
                       <div className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                        Loading categories...
+                        <span className="h-3 w-32 animate-pulse rounded-full bg-slate-200 dark:bg-white/10" />
+                        <Spinner size="sm" />
                       </div>
                     )}
                   </div>

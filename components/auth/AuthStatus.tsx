@@ -3,6 +3,7 @@
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 
 interface AuthStatusProps {
   children: React.ReactNode;
@@ -15,7 +16,7 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ children, fallback = nul
 
   // Show loading state while session is being determined
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return <LoadingState className="min-h-[60vh]" />;
   }
 
   // Show fallback if not authenticated

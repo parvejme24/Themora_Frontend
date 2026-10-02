@@ -3,6 +3,7 @@
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
 
   // Show loading state while session is being determined
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return <LoadingState className="min-h-[60vh]" />;
   }
 
   // Check authentication requirements

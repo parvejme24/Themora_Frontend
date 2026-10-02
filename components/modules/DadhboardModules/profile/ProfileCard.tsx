@@ -8,6 +8,7 @@ import { AuthContext } from "@/Providers/AuthProvider";
 import { RiAdminLine } from "react-icons/ri";
 import { IUser } from "@/types/auth";
 import { useCurrentUser } from "@/hooks/useAuth";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 const ProfileCard: React.FC = () => {
   const { user: authContextUser, loading, error } = useContext(AuthContext) || {};
@@ -45,10 +46,8 @@ const ProfileCard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-[#1A1D37] rounded-lg shadow p-6">
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-red-500">Error loading profile: {error}</p>
-        </div>
+      <div className="flex items-center justify-center">
+        <ErrorState error={error} subject="your profile" compact />
       </div>
     );
   }

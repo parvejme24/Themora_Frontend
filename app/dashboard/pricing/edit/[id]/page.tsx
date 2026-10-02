@@ -39,6 +39,8 @@ import { FiSave, FiRotateCcw, FiArrowLeft, FiPlus, FiX } from "react-icons/fi";
 import Link from "next/link";
 import { toast } from "sonner";
 import { UpdatePricingData } from "@/types/pricing";
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 export default function EditPricingPage() {
   const params = useParams();
@@ -156,16 +158,14 @@ export default function EditPricingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Loading pricing plan...</div>
-      </div>
+      <LoadingState className="min-h-screen" />
     );
   }
 
   if (error || !pricingPlan) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg text-red-600">Error loading pricing plan</div>
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <ErrorState error={error} subject="this pricing plan" backHref="/dashboard/pricing" backLabel="Back to pricing" />
       </div>
     );
   }

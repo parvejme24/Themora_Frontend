@@ -2,6 +2,7 @@
 import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -18,7 +19,7 @@ export const ProtectedRoute = ({
   requireAdmin = false,
   requireSuperAdmin = false,
   redirectTo = '/login',
-  fallback = <div>Loading...</div>,
+  fallback = <LoadingState className="min-h-screen" />,
 }: ProtectedRouteProps) => {
   const router = useRouter();
   const { data: session, status } = useSession();

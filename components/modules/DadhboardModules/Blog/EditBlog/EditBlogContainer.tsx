@@ -26,6 +26,8 @@ import { useGetAllBlogCategoriesForStats } from "@/hooks/useBlogCategoryApi";
 import { useAuth } from "@/hooks/useAuth";
 import RichTextEditor from "../CreateBlog/RichTextEditor";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 interface EditBlogContainerProps {
   blogId?: string;
@@ -371,10 +373,7 @@ export default function EditBlogContainer({
         <div className="container mx-auto max-w-6xl px-4">
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">
-                Loading blog data...
-              </p>
+              <Spinner size="lg" />
             </div>
           </div>
         </div>
@@ -385,23 +384,8 @@ export default function EditBlogContainer({
   // Show error state if blog fetch failed
   if (blogId && blogError) {
     return (
-      <div className="min-h-screen py-8">
-        <div className="container mx-auto max-w-6xl px-4">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">
-              Error Loading Blog
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Failed to load the blog data. Please try again.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
+        <ErrorState error={blogError} subject="this blog post" onRetry={() => window.location.reload()} backHref="/dashboard/blogs" backLabel="All blogs" />
       </div>
     );
   }
@@ -538,9 +522,7 @@ export default function EditBlogContainer({
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Loading categories...
-                    </div>
+                    <div className="flex h-10 items-center"><Spinner size="sm" /></div>
                   )}
                 </CardContent>
               </Card>
