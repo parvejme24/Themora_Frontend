@@ -1,292 +1,179 @@
 "use client";
+
 import React, { useMemo } from "react";
-import { GoArrowRight } from "react-icons/go";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { FiArrowRight, FiArrowUpRight, FiGrid } from "react-icons/fi";
 import { useGetAllTemplateCategoriesForStats } from "@/hooks/useTemplateCategoryApi";
+import { getTechIcon, normaliseTech, SUGGESTED_STACKS } from "./techIcons";
+import SectionHeading from "../shared/SectionHeading";
+import { EASE_OUT } from "../shared/Reveal";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
+
+const exploreLink = (
+  <Link
+    href="/template"
+    className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-[#0F5BBD]/40 hover:text-[#0F5BBD] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:text-[#8DB8FF]"
+  >
+    Explore all
+    <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+  </Link>
+);
+
+// Tracks the cursor so the card can paint a soft spotlight under it
+const handleSpotlight = (e: React.PointerEvent<HTMLElement>) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty("--x", `${e.clientX - rect.left}px`);
+  e.currentTarget.style.setProperty("--y", `${e.clientY - rect.top}px`);
+};
+
+const GRID_SIZE = 12;
+
+interface CategoryTile {
+  key: string;
+  title: string;
+  href: string;
+  image?: string | null;
+  count?: number;
+}
+
+// One consistent tile for every category: solid brand colour + white glyph,
+// so logos read the same on light and dark backgrounds
+const TechTile = ({ title, image }: { title: string; image?: string | null }) => {
+  const tech = getTechIcon(title);
+  const base =
+    "relative flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg ring-1 ring-black/5 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110 dark:ring-white/15";
+
+  if (tech) {
+    const Icon = tech.icon;
+    return (
+      <span className={base} style={{ backgroundColor: tech.bg, boxShadow: `0 10px 24px -10px ${tech.bg}` }}>
+        <span aria-hidden className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/25 to-transparent" />
+        <Icon className="relative h-8 w-8" style={{ color: tech.fg ?? "#fff" }} />
+      </span>
+    );
+  }
+
+  // Unknown stack: uploaded image on a white tile (stays visible in dark mode)
+  return (
+    <span className={`${base} bg-white`}>
+      {image ? (
+        <Image src={image} alt="" width={36} height={36} className="h-8 w-8 object-contain" />
+      ) : (
+        <FiGrid className="h-7 w-7 text-[#0F5BBD]" />
+      )}
+    </span>
+  );
+};
 
 export default function Categories() {
-  const router = useRouter();
+  const { data: categoriesData, isLoading, error, refetch } = useGetAllTemplateCategoriesForStats();
 
-  // Fetch dynamic categories from API
-  const {
-    data: categoriesData,
-    isLoading,
-    error,
-  } = useGetAllTemplateCategoriesForStats();
-
-  // Get categories sorted by template count (most popular first) and limit to top 12
-  // Show all categories, but prioritize those with templates
+  // Most-used categories first, then newest; top 12
   const categories = useMemo(() => {
     if (!categoriesData?.data) return [];
-    return categoriesData.data
+    return [...categoriesData.data]
       .sort((a, b) => {
-        // First sort by template count (categories with templates first)
         if (b.templateCount !== a.templateCount) {
           return b.templateCount - a.templateCount;
         }
-        // Then sort by creation date (newest first)
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       })
-      .slice(0, 12); // Limit to top 12 categories
+      .slice(0, GRID_SIZE);
   }, [categoriesData]);
 
-  const handleExploreMore = () => {
-    router.push("/template");
-  };
+  // Real categories first, then suggested stacks to fill the grid
+  const tiles = useMemo<CategoryTile[]>(() => {
+    const real: CategoryTile[] = categories.map((c) => ({
+      key: c.id,
+      title: c.title,
+      href: `/template?categoryId=${c.id}`,
+      image: c.image,
+      count: c.templateCount,
+    }));
+    const taken = new Set(real.map((t) => normaliseTech(t.title)));
+    const extra: CategoryTile[] = SUGGESTED_STACKS.filter((name) => !taken.has(normaliseTech(name)))
+      .slice(0, Math.max(0, GRID_SIZE - real.length))
+      .map((name) => ({
+        key: `suggested-${name}`,
+        title: name,
+        href: `/template?search=${encodeURIComponent(name)}`,
+      }));
+    return [...real, ...extra];
+  }, [categories]);
 
-  const handleCategoryClick = (categoryId: string) => {
-    router.push(`/template?categoryId=${categoryId}`);
-  };
-
-  // Loading skeleton
-  if (isLoading) {
-    return (
-      <motion.div
-        className="py-14 bg-gradient-to-b from-[#FAFCFF] dark:from-[#000424] to-[#FAFCFF] dark:to-[#000424]"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="container mx-auto max-w-7xl px-5 lg:px-0">
-          <motion.div
-            className="flex justify-between items-center"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-            <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-          </motion.div>
-          <div className="mt-5">
-            <Swiper
-              spaceBetween={20}
-              slidesPerView={2}
-              breakpoints={{
-                640: { slidesPerView: 3 },
-                768: { slidesPerView: 4 },
-                1024: { slidesPerView: 6 },
-              }}
-              className="categories-swiper"
-            >
-              {[...Array(6)].map((_, index) => (
-                <SwiperSlide key={index}>
-                  <div className="p-[1px] bg-gradient-to-t from-[#87A9D6] dark:from-[#04010B] to-[#ABCFFF] dark:to-[#16073F] rounded-xl">
-                    <div className="bg-[#F5F9FF] dark:bg-[#1A1D37] border border-[#ABCFFE] dark:border-[#16073E] rounded-xl px-6 py-10">
-                      <div className="flex justify-center items-center">
-                        <div className="bg-gray-200 dark:bg-gray-700 rounded-full w-[67px] h-[67px] animate-pulse" />
-                      </div>
-                      <div className="mt-3">
-                        <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-2 animate-pulse" />
-                        <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded mx-auto animate-pulse" />
-                      </div>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
-        </div>
-      </motion.div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <motion.div
-        className="py-14 bg-gradient-to-b from-[#FAFCFF] dark:from-[#000424] to-[#FAFCFF] dark:to-[#000424]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="container mx-auto max-w-7xl px-5 lg:px-0">
-          <div className="text-center text-red-500">
-            Failed to load categories. Please try again later.
-          </div>
-        </div>
-      </motion.div>
-    );
-  }
-
-  // Empty state
-  if (categories.length === 0) {
-    return null;
-  }
-
+  
   return (
-    <motion.div
-      className="py-14 bg-gradient-to-b from-[#FAFCFF] dark:from-[#000424] to-[#FAFCFF] dark:to-[#000424]"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      <div className="container mx-auto max-w-7xl px-5 lg:px-0">
-        <motion.div
-          className="flex justify-between items-center"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <motion.h2
-            className="md:text-[24px] font-bold dark:text-[#FFFFFF]"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{
-              opacity: 1,
-              x: 0,
-              backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-            }}
-            transition={{
-              duration: 0.5,
-              delay: 0.2,
-              backgroundPosition: {
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
-            }}
-            style={{
-              background:
-                "linear-gradient(90deg, #1f2937, #3b82f6, #8b5cf6, #1f2937)",
-              backgroundSize: "200% 100%",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            Popular Categories
-          </motion.h2>
+    <section className="relative py-20 sm:py-24">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeading
+          align="left"
+          eyebrow="Categories"
+          title="Browse by"
+          highlight="popular categories"
+          description="Hand-picked collections to help you find the right starting point, fast."
+          action={exploreLink}
+        />
 
-          <motion.button
-            onClick={handleExploreMore}
-            className="text-xs md:text-[16px] flex items-center gap-2 text-[#0F5BBD] cursor-pointer hover:underline duration-300"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            whileHover={{ scale: 1.05, x: 5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Explore More <GoArrowRight className="md:text-2xl" />
-          </motion.button>
-        </motion.div>
-        <motion.div
-          className="mt-5"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <Swiper
-            spaceBetween={20}
-            slidesPerView={2}
-            breakpoints={{
-              640: {
-                slidesPerView: 3,
-              },
-              768: {
-                slidesPerView: 4,
-              },
-              1024: {
-                slidesPerView: 6,
-              },
-            }}
-            className="categories-swiper"
-          >
-            {categories.map((category, index) => (
-              <SwiperSlide key={category.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{
-                    duration: 0.4,
-                    delay: 0.5 + index * 0.1,
-                    ease: "easeOut",
-                  }}
-                  whileHover={{
-                    scale: 0.95,
-                    y: 5,
-                    transition: { duration: 0.2 },
-                  }}
-                >
-                  <div className="p-[1px] bg-gradient-to-t from-[#87A9D6] dark:from-[#04010B] to-[#ABCFFF] dark:to-[#16073F] rounded-xl">
-                    <motion.div
-                      className="cursor-pointer bg-[#F5F9FF] dark:bg-[#1A1D37] border border-[#ABCFFE] dark:border-[#16073E] rounded-xl px-6 py-10"
-                      whileHover={{
-                        scale: 0.98,
-                        transition: { duration: 0.2 },
-                      }}
-                      onClick={() => handleCategoryClick(category.id)}
+        {error ? (
+          <ErrorState error={error} subject="categories" onRetry={refetch} compact className="mt-12" />
+        ) : (
+          <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6">
+            {isLoading
+              ? [...Array(GRID_SIZE)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-[168px] animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/5"
+                  />
+                ))
+              : tiles.map((category, index) => (
+                  <motion.div
+                    key={category.key}
+                    initial={{ opacity: 0, y: 24, scale: 0.96 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{ duration: 0.6, delay: (index % 6) * 0.06, ease: EASE_OUT }}
+                  >
+                    <Link
+                      href={category.href}
+                      onPointerMove={handleSpotlight}
+                      className="group relative flex h-full flex-col items-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-[#0F5BBD]/40 hover:shadow-xl hover:shadow-[#0F5BBD]/10 sm:p-6 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-[#8DB8FF]/30"
                     >
-                      <motion.div
-                        className="flex justify-center items-center"
-                        whileHover={{ scale: 0.9 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <motion.span
-                          className="bg-[#FFFFFF] dark:bg-[#000424] rounded-full p-4 text-3xl w-[67px] h-[67px] flex justify-center items-center overflow-hidden"
-                          whileHover={{ rotate: 5 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          {category.image ? (
-                            <Image
-                              src={category.image}
-                              alt={category.title}
-                              width={40}
-                              height={40}
-                              className="w-[40px] h-[40px] object-contain"
-                              onError={(e) => {
-                                // Fallback to initial if image fails to load
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = "none";
-                                const fallback =
-                                  target.nextElementSibling as HTMLElement;
-                                if (fallback) fallback.style.display = "flex";
-                              }}
-                            />
-                          ) : null}
-                        </motion.span>
-                      </motion.div>
-                      <motion.div
-                        className="mt-3"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
-                      >
-                        <motion.h4
-                          className="font-bold text-center text-lg dark:text-white"
-                          whileHover={{ scale: 0.95 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          {category.title}
-                        </motion.h4>
-                        <motion.p
-                          className="text-center font-semibold text-[16px]"
-                          animate={{
-                            color: ["#1e40af", "#3b82f6", "#1e40af"],
-                          }}
-                          transition={{
-                            duration: 3,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            scale: { duration: 0.2 },
-                          }}
-                          whileHover={{ scale: 0.9 }}
-                        >
-                          {category.templateCount}
-                        </motion.p>
-                      </motion.div>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </motion.div>
+                      {/* Cursor spotlight */}
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        style={{
+                          background:
+                            "radial-gradient(220px circle at var(--x, 50%) var(--y, 50%), rgb(59 130 246 / 0.14), transparent 70%)",
+                        }}
+                      />
+                      <FiArrowUpRight className="absolute right-3 top-3 h-4 w-4 -translate-x-1 translate-y-1 text-[#0F5BBD] opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100 dark:text-[#8DB8FF]" />
+
+                      <TechTile title={category.title} image={category.image} />
+
+                      <h3 className="relative mt-4 line-clamp-1 text-sm font-semibold text-slate-900 sm:text-base dark:text-white">
+                        {category.title}
+                      </h3>
+                      <p className="relative mt-1 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
+                        {category.count === undefined ? (
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:bg-white/10 dark:text-slate-300">
+                            Coming soon
+                          </span>
+                        ) : (
+                          <>
+                            <span className="font-semibold text-[#0F5BBD] dark:text-[#8DB8FF]">{category.count}</span>{" "}
+                            {category.count === 1 ? "template" : "templates"}
+                          </>
+                        )}
+                      </p>
+                    </Link>
+                  </motion.div>
+                ))}
+          </div>
+        )}
       </div>
-    </motion.div>
+    </section>
   );
 }
