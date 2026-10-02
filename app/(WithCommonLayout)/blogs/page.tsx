@@ -1,14 +1,10 @@
 import BlogContainer from "@/components/modules/CommonModules/blogs/BlogContainer";
-import Newsletter from "@/components/shared/Newsletter/Newsletter";
-import PageHeader from "@/components/shared/PageHeader/PageHeader";
 import React from "react";
 
 export default function BlogPage() {
   return (
-    <div>
-      <PageHeader title="Trending Blog Post " subTitle="Home > Blog" value="" />
+    <div className="overflow-x-clip bg-[#F5F7FB] dark:bg-[#05071A]">
       <BlogContainer />
-      <Newsletter />
     </div>
   );
 }
