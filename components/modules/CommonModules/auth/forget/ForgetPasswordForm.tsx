@@ -1,12 +1,14 @@
+"use client";
+
 import React, { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { Form } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
-import LOGO from "@/assets/common/logo.png";
-import Image from "next/image";
-import EmailStep from "./EmailStep";
-import OtpStep from "./OtpStep";
-import NewPasswordStep from "./NewPasswordStep";
+import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
+import { FiArrowLeft, FiArrowRight, FiCheck, FiLock, FiMail } from "react-icons/fi";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { AuthInput, FormAlert, SubmitButton } from "../AuthFields";
 
 export interface RegisterFormValues {
   name: string;
@@ -15,118 +17,165 @@ export interface RegisterFormValues {
   confirmPassword: string;
 }
 
+const STEPS = ["Email", "Verify", "New password"];
+
+/*
+ * NOTE: the backend has no password-reset endpoints yet, so sending/verifying
+ * the code below is still simulated (same behaviour as before the redesign).
+ */
 export default function ForgetPasswordForm() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [otp, setOtp] = useState("");
   const [sentOtp, setSentOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const router = useRouter();
 
-  const form = useForm<RegisterFormValues>({
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-    mode: "onTouched",
-  });
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({ defaultValues: { name: "", email: "", password: "", confirmPassword: "" }, mode: "onTouched" });
 
-  // Simulate sending OTP
   const handleSendOtp = () => {
+    setBusy(true);
     setTimeout(() => {
-      const generatedOtp = "123456";
-      setSentOtp(generatedOtp);
+      setSentOtp("123456");
+      setBusy(false);
       setStep(2);
     }, 800);
   };
 
-  // Simulate verifying OTP
   const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
     if (otp === sentOtp) {
-      setOtpError("");
+      setOtpError(null);
       setStep(3);
     } else {
-      setOtpError("Invalid OTP. Please try again.");
+      setOtpError("That code doesn't match. Please check and try again.");
     }
   };
 
-  // Handle new password submit
-  const handleResetPassword = (data: RegisterFormValues) => {
-    if (data.password !== data.confirmPassword) {
-      form.setError("confirmPassword", {
-        type: "manual",
-        message: "Passwords do not match",
-      });
-      return;
-    }
+  const handleResetPassword = () => {
+    setBusy(true);
     setTimeout(() => {
-      alert("Password reset successful! You can now log in.");
+      toast.success("Password reset! You can now sign in.");
       router.push("/login");
     }, 800);
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={
-          step === 1
-            ? form.handleSubmit(handleSendOtp)
-            : step === 3
-            ? form.handleSubmit(handleResetPassword)
-            : undefined
-        }
-        className="space-y-6 max-w-lg mx-5 md:mx-auto bg-[#F5F7F9] dark:bg-[#1A1D37] px-8 md:px-12 py-10 md:py-14 rounded-lg shadow"
-      >
-        <div>
-          <h3 className="text-[25px] font-semibold flex items-center gap-2">
-            <Image 
-              src={LOGO} 
-              alt="TechFynite Logo" 
-              width={40} 
-              height={40} 
-              style={{ width: 'auto', height: 'auto' }}
-            />
-            TechFynite
-          </h3>
-          <h2 className="text-[32px] md:text-[40px] font-bold">
-            {step === 1 && "Forgot Password"}
-            {step === 2 && "Verify OTP"}
-            {step === 3 && "Set New Password"}
-          </h2>
-        </div>
-        {step === 1 && <EmailStep form={form} />}
-        {step === 2 && (
-          <OtpStep
-            otp={otp}
-            setOtp={setOtp}
-            otpError={otpError}
-            onVerifyOtp={handleVerifyOtp}
-          />
-        )}
-        {step === 3 && (
-          <NewPasswordStep
-            form={form}
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}
-            showConfirmPassword={showConfirmPassword}
-            setShowConfirmPassword={setShowConfirmPassword}
-          />
-        )}
-        <div className="text-center text-[15px] mt-2 text-[#718096]">
-          Don&apos;t have an account?{" "}
-          <button
-            type="button"
-            className="text-blue-700 underline cursor-pointer"
-            onClick={() => router.push("/register")}
-          >
-            Register
-          </button>
-        </div>
-      </form>
-    </Form>
+    <div>
+      {/* Stepper */}
+      <ol className="mb-8 flex items-center gap-2">
+        {STEPS.map((label, i) => {
+          const n = (i + 1) as 1 | 2 | 3;
+          const done = step > n;
+          const active = step === n;
+          return (
+            <li key={label} className="flex flex-1 items-center gap-2">
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                  done
+                    ? "bg-emerald-500 text-white"
+                    : active
+                    ? "bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white shadow-md shadow-[#3F5BF0]/30"
+                    : "bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400"
+                }`}
+              >
+                {done ? <FiCheck className="h-3.5 w-3.5" /> : n}
+              </span>
+              <span className={`hidden text-xs font-medium sm:block ${active ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>{label}</span>
+              {i < STEPS.length - 1 && <span className={`h-px flex-1 ${done ? "bg-emerald-500" : "bg-slate-200 dark:bg-white/10"}`} />}
+            </li>
+          );
+        })}
+      </ol>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.3 }}>
+          {step === 1 && (
+            <form onSubmit={handleSubmit(handleSendOtp)} noValidate className="space-y-5">
+              <AuthInput
+                label="Email"
+                icon={FiMail}
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                error={errors.email?.message}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Invalid email address" },
+                })}
+              />
+              <SubmitButton loading={busy}>
+                Send verification code <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+              </SubmitButton>
+            </form>
+          )}
+
+          {step === 2 && (
+            <form onSubmit={handleVerifyOtp} className="space-y-5">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Enter the 6-digit code we sent to <span className="font-semibold text-slate-900 dark:text-white">{getValues("email")}</span>
+              </p>
+              <InputOTP maxLength={6} value={otp} onChange={(v) => setOtp(v.replace(/\D/g, ""))} autoFocus containerClassName="justify-between">
+                <InputOTPGroup className="w-full justify-between gap-2">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <InputOTPSlot
+                      key={i}
+                      index={i}
+                      className="h-14 w-full rounded-xl border border-slate-200 bg-white/80 text-xl font-semibold first:rounded-xl last:rounded-xl data-[active=true]:border-[#1D6FE0]/50 data-[active=true]:ring-4 data-[active=true]:ring-[#1D6FE0]/10 dark:border-white/10 dark:bg-white/[0.03]"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+              <FormAlert title="Invalid code" message={otpError} />
+              <SubmitButton>
+                Verify code <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+              </SubmitButton>
+              <button type="button" onClick={() => setStep(1)} className="inline-flex w-full items-center justify-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+                <FiArrowLeft className="h-4 w-4" /> Use a different email
+              </button>
+            </form>
+          )}
+
+          {step === 3 && (
+            <form onSubmit={handleSubmit(handleResetPassword)} noValidate className="space-y-5">
+              <AuthInput
+                label="New password"
+                icon={FiLock}
+                type="password"
+                autoComplete="new-password"
+                placeholder="At least 6 characters"
+                error={errors.password?.message}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: { value: 6, message: "Password must be at least 6 characters" },
+                })}
+              />
+              <AuthInput
+                label="Confirm password"
+                icon={FiLock}
+                type="password"
+                autoComplete="new-password"
+                placeholder="Repeat your new password"
+                error={errors.confirmPassword?.message}
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) => value === getValues("password") || "Passwords do not match",
+                })}
+              />
+              <SubmitButton loading={busy}>Reset password</SubmitButton>
+            </form>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      <Link href="/login" className="mt-8 inline-flex w-full items-center justify-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+        <FiArrowLeft className="h-4 w-4" /> Back to sign in
+      </Link>
+    </div>
   );
 }
