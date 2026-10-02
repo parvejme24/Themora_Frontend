@@ -1,15 +1,21 @@
 "use client";
-import { Input } from "@/components/ui/input";
+
+import React, { useState } from "react";
 import Image from "next/image";
-import React from "react";
-import { FaSearch } from "react-icons/fa";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Marquee from "react-fast-marquee";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import { FiSearch, FiArrowRight, FiZap, FiStar } from "react-icons/fi";
+import CountUp from "react-countup";
 
 import TemplatesImage from "@/assets/images/templates.png";
 import FigmaLogo from "@/assets/images/figma.png";
-
-// Using public image path strings to avoid missing asset imports
-
 import StatImage from "@/assets/common/stat.png";
 
 import FramerIcon from "@/assets/tech-icons/framer.png";
@@ -23,510 +29,312 @@ import NodejsIcon from "@/assets/tech-icons/nodejs.png";
 import CssIcon from "@/assets/tech-icons/css.png";
 import BootstrapIcon from "@/assets/tech-icons/bootstrap.png";
 import WordpressIcon from "@/assets/tech-icons/wordpress.png";
+import { EASE_OUT } from "../shared/Reveal";
 
 const icons = [
-  { id: 1, icon: FramerIcon },
-  { id: 2, icon: FigmaIcon },
-  { id: 3, icon: WebflowIcon },
-  { id: 4, icon: JsIcon },
-  { id: 5, icon: ReactIcon },
-  { id: 6, icon: PhpIcon },
-  { id: 7, icon: HtmlIcon },
-  { id: 8, icon: NodejsIcon },
-  { id: 9, icon: CssIcon },
-  { id: 10, icon: WordpressIcon },
-  { id: 11, icon: BootstrapIcon },
+  { name: "Framer", icon: FramerIcon },
+  { name: "Figma", icon: FigmaIcon },
+  { name: "Webflow", icon: WebflowIcon },
+  { name: "JavaScript", icon: JsIcon },
+  { name: "React", icon: ReactIcon },
+  { name: "PHP", icon: PhpIcon },
+  { name: "HTML", icon: HtmlIcon },
+  { name: "Node.js", icon: NodejsIcon },
+  { name: "CSS", icon: CssIcon },
+  { name: "WordPress", icon: WordpressIcon },
+  { name: "Bootstrap", icon: BootstrapIcon },
 ];
 
+const stats = [
+  { end: 100, suffix: "+", label: "Products" },
+  { end: 5, suffix: "K+", label: "Downloads" },
+  { end: 1.2, decimals: 1, suffix: "K+", label: "Subscribers" },
+];
+
+const ribbonTags = [
+  "Premium Templates",
+  "Lifetime Updates",
+  "Figma Source Files",
+  "Clean Code",
+  "Fully Responsive",
+  "Dark Mode Ready",
+  "Dedicated Support",
+];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, delay: 0.1 + i * 0.1, ease: EASE_OUT },
+  }),
+};
+
 export default function Banner() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  // Pointer-driven 3D tilt for the hero visual
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [8, -8]), { stiffness: 120, damping: 18 });
+  const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-10, 10]), { stiffness: 120, damping: 18 });
+  const floatX = useSpring(useTransform(mx, [-0.5, 0.5], [-18, 18]), { stiffness: 80, damping: 20 });
+  const floatY = useSpring(useTransform(my, [-0.5, 0.5], [-18, 18]), { stiffness: 80, damping: 20 });
+  const counterX = useTransform(floatX, (v) => -v);
+  const counterY = useTransform(floatY, (v) => -v);
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse") return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    mx.set((e.clientX - rect.left) / rect.width - 0.5);
+    my.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  const resetTilt = () => {
+    mx.set(0);
+    my.set(0);
+  };
+
+  const search = (term: string) => {
+    const value = term.trim();
+    router.push(value ? `/template?search=${encodeURIComponent(value)}` : "/template");
+  };
+
   return (
-    <div className="min-h-screen lg:h-[80vh] bg-gradient-to-tl from-[#FFFFFF] dark:to-[#000000] via-[#E9F0FF] dark:via-[#121B3B] to-[#FFFFFF] dark:from-[#000000] py-8 sm:py-16 lg:py-24 flex justify-center items-center relative overflow-hidden">
-      {/* Animated background elements */}
+    <section className="tf-noise relative isolate overflow-hidden bg-gradient-to-b from-[#EEF3FC] via-[#F5F7FB] to-[#F5F7FB] dark:from-[#070A24] dark:via-[#05071A] dark:to-[#05071A]">
+      {/* Background: grid + aurora blobs */}
+      <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
       <motion.div
-        className="absolute inset-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        {/* Floating geometric shapes */}
-        <motion.div
-          className="absolute top-20 left-10 w-20 h-20 bg-blue-300 dark:bg-blue-800 rounded-full opacity-40 dark:opacity-20"
-          animate={{
-            y: [0, -20, 0],
-            x: [0, 10, 0],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute top-40 right-20 w-16 h-16 bg-purple-300 dark:bg-purple-800 rounded-lg opacity-40 dark:opacity-20"
-          animate={{
-            y: [0, 30, 0],
-            x: [0, -15, 0],
-            rotate: [0, -180, -360],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1,
-          }}
-        />
-        <motion.div
-          className="absolute bottom-32 left-1/4 w-12 h-12 bg-green-300 dark:bg-green-800 rounded-full opacity-40 dark:opacity-20"
-          animate={{
-            y: [0, -25, 0],
-            x: [0, 20, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-1/3 w-14 h-14 bg-yellow-300 dark:bg-yellow-800 rounded-lg opacity-40 dark:opacity-20"
-          animate={{
-            y: [0, 20, 0],
-            x: [0, -10, 0],
-            rotate: [0, 90, 180, 270, 360],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "linear",
-            delay: 0.5,
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-5 w-8 h-8 bg-pink-300 dark:bg-pink-800 rounded-full opacity-40 dark:opacity-20"
-          animate={{
-            y: [0, -15, 0],
-            x: [0, 25, 0],
-            scale: [1, 0.8, 1],
-          }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.5,
-          }}
-        />
-        <motion.div
-          className="absolute top-1/3 right-10 w-10 h-10 bg-indigo-300 dark:bg-indigo-800 rounded-lg opacity-40 dark:opacity-20"
-          animate={{
-            y: [0, 20, 0],
-            x: [0, -20, 0],
-            rotate: [0, -90, -180, -270, -360],
-          }}
-          transition={{
-            duration: 9,
-            repeat: Infinity,
-            ease: "linear",
-            delay: 3,
-          }}
-        />
+        aria-hidden
+        className="pointer-events-none absolute -left-32 -top-32 -z-10 h-[420px] w-[420px] rounded-full bg-[#3B82F6]/25 blur-[110px] sm:h-[560px] sm:w-[560px] dark:bg-[#2563EB]/30"
+        animate={{ x: [0, 60, 0], y: [0, 40, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -right-24 top-1/4 -z-10 h-[360px] w-[360px] rounded-full bg-[#8B5CF6]/20 blur-[110px] sm:h-[480px] sm:w-[480px] dark:bg-[#7C3AED]/25"
+        animate={{ x: [0, -50, 0], y: [0, 60, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute bottom-0 left-1/3 -z-10 h-[260px] w-[260px] rounded-full bg-[#22D3EE]/15 blur-[100px] dark:bg-[#06B6D4]/15"
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+      />
 
-        {/* Animated particles */}
-        {[...Array(15)].map((_, i) => {
-          // Use fixed positions to avoid hydration mismatch
-          const positions = [
-            { left: 10, top: 20 }, { left: 25, top: 15 }, { left: 40, top: 30 },
-            { left: 60, top: 10 }, { left: 80, top: 25 }, { left: 15, top: 45 },
-            { left: 35, top: 60 }, { left: 55, top: 50 }, { left: 75, top: 40 },
-            { left: 90, top: 60 }, { left: 20, top: 75 }, { left: 45, top: 80 },
-            { left: 65, top: 70 }, { left: 85, top: 85 }, { left: 5, top: 50 }
-          ];
-          const pos = positions[i] || { left: 50, top: 50 };
-          
-          return (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-500 dark:bg-blue-300 rounded-full opacity-80 dark:opacity-60"
-              style={{
-                left: `${pos.left}%`,
-                top: `${pos.top}%`,
-              }}
-              animate={{
-                y: [0, -100, 0],
-                opacity: [0, 1, 0],
-                scale: [0, 1, 0],
-              }}
-              transition={{
-                duration: 3 + (i * 0.2),
-                repeat: Infinity,
-                delay: i * 0.3,
-                ease: "easeInOut",
-              }}
-            />
-          );
-        })}
+      <div className="container mx-auto max-w-7xl px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-14 lg:pt-20">
+        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
+          {/* Copy */}
+          <motion.div initial="hidden" animate="show" className="text-center lg:text-left">
+            <motion.div custom={0} variants={fadeUp}>
+              <Link
+                href="/template"
+                className="group inline-flex items-center gap-2 rounded-full border border-[#0F5BBD]/15 bg-white/70 py-1 pl-1 pr-3 text-xs font-medium text-slate-700 shadow-sm backdrop-blur transition hover:border-[#0F5BBD]/40 sm:text-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+              >
+                <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#6D5DFC] px-2.5 py-0.5 text-white">
+                  <FiZap className="h-3 w-3" /> New
+                </span>
+                Fresh templates added every week
+                <FiArrowRight className="transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </motion.div>
 
-        {/* Interactive floating orbs */}
-        <motion.div
-          className="absolute top-1/4 left-1/3 w-32 h-32 bg-gradient-to-r from-blue-400/30 to-purple-400/30 dark:from-blue-600/20 dark:to-purple-600/20 rounded-full blur-xl"
-          animate={{
-            x: [0, 50, -30, 0],
-            y: [0, -30, 20, 0],
-            scale: [1, 1.2, 0.8, 1],
-            opacity: [0.3, 0.6, 0.4, 0.3],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-gradient-to-r from-pink-400/30 to-yellow-400/30 dark:from-pink-600/20 dark:to-yellow-600/20 rounded-full blur-lg"
-          animate={{
-            x: [0, -40, 30, 0],
-            y: [0, 25, -15, 0],
-            scale: [1, 0.7, 1.3, 1],
-            opacity: [0.2, 0.5, 0.3, 0.2],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-        />
-
-        {/* Animated gradient waves */}
-        <motion.div
-          className="absolute inset-0 opacity-20"
-          style={{
-            background:
-              "radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)",
-          }}
-          animate={{
-            background: [
-              "radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)",
-              "radial-gradient(circle at 80% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 60% 60%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)",
-              "radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 60% 60%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)",
-            ],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        {/* Floating tech icons */}
-        <motion.div
-          className="absolute top-10 right-1/4 w-8 h-8 bg-white/20 dark:bg-white/10 rounded-lg flex items-center justify-center"
-          animate={{
-            y: [0, -20, 0],
-            rotate: [0, 180, 360],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
-        </motion.div>
-        <motion.div
-          className="absolute bottom-20 left-1/5 w-6 h-6 bg-white/20 dark:bg-white/10 rounded-full flex items-center justify-center"
-          animate={{
-            y: [0, 15, 0],
-            x: [0, 10, 0],
-            rotate: [0, -90, -180],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1,
-          }}
-        >
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-        </motion.div>
-        <motion.div
-          className="absolute top-1/2 right-10 w-7 h-7 bg-white/20 dark:bg-white/10 rounded-lg flex items-center justify-center"
-          animate={{
-            y: [0, -10, 0],
-            x: [0, -15, 0],
-            rotate: [0, 90, 180, 270, 360],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "linear",
-            delay: 2,
-          }}
-        >
-          <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
-        </motion.div>
-
-        {/* Animated grid pattern */}
-        <motion.div
-          className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(15, 91, 189, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 91, 189, 0.1) 1px, transparent 1px)",
-            backgroundSize: "50px 50px",
-          }}
-          animate={{
-            backgroundPosition: ["0px 0px", "50px 50px"],
-            opacity: [0.05, 0.1, 0.05],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-      </motion.div>
-
-      <div className="h-full before:content-[''] before:absolute before:inset-0 before:bg-[linear-gradient(to_right,#0F5BBD_1px,transparent_1px),linear-gradient(to_bottom,#0F5BBD_1px,transparent_1px)] before:bg-[size:60px_60px] before:opacity-10">
-        <div className="mt-[30px] container mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-4 sm:py-6 lg:py-10 flex flex-col-reverse md:flex-row md:grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-center">
-          {/* Left side content with animations */}
-          <motion.div
-            className="z-10 px-10 md:px-0 w-[400px] md:w-full"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            {/* Main heading with gradient text animation */}
-            <motion.h2
-              className="text-[24px] sm:text-[30px] md:text-[40px] lg:text-[50px] xl:text-[64px] leading-tight font-bold text-center md:text-left"
-              initial={{ opacity: 0, y: -30 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-              }}
-              transition={{
-                duration: 0.6,
-                delay: 0.2,
-                backgroundPosition: {
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                },
-              }}
-              style={{
-                background:
-                  "linear-gradient(90deg, #1f2937, #3b82f6, #8b5cf6, #1f2937)",
-                backgroundSize: "200% 100%",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
+            <motion.h1
+              custom={1}
+              variants={fadeUp}
+              className="mt-6 text-[40px] font-bold leading-[1.05] tracking-tight text-slate-900 sm:text-6xl xl:text-[72px] dark:text-white"
             >
-              2M+ Curated Digital Products
-            </motion.h2>
-            {/* Description paragraph with hover effect */}
+              2M+ Curated
+              <br className="hidden sm:block" />{" "}
+              <span className="tf-gradient-text">Digital Products</span>
+            </motion.h1>
+
             <motion.p
-              className="mt-3 sm:mt-4 lg:mt-5 text-[12px] sm:text-[14px] md:text-[16px] dark:text-[#FFFFFF] text-center md:text-left"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              whileHover={{ scale: 1.02 }}
+              custom={2}
+              variants={fadeUp}
+              className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg lg:mx-0 dark:text-slate-300"
             >
               Explore the best premium themes and plugins available for sale.
               Our unique collection is hand-curated by experts. Find and buy the
               perfect premium theme today.
             </motion.p>
-            {/* Search field container with animations */}
-            <motion.div
-              className="flex items-center my-3 sm:my-4 lg:my-5 w-full"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              {/* Search input with hover effects */}
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileFocus={{ scale: 1.01 }}
-                transition={{ duration: 0.2 }}
-                className="w-full"
-              >
-              <Input
-                type="text"
-                  className="px-3 sm:px-4 lg:px-5 py-3 sm:py-4 lg:py-6 border-none rounded-xl bg-white dark:bg-white text-black italic text-sm sm:text-base"
-                placeholder="Search Theme, Template & More..."
-              />
-              </motion.div>
-              {/* Search button with pulsing animation */}
-              <motion.span
-                className="-ml-8 sm:-ml-10 lg:-ml-12 bg-[#3273C7] rounded-full p-1.5 sm:p-2 text-white inline-block z-10"
-                whileHover={{
-                  scale: 1.05,
-                  rotate: 3,
-                  transition: { duration: 0.2 },
-                }}
-                whileTap={{ scale: 0.95 }}
-                animate={{
-                  boxShadow: [
-                    "0 0 0 0 rgba(50, 115, 199, 0.4)",
-                    "0 0 0 8px rgba(50, 115, 199, 0.1)",
-                    "0 0 0 0 rgba(50, 115, 199, 0.4)",
-                  ],
-                }}
-                transition={{
-                  boxShadow: {
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                }}
-              >
-                <FaSearch />
-              </motion.span>
-            </motion.div>
 
-            {/* Tech stack icons marquee - continuous scrolling animation */}
-            <div className="relative overflow-hidden mt-4 sm:mt-6 lg:mt-8">
-              <motion.div
-                className="flex items-center gap-2 sm:gap-3 lg:gap-4 whitespace-nowrap"
-                animate={{
-                  x: [0, -100 * icons.length],
-                }}
-                transition={{
-                  duration: 20,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-              >
-                {/* First set of tech icons */}
-              {icons.map((icon) => (
-                  <motion.div
-                  key={icon.id}
-                    className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-[#FFFFFF] dark:bg-gray-800 flex justify-center items-center shadow-sm hover:shadow-md transition-shadow cursor-pointer flex-shrink-0"
-                    whileHover={{
-                      scale: 1.1,
-                      y: -5,
-                      transition: { duration: 0.2 },
-                    }}
-                  >
-                    <Image
-                      src={icon.icon}
-                      alt={icon.id.toString()}
-                      className="w-4 h-4 sm:w-5 sm:h-5 lg:w-7 lg:h-7 object-contain p-[1px]"
-                    />
-                  </motion.div>
-                ))}
-                {/* Duplicate set for seamless infinite loop */}
-                {icons.map((icon) => (
-                  <motion.div
-                    key={`duplicate-${icon.id}`}
-                    className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-[#FFFFFF] dark:bg-gray-800 flex justify-center items-center shadow-sm hover:shadow-md transition-shadow cursor-pointer flex-shrink-0"
-                    whileHover={{
-                      scale: 1.1,
-                      y: -5,
-                      transition: { duration: 0.2 },
-                    }}
+            {/* Search */}
+            <motion.form
+              custom={3}
+              variants={fadeUp}
+              onSubmit={(e) => {
+                e.preventDefault();
+                search(query);
+              }}
+              className="group relative mx-auto mt-8 max-w-xl lg:mx-0"
+              role="search"
+            >
+              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#0F5BBD] via-[#6D5DFC] to-[#22B8F0] opacity-30 blur transition duration-500 group-focus-within:opacity-70" />
+              <div className="relative flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-[#0F5BBD]/5 dark:border-white/10 dark:bg-[#0D1130]">
+                <FiSearch className="ml-3 h-5 w-5 shrink-0 text-slate-400" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search themes, templates & more..."
+                  aria-label="Search templates"
+                  className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:text-base dark:text-white"
+                />
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="tf-shine inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30 sm:px-6"
                 >
-                  <Image
-                    src={icon.icon}
-                    alt={icon.id.toString()}
-                      className="w-4 h-4 sm:w-5 sm:h-5 lg:w-7 lg:h-7 object-contain p-[1px]"
-                  />
-                  </motion.div>
+                  <span className="hidden sm:inline">Search</span>
+                  <FiArrowRight className="sm:hidden" />
+                </motion.button>
+              </div>
+            </motion.form>
+
+            {/* Stats */}
+            <motion.dl
+              custom={4}
+              variants={fadeUp}
+              className="mx-auto mt-10 flex max-w-md items-center justify-center divide-x divide-slate-200 lg:mx-0 lg:justify-start dark:divide-white/10"
+            >
+              {stats.map(({ end, decimals, suffix, label }, i) => (
+                <div key={label} className="flex flex-col px-5 first:pl-0 last:pr-0 sm:px-8">
+                  <dt className="order-2 mt-1 text-xs text-slate-500 sm:text-sm dark:text-slate-400">{label}</dt>
+                  <dd className="order-1 text-2xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-3xl dark:text-white">
+                    <CountUp end={end} decimals={decimals ?? 0} suffix={suffix} duration={2} delay={0.6 + i * 0.1} />
+                  </dd>
+                </div>
               ))}
-              </motion.div>
-            </div>
+            </motion.dl>
           </motion.div>
 
-          {/* Right side - hero image and floating elements */}
-          <div className="relative flex items-center justify-center w-full">
-            <Image
-              src={TemplatesImage}
-              alt="Templates"
-              className="w-[90%] md:w-full"
-            />
-            {/* Floating Figma logo */}
+          {/* Visual */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3, ease: EASE_OUT }}
+            onPointerMove={handlePointerMove}
+            onPointerLeave={resetTilt}
+            className="relative mx-auto w-full max-w-[560px] [perspective:1200px]"
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                y: [0, -15, 0],
-                rotate: [0, 5, -5, 0]
-              }}
-              transition={{ 
-                duration: 0.6, 
-                delay: 1,
-                y: {
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                },
-                rotate: {
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }
-              }}
-              whileHover={{ 
-                scale: 1.1,
-                y: -8,
-                transition: { duration: 0.2 }
-              }}
-              className="absolute top-10 right-5"
+              style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+              className="relative"
             >
-              <Image
-                src={FigmaLogo}
-                alt="Figma"
-                width={48}
-                height={48}
-                className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12"
-                style={{ width: 'auto', height: 'auto' }}
-                draggable={false}
-              />
+              {/* Glow behind */}
+              <div className="absolute inset-6 -z-10 rounded-[32px] bg-gradient-to-tr from-[#0F5BBD] via-[#6D5DFC] to-[#22B8F0] opacity-40 blur-3xl dark:opacity-50" />
+
+              {/* Browser frame */}
+              <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-2 shadow-2xl shadow-[#0F35A7]/20 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+                <div className="flex items-center gap-1.5 px-3 py-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
+                  <span className="ml-3 h-5 flex-1 rounded-md bg-slate-100 dark:bg-white/10" />
+                </div>
+                <Image
+                  src={TemplatesImage}
+                  alt="Preview of premium templates"
+                  priority
+                  className="h-auto w-full rounded-2xl"
+                />
+              </div>
             </motion.div>
-            {/* Community stats card */}
+
+            {/* Floating cards (parallax against pointer) */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.3, y: 20 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                y: [0, -10, 0]
-              }}
-              transition={{ 
-                duration: 0.8, 
-                delay: 1.2,
-                type: "spring",
-                stiffness: 100,
-                damping: 15,
-                y: {
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }
-              }}
-              whileHover={{ 
-                scale: 1.05,
-                y: -5,
-                transition: { duration: 0.2 }
-              }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              style={{ x: floatX, y: floatY }}
+              className="absolute -left-3 top-[18%] sm:-left-8"
             >
-              <Image
-                src={StatImage}
-                alt="Stat"
-                width={110}
-                height={110}
-                className="w-16 h-16 sm:w-20 sm:h-20 md:w-[110px] md:h-[110px]"
-                style={{ width: 'auto', height: 'auto' }}
-                draggable={false}
-              />
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                className="flex items-center gap-2.5 rounded-2xl border border-white/70 bg-white/85 p-2.5 pr-4 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/85"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 dark:bg-white/10">
+                  <Image src={FigmaLogo} alt="" width={20} height={20} className="h-5 w-auto" />
+                </span>
+                <span className="text-left">
+                  <span className="block text-xs font-semibold text-slate-900 dark:text-white">Figma ready</span>
+                  <span className="block text-[11px] text-slate-500 dark:text-slate-400">Source files included</span>
+                </span>
+              </motion.div>
             </motion.div>
-          </div>
+
+            <motion.div
+              style={{ x: counterX, y: counterY }}
+              className="absolute -bottom-6 -right-2 sm:-right-6"
+            >
+              <motion.div
+                animate={{ y: [0, 12, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="rounded-2xl border border-white/70 bg-white/85 p-3 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/85"
+              >
+                <Image src={StatImage} alt="Community stats" width={96} height={96} className="h-16 w-auto sm:h-20" />
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.1, type: "spring", stiffness: 200, damping: 14 }}
+              className="absolute -top-4 right-6 inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-lg dark:bg-white dark:text-slate-900"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              Live preview
+            </motion.div>
+          </motion.div>
         </div>
+
       </div>
-    </div>
+
+      {/* Crossed ribbon marquee */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9, duration: 0.9, ease: EASE_OUT }}
+        className="relative h-[150px] sm:h-[170px]"
+        aria-label="Supported technologies"
+      >
+        {/* Back ribbon: features */}
+        <div className="absolute left-[-5%] top-1/2 w-[110%] -translate-y-1/2 rotate-[2.5deg] border-y border-slate-200 bg-white/80 py-3 backdrop-blur dark:border-white/10 dark:bg-white/[0.04]">
+          <Marquee speed={28} direction="right" autoFill>
+            {ribbonTags.map((tag) => (
+              <span
+                key={tag}
+                className="mx-5 inline-flex items-center gap-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500"
+              >
+                {tag}
+                <FiStar className="h-3.5 w-3.5 text-[#6D5DFC]" />
+              </span>
+            ))}
+          </Marquee>
+        </div>
+
+        {/* Front ribbon: tech stack */}
+        <div className="absolute left-[-5%] top-1/2 w-[110%] -translate-y-1/2 -rotate-[2.5deg] bg-gradient-to-r from-[#0F35A7] via-[#0F5BBD] to-[#6D5DFC] py-3.5 shadow-2xl shadow-[#0F5BBD]/30">
+          <Marquee speed={45} pauseOnHover autoFill>
+            {icons.map(({ name, icon }) => (
+              <span key={name} className="group mx-4 inline-flex items-center gap-3 sm:mx-6">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-md transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110">
+                  <Image src={icon} alt="" className="h-5 w-5 object-contain" />
+                </span>
+                <span className="text-base font-bold uppercase tracking-wide text-white sm:text-lg">
+                  {name}
+                </span>
+                <span aria-hidden className="ml-4 text-xl text-white/40 sm:ml-6">✦</span>
+              </span>
+            ))}
+          </Marquee>
+        </div>
+      </motion.div>
+    </section>
   );
 }
