@@ -1,26 +1,30 @@
 "use client";
-import React from "react";
-import { IoMdCheckmarkCircle } from "react-icons/io";
+
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   motion,
   AnimatePresence,
   useScroll,
   useSpring,
   useTransform,
+  useMotionValueEvent,
+  type MotionValue,
 } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { FiArrowRight, FiCheck } from "react-icons/fi";
+import Reveal, { EASE_OUT } from "../shared/Reveal";
+import { MOCKUPS } from "./Mockups";
 
 const items = [
   {
     id: 1,
     heading: "Got a Project in Mind? Let's Build It Together.",
-    desc: "From eye-catching designs to powerful code — we specialize in turning your ideas into high-performing digital experiences. Whether you're looking for a sleek website, an intuitive user interface, or a fully custom-built platform, Techfynite is ready to make it real.",
-    image: "https://i.ibb.co.com/fRzDkF9/frame.png",
+    desc: "From eye-catching designs to powerful code — we specialize in turning your ideas into high-performing digital experiences. Whether you're looking for a sleek website, an intuitive user interface, or a fully custom-built platform, Themora is ready to make it real.",
     features: [
       {
         feature: "Web Design",
         featureDescription:
-          " Crafting visually stunning websites that reflect your   brand and engage your audience.",
+          "Crafting visually stunning websites that reflect your brand and engage your audience.",
       },
       {
         feature: "UI/UX Design",
@@ -37,8 +41,7 @@ const items = [
   {
     id: 2,
     heading: "Have an Idea? Let's Turn It Into Reality.",
-    desc: "Bringing innovative concepts to life with expert coding and seamless design. Whether you need a dynamic app, custom software, or enhanced web presence, Techfynite is your partner from concept to launch.",
-    image: "https://i.ibb.co.com/xqGPgP2R/1.png",
+    desc: "Bringing innovative concepts to life with expert coding and seamless design. Whether you need a dynamic app, custom software, or enhanced web presence, Themora is your partner from concept to launch.",
     features: [
       {
         feature: "Mobile Apps",
@@ -60,8 +63,7 @@ const items = [
   {
     id: 3,
     heading: "Ready to Transform Your Digital Presence?",
-    desc: "Delivering innovative solutions that combine sleek aesthetics with cutting-edge technology. Whether it’s a responsive site, an engaging app, or a complete platform overhaul, Techfynite is here to elevate your brand.",
-    image: "https://i.ibb.co.com/20dLH3kn/2.png",
+    desc: "Delivering innovative solutions that combine sleek aesthetics with cutting-edge technology. Whether it’s a responsive site, an engaging app, or a complete platform overhaul, Themora is here to elevate your brand.",
     features: [
       {
         feature: "Responsive Design",
@@ -83,8 +85,7 @@ const items = [
   {
     id: 4,
     heading: "Looking to Innovate? Let's Code Your Vision.",
-    desc: "We specialize in converting your creative ideas into robust digital solutions. Whether you want a custom web solution, engaging mobile app, or digital marketing platform, Techfynite is ready to innovate with you.",
-    image: "https://i.ibb.co.com/d4gndrj5/3.png",
+    desc: "We specialize in converting your creative ideas into robust digital solutions. Whether you want a custom web solution, engaging mobile app, or digital marketing platform, Themora is ready to innovate with you.",
     features: [
       {
         feature: "Custom Web Solutions",
@@ -105,165 +106,212 @@ const items = [
   },
 ];
 
-export default function BuildWithUs() {
+type Item = (typeof items)[number];
+
+const ctaLink = (
+  <Link
+    href="/contact"
+    className="tf-shine group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-6 py-3 text-sm font-semibold text-white shadow-xl shadow-[#0F5BBD]/25 transition hover:shadow-[#0F5BBD]/40"
+  >
+    Start a project
+    <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+  </Link>
+);
+
+const FeatureList = ({ item, animated }: { item: Item; animated?: boolean }) => (
+  <ul className="mt-6 grid gap-3">
+    {item.features.map((f, i) => (
+      <motion.li
+        key={f.feature}
+        initial={animated ? { opacity: 0, x: -14 } : false}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.45, delay: 0.1 + i * 0.08, ease: EASE_OUT }}
+        className="flex gap-3 rounded-2xl border border-slate-200 bg-white/70 p-4 backdrop-blur dark:border-white/10 dark:bg-white/[0.03]"
+      >
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0F5BBD] to-[#6D5DFC] text-white">
+          <FiCheck className="h-3.5 w-3.5" />
+        </span>
+        <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <span className="font-semibold text-slate-900 dark:text-white">{f.feature}</span>{" "}
+          — {f.featureDescription}
+        </p>
+      </motion.li>
+    ))}
+  </ul>
+);
+
+// Desktop: map the section's overall progress to this step's own 0 → 1 range
+const StepVisual = ({ index, progress }: { index: number; progress: MotionValue<number> }) => {
+  const local = useTransform(progress, [index / items.length, (index + 1) / items.length], [0, 1]);
+  const Mockup = MOCKUPS[index % MOCKUPS.length];
+  return <Mockup progress={local} />;
+};
+
+// Mobile: each mockup scrolls with its own position in the viewport
+const MobileVisual = ({ index }: { index: number }) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const Mockup = MOCKUPS[index % MOCKUPS.length];
+  return (
+    <div ref={ref} className="mx-auto w-full max-w-xl px-2">
+      <Mockup progress={scrollYProgress} />
+    </div>
+  );
+};
+
+function DesktopStory() {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
-  const [activeIndex, setActiveIndex] = useState(0);
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 20,
-    mass: 0.4,
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.4 });
+
+  useMotionValueEvent(progress, "change", (p) => {
+    const idx = Math.min(items.length - 1, Math.max(0, Math.floor(p * items.length)));
+    setActiveIndex((prev) => (prev === idx ? prev : idx));
   });
 
-  const total = items.length;
-  const indexFromProgress = useMemo(
-    () => (p: number) => {
-      if (total <= 1) return 0;
-      const idx = Math.round(p * (total - 1));
-      return Math.max(0, Math.min(total - 1, idx));
-    },
-    [total]
-  );
-
-  useEffect(() => {
-    const unsubscribe = smoothProgress.on("change", (p) => {
-      setActiveIndex(indexFromProgress(p));
-    });
-    return () => unsubscribe();
-  }, [smoothProgress, indexFromProgress]);
-
+  const visualY = useTransform(progress, [0, 1], [24, -24]);
   const current = items[activeIndex];
 
-  // Parallax + subtle transform for the image
-  const imageY = useTransform(smoothProgress, [0, 1], [40, -40]);
-  const imageScale = useTransform(smoothProgress, [0, 0.5, 1], [0.98, 1, 0.98]);
-  const imageRotate = useTransform(smoothProgress, [0, 1], [-1.5, 1.5]);
-
-  // Background accent parallax
-  const bgScale = useTransform(smoothProgress, [0, 1], [0.9, 1.08]);
-  const bgOpacity = useTransform(
-    smoothProgress,
-    [0, 0.5, 1],
-    [0.15, 0.25, 0.15]
-  );
-
-  // Variants for staggered feature reveal
-  const listVariants = {
-    hidden: { opacity: 0, y: 16 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { staggerChildren: 0.06, delayChildren: 0.06 },
-    },
-    exit: { opacity: 0, y: -16 },
-  } as const;
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -12 },
-    visible: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: 12 },
-  } as const;
+  const jumpTo = (i: number) => {
+    const el = containerRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    const step = (el.offsetHeight - window.innerHeight) / items.length;
+    window.scrollTo({ top: top + step * i + 4, behavior: "smooth" });
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className="relative"
-      style={{ height: `${Math.max(1, total) * 100}vh` }}
-    >
-      <div className="sticky top-0 h-screen flex items-center">
-        {/* Background accent */}
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center"
-          style={{ opacity: bgOpacity }}
-        >
-          <motion.div
-            className="w-[60vw] h-[60vw] max-w-[720px] max-h-[720px] rounded-full bg-gradient-to-br from-[#0F5BBD33] to-[#00D4FF22] blur-3xl"
-            style={{ scale: bgScale }}
-          />
-        </motion.div>
-        <div className="container mx-auto max-w-7xl px-4 lg:px-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-            {/* left side */}
+    <div ref={containerRef} className="relative hidden lg:block" style={{ height: `${items.length * 85}vh` }}>
+      <div className="sticky top-0 flex h-screen items-center">
+        <div className="container mx-auto max-w-7xl px-8">
+          <div className="grid grid-cols-[1fr_1.05fr] items-center gap-16">
             <div>
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.div
-                  key={`left-${current.id}`}
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -24 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                >
-                  <h2 className="text-[34px] leading-tight font-bold">
-                    {current.heading}
-                  </h2>
-                  <p className="text-[14px] mt-2 text-gray-600 dark:text-[#FFFFFF]">
-                    {current.desc}
-                  </p>
-                  <motion.div
-                    className="flex flex-col gap-2 mt-5"
-                    variants={listVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#0F5BBD]/20 bg-[#0F5BBD]/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#0F5BBD] dark:border-white/10 dark:bg-white/5 dark:text-[#8DB8FF]">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                Build with us
+              </span>
+
+              {/* Step nav */}
+              <div className="mt-6 flex gap-2" role="tablist">
+                {items.map((it, i) => (
+                  <button
+                    key={it.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === activeIndex}
+                    aria-label={`Show story ${i + 1}`}
+                    onClick={() => jumpTo(i)}
+                    className="group relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10"
                   >
-                    {current.features.map((feature) => (
-                      <motion.div
-                        key={feature.feature}
-                        className="flex items-center gap-2 text-[14px]"
-                        variants={itemVariants}
-                      >
-                        <IoMdCheckmarkCircle className="text-[#0F5BBD] text-3xl -mt-4" />
-                        <p className="text-[14px] font-bold">
-                          {feature.feature} -{" "}
-                          <span className="font-normal">
-                            {feature.featureDescription}
-                          </span>
-                        </p>
-                      </motion.div>
-                    ))}
+                    <motion.span
+                      className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#6D5DFC]"
+                      initial={false}
+                      animate={{ width: i <= activeIndex ? "100%" : "0%" }}
+                      transition={{ duration: 0.5, ease: EASE_OUT }}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative mt-8 min-h-[460px]">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={current.id}
+                    initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -24, filter: "blur(6px)" }}
+                    transition={{ duration: 0.45, ease: EASE_OUT }}
+                  >
+                    <p className="font-mono text-sm text-slate-400">
+                      {String(activeIndex + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
+                    </p>
+                    <h2 className="mt-2 text-4xl font-bold leading-tight tracking-tight text-slate-900 xl:text-[44px] dark:text-white">
+                      {current.heading}
+                    </h2>
+                    <p className="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                      {current.desc}
+                    </p>
+                    <FeatureList item={current} animated />
                   </motion.div>
+                </AnimatePresence>
+              </div>
+              <div className="mt-6">{ctaLink}</div>
+            </div>
+
+            <motion.div style={{ y: visualY }}>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={current.id}
+                  initial={{ opacity: 0, scale: 0.94, rotateY: -12 }}
+                  animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, rotateY: 12 }}
+                  transition={{ duration: 0.55, ease: EASE_OUT }}
+                  style={{ transformPerspective: 1200 }}
+                >
+                  <StepVisual index={activeIndex} progress={progress} />
                 </motion.div>
               </AnimatePresence>
-            </div>
-
-            {/* right side */}
-            <div className="flex justify-center">
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.img
-                  key={`img-${current.id}`}
-                  src={current.image}
-                  alt={current.heading}
-                  initial={{ opacity: 0, scale: 0.96, rotate: -2 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.98, rotate: 2 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  style={{ y: imageY, scale: imageScale, rotate: imageRotate }}
-                />
-              </AnimatePresence>
-            </div>
+            </motion.div>
           </div>
-
-          {/* dots / step indicator */}
-          {total > 1 && (
-            <div className="mt-8 flex items-center gap-2">
-              {items.map((it, i) => (
-                <span
-                  key={it.id}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    i === activeIndex
-                      ? "bg-[#0F5BBD] w-8"
-                      : "bg-gray-300 dark:bg-gray-600 w-2"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
+  );
+}
+
+function MobileStack() {
+  return (
+    <div className="container mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:hidden">
+      <Reveal className="text-center">
+        <span className="inline-flex items-center gap-2 rounded-full border border-[#0F5BBD]/20 bg-[#0F5BBD]/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#0F5BBD] dark:border-white/10 dark:bg-white/5 dark:text-[#8DB8FF]">
+          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+          Build with us
+        </span>
+      </Reveal>
+      <div className="mt-10 space-y-16">
+        {items.map((item, i) => (
+          <Reveal key={item.id} className="grid gap-8 sm:gap-10">
+            <MobileVisual index={i} />
+            <div>
+              <p className="font-mono text-sm text-slate-400">
+                {String(i + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
+              </p>
+              <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+                {item.heading}
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-300">
+                {item.desc}
+              </p>
+              <FeatureList item={item} />
+            </div>
+          </Reveal>
+        ))}
+      </div>
+      <Reveal className="mt-12 flex justify-center">{ctaLink}</Reveal>
+    </div>
+  );
+}
+
+export default function BuildWithUs() {
+  // Only mount the scroll-driven story on large screens; smaller screens get a stacked layout
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  return (
+    <section className="relative">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-[#F3F7FF] to-transparent dark:via-[#0A0E2C]" />
+      {isDesktop ? <DesktopStory /> : <MobileStack />}
+    </section>
   );
 }
