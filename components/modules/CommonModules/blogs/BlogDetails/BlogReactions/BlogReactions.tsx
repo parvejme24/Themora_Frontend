@@ -71,47 +71,37 @@ export default function BlogReactions({ blogId, reactCount = 0 }: BlogReactionsP
   };
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4">
-      <div className="flex items-center gap-2">
-        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-          React to this blog:
-        </span>
+    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="font-semibold text-slate-900 dark:text-white">Enjoyed this article?</p>
+        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+          {reactCount > 0 ? `${reactCount} ${reactCount === 1 ? "person has" : "people have"} reacted` : "Be the first to react"}
+        </p>
       </div>
-      
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+
+      <div className="flex flex-wrap gap-2">
         {(Object.keys(REACTION_EMOJIS) as ReactionType[]).map((reactionType) => {
           const isSelected = selectedReaction === reactionType;
           return (
             <button
               key={reactionType}
+              type="button"
               onClick={() => handleReactionClick(reactionType)}
               disabled={addReactionMutation.isPending}
-              className={`
-                flex items-center gap-1 sm:gap-2 px-2 py-1.5 sm:px-4 sm:py-2 rounded-full border-2 transition-all
-                ${isSelected
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-400 scale-105 sm:scale-110'
-                  : 'bg-white dark:bg-[#0B1026] border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }
-                disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer
-                hover:scale-105 active:scale-95
-              `}
               title={REACTION_LABELS[reactionType]}
+              aria-label={REACTION_LABELS[reactionType]}
+              aria-pressed={isSelected}
+              className={`group flex h-11 w-11 items-center justify-center rounded-full border text-xl transition-all duration-200 hover:-translate-y-1 hover:scale-110 active:scale-95 disabled:opacity-50 ${
+                isSelected
+                  ? "border-transparent bg-gradient-to-br from-[#1D6FE0]/15 to-[#7C5CFC]/15 shadow-md ring-2 ring-[#1D6FE0]/40"
+                  : "border-slate-200 bg-slate-50 hover:border-slate-300 dark:border-white/10 dark:bg-white/5"
+              }`}
             >
-              <span className="text-lg sm:text-2xl">{REACTION_EMOJIS[reactionType]}</span>
-              <span className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                {REACTION_LABELS[reactionType]}
-              </span>
+              <span className="transition-transform group-hover:scale-110">{REACTION_EMOJIS[reactionType]}</span>
             </button>
           );
         })}
       </div>
-
-      {reactCount > 0 && (
-        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <span className="font-medium">{reactCount}</span>
-          <span>{reactCount === 1 ? 'reaction' : 'reactions'}</span>
-        </div>
-      )}
     </div>
   );
 }

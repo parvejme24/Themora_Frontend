@@ -4,75 +4,59 @@ import Image from "next/image";
 import Link from "next/link";
 import BlogSidebarSkeleton from "./BlogSidebarSkeleton";
 import { useGetPublishedBlogs } from "@/hooks/useBlogApi";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
+import { FiArrowRight } from "react-icons/fi";
 
-export default function BlogSidebar() {
-  const { data, isLoading, error } = useGetPublishedBlogs({
-    limit: 5,
+export default function BlogSidebar({ excludeId }: { excludeId?: string }) {
+  const { data, isLoading, error, refetch } = useGetPublishedBlogs({
+    limit: 6,
     sortBy: "createdAt",
     sortOrder: "desc",
   });
 
-  const latestBlogs = data?.data || [];
+  const latestBlogs = (data?.data || []).filter((b) => b.id !== excludeId).slice(0, 5);
 
   return (
-    <div>
-      <h2 className="text-lg font-bold mb-4">Latest Blogs</h2>
-      {isLoading ? (
-        <BlogSidebarSkeleton />
-      ) : error ? (
-        <div className="text-red-500 dark:text-red-400 text-sm">
-          {error instanceof Error ? error.message : "Error loading blogs"}
-        </div>
-      ) : latestBlogs.length === 0 ? (
-        <div className="text-gray-500 dark:text-gray-400 text-sm">No blogs found.</div>
-      ) : (
-        <ul className="space-y-4">
-          {latestBlogs.map((blog) => (
-            <li key={blog.id} className="flex gap-3 items-center">
-              <Link
-                href={`/blogs/${blog.id}`}
-                className="flex gap-3 items-center w-full hover:opacity-80 transition-opacity cursor-pointer"
-              >
-                {blog.featuredImageUrl ? (
-                  <div className="relative w-16 h-10 flex-shrink-0">
-                    <Image
-                      src={blog.featuredImageUrl}
-                      alt={blog.title}
-                      fill
-                      sizes="64px"
-                      className="rounded object-cover"
-                    />
+    <>
+      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#0B0F2E]">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Latest articles</p>
+        {isLoading ? (
+          <BlogSidebarSkeleton />
+        ) : error ? (
+          <ErrorState error={error} subject="the latest posts" onRetry={refetch} compact className="!border-0 !bg-transparent !px-0 !py-6" />
+        ) : latestBlogs.length === 0 ? (
+          <p className="text-sm text-slate-500 dark:text-slate-400">No articles yet.</p>
+        ) : (
+          <ul className="-mx-2 space-y-1">
+            {latestBlogs.map((blog) => (
+              <li key={blog.id}>
+                <Link href={`/blogs/${blog.id}`} className="group flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.04]">
+                  <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-white/5">
+                    {blog.featuredImageUrl && (
+                      <Image src={blog.featuredImageUrl} alt="" fill sizes="64px" className="object-contain transition-transform duration-500 group-hover:scale-105" />
+                    )}
                   </div>
-                ) : (
-                  <div className="w-16 h-10 bg-gray-200 dark:bg-gray-700 rounded flex-shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm line-clamp-2">
-                    {blog.title}
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-800 transition-colors group-hover:text-[#1D6FE0] dark:text-slate-200 dark:group-hover:text-[#8DB8FF]">
+                      {blog.title}
+                    </p>
+                    {blog.category && <p className="mt-1 text-xs text-slate-400">{blog.category.title}</p>}
                   </div>
-                  {blog.category && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {blog.category.title}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="bg-[#081550] p-10 space-y-3 rounded-lg mt-10">
-        <h3 className="text-3xl text-white font-bold mb-4">Check Out Our All Templates</h3>
-        <span className="block w-[150px] bg-gradient-to-r from-[#BDD9FE] to-[#8AACDA] rounded-lg p-[2px]">
-          <Link
-            href={"/template"}
-            className="bg-gradient-to-r text-white from-[#0F59BC] to-[#0F35A7] w-[146px] h-full py-2 flex justify-center items-center rounded-lg cursor-pointer"
-          >
-            Explore Now
-          </Link>
-        </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-    </div>
+
+      <div className="tf-noise relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#1D4FD8] via-[#3F3FD8] to-[#6D3FE0] p-7 text-white shadow-xl shadow-[#3F5BF0]/25">
+        <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
+        <h3 className="relative text-2xl font-bold leading-tight">Check out all our templates</h3>
+        <p className="relative mt-2 text-sm text-white/75">Premium themes and plugins to launch your next project faster.</p>
+        <Link href="/template" className="group relative mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5">
+          Explore now <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+        </Link>
+      </div>
+    </>
   );
 }

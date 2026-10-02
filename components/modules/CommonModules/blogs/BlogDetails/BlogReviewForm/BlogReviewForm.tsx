@@ -124,7 +124,6 @@ export default function BlogReviewForm({ blogId }: BlogReviewFormProps) {
     return (
       <div className="p-4 mt-10">
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
           <div className="mt-4 space-y-3">
             <div className="h-4 w-32 bg-gray-300 dark:bg-gray-700 rounded mx-auto animate-pulse"></div>
             <div className="h-20 w-full bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div>
@@ -140,7 +139,7 @@ export default function BlogReviewForm({ blogId }: BlogReviewFormProps) {
   // Allow public reviews - no need to require login
 
   return (
-    <div className="mt-8 bg-white dark:bg-[#1A1D37] rounded-lg p-4">
+    <div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         {/* Comment Input - Facebook Style */}
         <div className="flex items-start gap-3">
@@ -162,7 +161,7 @@ export default function BlogReviewForm({ blogId }: BlogReviewFormProps) {
             }
             if (user) {
               return (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold flex-shrink-0 text-sm">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-sm font-semibold text-white">
                   {(user.fullName || "U").charAt(0).toUpperCase()}
                 </div>
               );
@@ -176,12 +175,12 @@ export default function BlogReviewForm({ blogId }: BlogReviewFormProps) {
           
           {/* Input Container */}
           <div className="flex-1">
-            <div className="bg-gray-100 dark:bg-[#0B1026] rounded-2xl px-4 py-2">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-2 transition focus-within:border-[#1D6FE0]/40 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#1D6FE0]/10 dark:border-white/10 dark:bg-white/[0.03]">
               <Textarea
                 name="commentText"
                 value={formData.commentText}
                 onChange={handleInputChange}
-                placeholder="Write a comment..."
+                placeholder="Share your thoughts…"
                 className="bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none min-h-[40px] max-h-[120px] text-sm text-gray-900 dark:text-gray-200 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
                 rows={1}
@@ -195,13 +194,13 @@ export default function BlogReviewForm({ blogId }: BlogReviewFormProps) {
             
             {/* Name and Email Fields (Hidden when logged in) */}
             {!user && (
-              <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <Input
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
                   placeholder="Your name"
-                  className="bg-gray-50 dark:bg-[#0B1026] border border-gray-200 dark:border-gray-700 text-sm h-9"
+                  className="h-11 rounded-xl border border-slate-200 bg-slate-50/80 text-sm dark:border-white/10 dark:bg-white/[0.03]"
                   required
                 />
                 <Input
@@ -210,21 +209,21 @@ export default function BlogReviewForm({ blogId }: BlogReviewFormProps) {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Your email"
-                  className="bg-gray-50 dark:bg-[#0B1026] border border-gray-200 dark:border-gray-700 text-sm h-9"
+                  className="h-11 rounded-xl border border-slate-200 bg-slate-50/80 text-sm dark:border-white/10 dark:bg-white/[0.03]"
                   required
                 />
               </div>
             )}
             
             {/* Submit Button */}
-            <div className="flex justify-end mt-2">
+            <div className="mt-3 flex justify-end">
               <Button
                 type="submit"
                 disabled={!isFormValid || createReviewMutation.isPending}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 h-8 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="h-10 rounded-full bg-gradient-to-r from-[#1D6FE0] to-[#6D5DFC] px-6 text-sm font-semibold text-white shadow-lg shadow-[#3F5BF0]/25 hover:opacity-95 disabled:opacity-50"
               >
-                {createReviewMutation.isPending ? "Posting..." : "Post"}
+                {createReviewMutation.isPending ? <span role="status" aria-label="Posting" className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : "Post comment"}
               </Button>
             </div>
           </div>
