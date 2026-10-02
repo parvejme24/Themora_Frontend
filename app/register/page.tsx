@@ -1,20 +1,25 @@
 "use client";
 
 import React from "react";
-import { ThemeToggle } from "@/components/modules/common/ThemeToggle/ThemeToggle";
+import Link from "next/link";
+import AuthShell from "@/components/modules/CommonModules/auth/AuthShell";
 import RegisterForm from "@/components/modules/CommonModules/auth/Register/RegisterForm";
-import { AuthBanner } from "@/components/modules/common/AuthBanner/AuthBanner";
 
 export default function RegisterPage() {
   return (
-    <div className="dark:bg-[#000424] grid grid-cols-1 lg:grid-cols-2 gap-10 items-center min-h-screen">
-      <AuthBanner />
-      <div>
-        <ThemeToggle />
-        <div className="mt-[20px]">
-          <RegisterForm />
-        </div>
-      </div>
-    </div>
+    <AuthShell
+      title="Create your account"
+      subtitle="Join Themora and start building with premium templates."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <RegisterForm />
+    </AuthShell>
   );
 }
