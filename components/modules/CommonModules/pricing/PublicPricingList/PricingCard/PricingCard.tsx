@@ -1,11 +1,10 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import React from "react";
 import { motion } from "framer-motion";
-import { FaCheck } from "react-icons/fa6";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { FiArrowRight, FiBriefcase, FiCheck, FiGlobe, FiUser } from "react-icons/fi";
+import type { IconType } from "react-icons";
 
 interface Pricing {
   id: string | number; // Support both string (UUID) and number IDs
@@ -17,83 +16,120 @@ interface Pricing {
   templateId?: string; // Optional templateId if pricing plan is linked to a specific template
 }
 
+const PLAN_ICONS: Record<string, IconType> = {
+  personal: FiUser,
+  business: FiBriefcase,
+  agency: FiGlobe,
+};
+
 export default function PricingCard({ plan }: { plan: Pricing }) {
   const router = useRouter();
+  const Icon = PLAN_ICONS[plan.title.toLowerCase()] ?? FiUser;
+  const featured = plan.recommended;
 
   const handleBuyNow = () => {
-    // If pricing plan has a templateId, redirect to that template's checkout
-    // Otherwise, redirect to billing page for pricing plan subscription
+    // Plans linked to a template go to its checkout; otherwise to the plan's billing page
     if (plan.templateId) {
       router.push(`/checkout/${plan.templateId}`);
     } else {
-      // Redirect to billing page for pricing plan subscription
-      // Convert plan.id to string (handles both string UUID and number IDs)
-      const billingId = typeof plan.id === 'string' ? plan.id : plan.id.toString();
-      router.push(`/billing/${billingId}`);
+      router.push(`/billing/${String(plan.id)}`);
     }
   };
-  const featureVariants = {
-    hidden: { opacity: 0, x: -8 },
-    show: { opacity: 1, x: 0 },
-  } as const;
 
   return (
     <motion.div
-      className={`relative rounded-lg border ${
-        plan.recommended
-          ? "border-[#0F59BC] shadow-lg"
-          : "border-gray-200 dark:border-gray-700"
-      } bg-white dark:bg-[#0B1026]`}
-      whileHover={{ y: -8, boxShadow: plan.recommended ? "0 20px 40px rgba(15,89,188,0.25)" : "0 16px 28px rgba(0,0,0,0.08)" }}
-      transition={{ type: "spring", stiffness: 260, damping: 18 }}
+      whileHover={{ y: -8 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      data-active={featured}
+      className={`tf-spin-border relative h-full rounded-[28px] ${featured ? "lg:-my-4" : ""}`}
     >
-      {plan.recommended && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge
-            variant="outline"
-            className="border-blue-600 text-blue-600 bg-white"
-          >
-            Recommended
-          </Badge>
-        </div>
-      )}
-      <div className="p-6">
-        <h3 className="text-2xl font-bold text-center text-[#0F59BC] dark:text-[#71A1FF]">
-          {plan.title}
-        </h3>
-        <p className="text-center mt-2 text-gray-600 dark:text-gray-300">
-          {plan.description}
-        </p>
-        <p className="text-center text-4xl font-bold py-5 dark:text-white">
-          ${plan.price}
-        </p>
-      </div>
-      <hr />
-      <motion.ul className="p-6 space-y-2" initial="hidden" whileInView="show" viewport={{ once: true }} transition={{ staggerChildren: 0.06 }}>
-        {plan.features.map((feature) => (
-          <motion.li
-            key={feature}
-            className="flex items-center gap-2 text-gray-800 dark:text-gray-200"
-            variants={featureVariants}
-          >
-            <FaCheck className="text-green-500 text-lg" /> {feature}
-          </motion.li>
-        ))}
-      </motion.ul>
+      <div
+        className={`relative flex h-full flex-col overflow-hidden rounded-[28px] border p-7 sm:p-8 ${
+          featured
+            ? "border-transparent bg-[#070B2A] text-white shadow-2xl shadow-[#3F5BF0]/30"
+            : "border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0B0F2E]"
+        }`}
+      >
+        {featured && (
+          <>
+            <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#3B5BF0_0%,transparent_55%),radial-gradient(ellipse_at_bottom_left,#7C3AED_0%,transparent_50%)] opacity-60" />
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-[0.12] [mask-image:radial-gradient(ellipse_at_top,#000_20%,transparent_70%)]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
+                backgroundSize: "36px 36px",
+              }}
+            />
+          </>
+        )}
 
-      <div className="p-6 w-full">
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            onClick={handleBuyNow}
-            className={`cursor-pointer w-full py-5 ${
-            plan.recommended
-              ? "bg-gradient-to-b from-[#0F59BC] to-[#0F35A7] text-white"
-              : "bg-transparent border-2 border-[#0F5BBD] text-[#0F5BBD] dark:text-[#71A1FF] dark:border-[#284F99] hover:bg-gradient-to-b from-[#0F59BC] to-[#0F35A7] hover:text-white duration-300"
+        <div className="relative flex items-center justify-between">
+          <span
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
+              featured
+                ? "bg-white/10 text-white ring-1 ring-white/20"
+                : "bg-gradient-to-br from-[#EEF4FF] to-[#F3EEFF] text-[#1D6FE0] dark:from-white/10 dark:to-white/5 dark:text-[#8DB8FF]"
             }`}
           >
-            Buy Now
-          </Button>
-        </motion.div>
+            <Icon className="h-5 w-5" />
+          </span>
+          {featured && (
+            <span className="rounded-full bg-gradient-to-r from-[#FDE68A] to-[#FBBF24] px-3 py-1 text-xs font-bold text-slate-900 shadow-lg">
+              Most popular
+            </span>
+          )}
+        </div>
+
+        <h3 className={`relative mt-6 text-xl font-semibold ${featured ? "text-white" : "text-slate-900 dark:text-white"}`}>{plan.title}</h3>
+        <p className={`relative mt-1 text-sm ${featured ? "text-slate-300" : "text-slate-500 dark:text-slate-400"}`}>{plan.description}</p>
+
+        <div className="relative mt-6 flex items-baseline gap-1.5">
+          <span className={`text-5xl font-bold tracking-tight ${featured ? "text-white" : "text-slate-900 dark:text-white"}`}>${plan.price}</span>
+          <span className={`text-sm ${featured ? "text-slate-400" : "text-slate-400"}`}>USD</span>
+        </div>
+
+        <motion.button
+          type="button"
+          onClick={handleBuyNow}
+          whileTap={{ scale: 0.98 }}
+          className={`group relative mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold transition ${
+            featured
+              ? "tf-shine bg-white text-slate-900 shadow-lg hover:shadow-white/20"
+              : "border border-slate-200 bg-slate-900 text-white hover:bg-gradient-to-r hover:from-[#1D6FE0] hover:to-[#6D5DFC] dark:border-white/10 dark:bg-white dark:text-slate-900 dark:hover:text-white"
+          }`}
+        >
+          Buy now
+          <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+        </motion.button>
+
+        <div className={`relative my-7 h-px ${featured ? "bg-white/10" : "bg-slate-100 dark:bg-white/10"}`} />
+
+        <p className={`relative text-xs font-semibold uppercase tracking-[0.14em] ${featured ? "text-slate-400" : "text-slate-400"}`}>
+          What&apos;s included
+        </p>
+        <ul className="relative mt-4 space-y-3">
+          {plan.features.map((feature, i) => (
+            <motion.li
+              key={feature}
+              initial={{ opacity: 0, x: -8 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.05 }}
+              className={`flex items-start gap-3 text-sm ${featured ? "text-slate-200" : "text-slate-600 dark:text-slate-300"}`}
+            >
+              <span
+                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                  featured ? "bg-gradient-to-br from-[#60A5FA] to-[#A78BFA] text-white" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                }`}
+              >
+                <FiCheck className="h-3 w-3" />
+              </span>
+              {feature}
+            </motion.li>
+          ))}
+        </ul>
       </div>
     </motion.div>
   );

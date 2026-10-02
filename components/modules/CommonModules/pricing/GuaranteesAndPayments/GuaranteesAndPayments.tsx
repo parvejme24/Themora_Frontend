@@ -1,99 +1,79 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { StaticImageData } from "next/image";
-import g1 from "@/assets/pricing/g1.png";
-import g2 from "@/assets/pricing/g1.png";
-import g3 from "@/assets/pricing/g1.png";
-import PayCards from "@/assets/pricing/pay-cards.png";
 import { motion } from "framer-motion";
+import { FiCreditCard, FiLock, FiRotateCcw } from "react-icons/fi";
+import type { IconType } from "react-icons";
+import PayCards from "@/assets/pricing/pay-cards.png";
 
 type Guarantee = {
-  image: StaticImageData;
+  icon: IconType;
   title: string;
   description?: string;
-  paymentImage?: StaticImageData;
-  alt: string;
+  showPayments?: boolean;
+  color: string;
 };
 
 const guarantees: Guarantee[] = [
   {
-    image: g1,
+    icon: FiLock,
     title: "SSL Secure Payments",
-    description:
-      "We use industry standard payment systems to facilitate online payments.",
-    alt: "SSL Secure Payments",
+    description: "We use industry standard payment systems to facilitate online payments.",
+    color: "#1D6FE0",
   },
   {
-    image: g2,
+    icon: FiRotateCcw,
     title: "Money Back Guarantee",
     description: "We offer a 30-day money-back guarantee for all our products.",
-    alt: "Money Back Guarantee",
+    color: "#10B981",
   },
   {
-    image: g3,
+    icon: FiCreditCard,
     title: "Accepted Payment Methods",
-    paymentImage: PayCards,
-    alt: "Accepted Payment Methods",
+    showPayments: true,
+    color: "#7C5CFC",
   },
 ];
 
 export default function GuaranteesAndPayments() {
-  const gridVariants = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
-  } as const;
-  const itemVariants = {
-    hidden: { opacity: 0, y: 18, scale: 0.98 },
-    show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.45, ease: "easeOut" } },
-  } as const;
   return (
-    <div className="container mx-auto max-w-7xl px-5 lg:px-0">
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mt-14 sm:mt-20 lg:mt-24"
-        variants={gridVariants}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: "-80px" }}
-      >
-        {guarantees.map((guarantee, index) => (
-          <motion.div
-            key={index}
-            className="flex gap-4 p-4 rounded-lg hover:bg-[#EAF3FF] dark:hover:bg-[#1E2B4D] transition-colors duration-300"
-            variants={itemVariants}
-            whileHover={{ y: -6 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          >
-            <motion.div className="flex-shrink-0" whileHover={{ rotate: 3, scale: 1.05 }}>
-              <Image
-                src={guarantee.image}
-                alt={guarantee.alt}
-                draggable={false}
-                className="w-[60px] h-[60px] sm:w-14 sm:h-14"
+    <section className="py-10">
+      <div className="grid gap-4 md:grid-cols-3">
+        {guarantees.map((g, i) => {
+          const Icon = g.icon;
+          return (
+            <motion.div
+              key={g.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.6, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              className="group relative flex gap-4 overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-white/[0.03]"
+            >
+              <div
+                aria-hidden
+                className="absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-30"
+                style={{ background: g.color }}
               />
+              <span
+                className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg"
+                style={{ background: g.color, boxShadow: `0 10px 24px -10px ${g.color}` }}
+              >
+                <Icon className="h-5 w-5" />
+              </span>
+              <div className="relative">
+                <h3 className="font-semibold text-slate-900 dark:text-white">{g.title}</h3>
+                {g.description && <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{g.description}</p>}
+                {g.showPayments && (
+                  <div className="mt-3 inline-flex rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200 dark:ring-white/10">
+                    <Image src={PayCards} alt="Accepted payment methods" className="h-auto w-full max-w-[180px]" draggable={false} />
+                  </div>
+                )}
+              </div>
             </motion.div>
-            <div>
-              <h4 className="text-[21px] sm:text-xl font-bold mb-2">
-                {guarantee.title}
-              </h4>
-              {guarantee.description ? (
-                <motion.p className="text-[13px] font-light dark:text-gray-300" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>
-                  {guarantee.description}
-                </motion.p>
-              ) : (
-                <motion.div className="mt-2" initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>
-                  <Image
-                    src={guarantee.paymentImage!}
-                    alt="Payment Methods"
-                    className="w-full max-w-[200px] h-auto"
-                    draggable={false}
-                  />
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-    </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

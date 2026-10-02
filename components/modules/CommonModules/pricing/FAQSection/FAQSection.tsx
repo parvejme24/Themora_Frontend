@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import { FaQuestion } from "react-icons/fa";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { FiArrowRight, FiCreditCard, FiHelpCircle, FiLifeBuoy, FiMessageCircle, FiPlus, FiRotateCcw } from "react-icons/fi";
+import type { IconType } from "react-icons";
 
 interface FAQItem {
   question: string;
@@ -20,9 +22,9 @@ const faqData: FAQCategory[] = [
     name: "General",
     faqs: [
       {
-        question: "What is TechFynite?",
+        question: "What is Themora?",
         answer:
-          "TechFynite is a platform that provides high-quality templates and digital products for developers and designers. We offer a wide range of solutions to help you build and grow your digital presence.",
+          "Themora is a platform that provides high-quality templates and digital products for developers and designers. We offer a wide range of solutions to help you build and grow your digital presence.",
       },
       {
         question: "How do I get started?",
@@ -121,163 +123,142 @@ const faqData: FAQCategory[] = [
   },
 ];
 
-export default function FAQSection() {
-  const [activeCategory, setActiveCategory] = useState("general");
+const CATEGORY_ICONS: Record<string, IconType> = {
+  general: FiHelpCircle,
+  payment: FiCreditCard,
+  support: FiLifeBuoy,
+  refund: FiRotateCcw,
+};
 
-  const activeCategoryData = faqData.find(
-    (category) => category.id === activeCategory
-  );
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+export default function FAQSection() {
+  const [activeCategory, setActiveCategory] = useState(faqData[0].id);
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const activeCategoryData = faqData.find((c) => c.id === activeCategory);
+
+  const selectCategory = (id: string) => {
+    setActiveCategory(id);
+    setOpenIndex(0);
+  };
 
   return (
-    <motion.div 
-      className="container mx-auto max-w-7xl px-5 lg:px-0 py-14"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Sidebar */}
-        <motion.div 
-          className="md:col-span-1 border border-[#bababad7] dark:border-[#ffffff28] rounded-xl bg-gradient-to-b from-[#FFFFFF] dark:from-[#0B0E20] to-[#EBF3FF] dark:to-[#0B0E20] py-10 w-full md:w-[270px]"
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="">
-            <motion.h3 
-              className="text-[35px] leading-tight font-bold mb-4 px-4"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              Questions & Answers
-            </motion.h3>
-            <div className="space-y-2 mt-8">
-              {faqData.map((category, index) => (
-                <motion.button
-                  key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`cursor-pointer text-[15px] w-full flex items-center justify-between p-3 rounded-lg transition-all duration-300 ${
-                    activeCategory === category.id
-                      ? "bg-[#0F59BC] text-white px-10 font-bold"
-                      : "hover:bg-[#EAF3FF] dark:hover:bg-[#1E2B4D] px-10"
-                  }`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                  whileHover={{ 
-                    scale: 1.02,
-                    x: 5,
-                    transition: { duration: 0.2 }
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="space-x-2">
-                    <motion.span 
-                      className="bg-white py-2 px-3.5 rounded text-[#0F5BBD] font-extrabold border-1 border-black"
-                      whileHover={{ 
-                        scale: 1.1,
-                        rotate: 5,
-                        transition: { duration: 0.2 }
-                      }}
+    <section className="py-20 sm:py-24">
+      <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+        {/* Intro + categories */}
+        <div className="lg:col-span-4">
+          <div className="lg:sticky lg:top-28">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1D6FE0] dark:text-[#8DB8FF]">FAQ</p>
+            <h2 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+              Questions <span className="tf-gradient-text">&amp; answers</span>
+            </h2>
+            <p className="mt-4 text-slate-600 dark:text-slate-400">
+              Everything you need to know about plans, payments and support.
+            </p>
+
+            <div className="mt-8 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] lg:flex-col lg:overflow-visible [&::-webkit-scrollbar]:hidden">
+              {faqData.map((category) => {
+                const Icon = CATEGORY_ICONS[category.id] ?? FiHelpCircle;
+                const active = activeCategory === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => selectCategory(category.id)}
+                    className={`relative flex shrink-0 items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-colors ${
+                      active ? "text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    }`}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="faq-cat"
+                        className="absolute inset-0 rounded-2xl border border-slate-200 bg-white shadow-md dark:border-white/10 dark:bg-white/[0.06]"
+                        transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                      />
+                    )}
+                    <span
+                      className={`relative flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
+                        active ? "bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white" : "bg-slate-100 dark:bg-white/5"
+                      }`}
                     >
-                      {category.name[0]}
-                    </motion.span>
-                    <span>{category.name}</span>
-                  </div>
-                </motion.button>
-              ))}
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="relative">{category.name}</span>
+                    <span className="relative ml-auto hidden text-xs text-slate-400 lg:inline">{category.faqs.length}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-[#F4F8FF] to-[#F7F3FF] p-6 lg:block dark:border-white/10 dark:from-[#0B1240] dark:to-[#150D3D]">
+              <FiMessageCircle className="h-6 w-6 text-[#1D6FE0] dark:text-[#8DB8FF]" />
+              <p className="mt-3 font-semibold text-slate-900 dark:text-white">Still have questions?</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Our team is happy to help.</p>
+              <Link href="/contact" className="group mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1D6FE0] dark:text-[#8DB8FF]">
+                Contact us <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        {/* FAQ Content */}
-        <motion.div 
-          className="md:col-span-3 md:pl-14 lg:px-0"
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
+        {/* Accordion */}
+        <div className="lg:col-span-8">
           <AnimatePresence mode="wait">
-            <motion.div 
+            <motion.ul
               key={activeCategory}
-              className="space-y-4"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.35, ease: EASE }}
+              className="space-y-3"
             >
-              {activeCategoryData?.faqs.map((faq, index) => (
-                <motion.div
-                  key={index}
-                  className="bg-transparent hover:bg-white dark:hover:bg-[#1A1D37] rounded-lg p-6 hover:shadow-sm duration-300"
-                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ 
-                    duration: 0.4, 
-                    delay: index * 0.1,
-                    ease: "easeOut"
-                  }}
-                  whileHover={{ 
-                    scale: 1.02,
-                    y: -5,
-                    transition: { duration: 0.2 }
-                  }}
-                  layout
-                >
-                  <div className="flex gap-3">
-                    <motion.div
-                      whileHover={{ 
-                        scale: 1.1,
-                        rotate: 10,
-                        transition: { duration: 0.2 }
-                      }}
+              {activeCategoryData?.faqs.map((faq, index) => {
+                const open = openIndex === index;
+                return (
+                  <li
+                    key={faq.question}
+                    className={`overflow-hidden rounded-2xl border transition-colors duration-300 ${
+                      open
+                        ? "border-[#1D6FE0]/30 bg-white shadow-lg shadow-[#0F5BBD]/5 dark:border-[#8DB8FF]/20 dark:bg-white/[0.04]"
+                        : "border-slate-200 bg-white/60 hover:border-slate-300 dark:border-white/10 dark:bg-white/[0.02]"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenIndex(open ? null : index)}
+                      aria-expanded={open}
+                      className="flex w-full items-center gap-4 px-5 py-5 text-left sm:px-6"
                     >
-                      <motion.span 
-                        className="bg-[#ACD0FF] rounded-full text-black flex justify-center items-center w-[30px] h-[30px] mt-1"
-                        animate={{
-                          scale: [1, 1.05, 1],
-                          opacity: [0.8, 1, 0.8]
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
+                      <span className="flex-1 text-base font-semibold text-slate-900 sm:text-lg dark:text-white">{faq.question}</span>
+                      <motion.span
+                        animate={{ rotate: open ? 45 : 0 }}
+                        transition={{ duration: 0.25 }}
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
+                          open ? "bg-[#1D6FE0] text-white" : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-300"
+                        }`}
                       >
-                        <FaQuestion />
+                        <FiPlus className="h-4 w-4" />
                       </motion.span>
-                    </motion.div>
-                    <div>
-                      <motion.h4 
-                        className="text-[24px] font-semibold flex items-center gap-2"
-                        whileHover={{ 
-                          scale: 1.02,
-                          transition: { duration: 0.2 }
-                        }}
-                      >
-                        {faq.question}
-                      </motion.h4>
-                      <motion.p 
-                        className="text-[14px] text-gray-600 dark:text-gray-300"
-                        initial={{ opacity: 0.8 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.2 }}
-                        whileHover={{ 
-                          scale: 1.01,
-                          transition: { duration: 0.2 }
-                        }}
-                      >
-                        {faq.answer}
-                      </motion.p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {open && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.35, ease: EASE }}
+                        >
+                          <p className="px-5 pb-6 text-[15px] leading-relaxed text-slate-600 sm:px-6 dark:text-slate-300">{faq.answer}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </li>
+                );
+              })}
+            </motion.ul>
           </AnimatePresence>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </section>
   );
 }
