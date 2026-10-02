@@ -1,7 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
-import Logo from "@/assets/common/logo.png";
+import ThemoraLogo from "@/components/shared/Logo/ThemoraLogo";
 
 export const LogoComponent = () => (
   <motion.div
@@ -10,16 +9,11 @@ export const LogoComponent = () => (
     transition={{ duration: 0.5 }}
     className="flex items-center"
   >
-    <Link href="/" className="flex items-center space-x-2">
-      <Image 
-        src={Logo} 
-        alt="TechFynite Logo" 
-        width={32} 
-        height={32} 
-        className="h-8 w-auto" 
-        style={{ width: 'auto', height: 'auto' }}
+    <Link href="/" aria-label="Themora home" className="group flex items-center">
+      <ThemoraLogo
+        size={34}
+        className="transition-transform duration-300 group-hover:scale-[1.03]"
       />
-      <span className="text-xl font-bold dark:text-white">TechFynite</span>
     </Link>
   </motion.div>
-); 
+);
