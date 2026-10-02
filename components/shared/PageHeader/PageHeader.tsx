@@ -67,7 +67,7 @@ export default function PageHeader({
   };
 
   return (
-    <div className="bg-gradient-to-r from-[#FDFEFF] via-[#EAF1FF] to-[#FDFEFF] dark:from-[#010103] dark:via-[#121B3A] dark:to-[#010103]">
+    <div className="bg-gradient-to-r from-[#F5F7FB] via-[#EAF1FF] to-[#F5F7FB] dark:from-[#010103] dark:via-[#121B3A] dark:to-[#010103]">
       <div className="h-full relative before:content-[''] before:absolute before:inset-0 before:bg-[linear-gradient(to_right,#0F5BBD_1px,transparent_1px),linear-gradient(to_bottom,#0F5BBD_1px,transparent_1px)] before:bg-[size:50px_50px] before:opacity-10">
         <motion.div
           className="py-8 md:py-12 px-5 max-w-[550px] mx-auto space-y-3"

@@ -33,7 +33,7 @@ export default function NotFound() {
   };
   return (
     <motion.div
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#FFFFFF] via-[#EBF3FF] to-[#E4EEFF] dark:from-[#05070f] dark:via-[#0b1433] dark:to-[#050a1f]"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#F5F7FB] via-[#EBF3FF] to-[#E4EEFF] dark:from-[#05070f] dark:via-[#0b1433] dark:to-[#050a1f]"
       initial="hidden"
       animate="visible"
       variants={containerVariants}

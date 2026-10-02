@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Light theme never uses pure white: every white utility resolves to a soft off-white */
+@theme {
+  --color-white: #fbfcfe;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,11 +50,11 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: #f5f7fb;
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --card: #fbfcfe;
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: #fbfcfe;
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
@@ -115,6 +120,27 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+
+  /* Tailwind v4 dropped the pointer cursor on buttons — restore it on everything clickable */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  a[href],
+  summary,
+  label[for],
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
   }
 
   body {
@@ -254,98 +280,144 @@ body {
   scrollbar-gutter: stable both-edges;
 }
 
-/* Blog Content HTML Styling */
+/* Blog Content HTML Styling — editorial reading typography */
 .blog-content {
-  @apply text-gray-700 dark:text-gray-300 leading-relaxed;
+  @apply text-[17px] leading-[1.85] text-slate-600 dark:text-slate-300;
+}
+.blog-content > * + * { @apply mt-6; }
+.blog-content h1 { @apply mt-14 text-3xl font-bold tracking-tight text-slate-900 dark:text-white; }
+.blog-content h2 { @apply mt-14 scroll-mt-32 text-[28px] font-bold leading-tight tracking-tight text-slate-900 dark:text-white; }
+.blog-content h3 { @apply mt-10 text-xl font-semibold tracking-tight text-slate-900 dark:text-white; }
+.blog-content h4 { @apply mt-8 text-lg font-semibold text-slate-900 dark:text-white; }
+.blog-content p { @apply text-slate-600 dark:text-slate-300; }
+.blog-content ul, .blog-content ol { @apply ml-6 space-y-2.5; }
+.blog-content ul { @apply list-disc marker:text-[#6D5DFC]; }
+.blog-content ol { @apply list-decimal marker:font-semibold marker:text-[#1D6FE0]; }
+.blog-content li { @apply pl-1.5; }
+.blog-content li p { @apply mt-0; }
+.blog-content img { @apply my-10 h-auto w-full max-w-full rounded-2xl border border-slate-200 dark:border-white/10; max-height: 640px; object-fit: cover; }
+.blog-content code { @apply rounded-md bg-[#1D6FE0]/10 px-1.5 py-0.5 font-mono text-[0.88em] text-[#1D4FD8] dark:text-[#8DB8FF]; }
+.blog-content pre { @apply overflow-x-auto rounded-2xl border border-slate-800 bg-[#0B0F2E] p-5 text-sm leading-relaxed; }
+.blog-content pre code { @apply bg-transparent p-0 text-slate-200; }
+.blog-content a { @apply font-medium text-[#1D6FE0] underline decoration-[#1D6FE0]/30 underline-offset-4 transition hover:decoration-[#1D6FE0] dark:text-[#8DB8FF]; }
+.blog-content hr { @apply my-12 border-slate-200 dark:border-white/10; }
+.blog-content strong { @apply font-semibold text-slate-900 dark:text-white; }
+.blog-content em { @apply italic; }
+.blog-content blockquote { @apply relative my-10 rounded-r-2xl border-l-4 border-[#6D5DFC] bg-gradient-to-r from-[#6D5DFC]/[0.07] to-transparent py-4 pl-6 pr-4 text-lg font-medium italic text-slate-800 dark:text-slate-100; }
+.blog-content table { @apply w-full border-collapse overflow-hidden rounded-xl text-sm; }
+.blog-content table th { @apply border border-slate-200 bg-slate-50 px-4 py-2.5 text-left font-semibold text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white; }
+.blog-content table td { @apply border border-slate-200 px-4 py-2.5 dark:border-white/10; }
+
+/* ===== Home page premium utilities ===== */
+@keyframes tf-gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
-.blog-content h1 {
-  @apply text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-gray-100;
+@keyframes tf-shine {
+  from { transform: translateX(-120%) skewX(-20deg); }
+  to { transform: translateX(220%) skewX(-20deg); }
 }
 
-.blog-content h2 {
-  @apply text-2xl font-bold mt-6 mb-3 text-gray-900 dark:text-gray-100;
+@keyframes tf-border-spin {
+  to { --tf-angle: 360deg; }
 }
 
-.blog-content h3 {
-  @apply text-xl font-semibold mt-5 mb-2 text-gray-900 dark:text-gray-100;
+@property --tf-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
 }
 
-.blog-content h4 {
-  @apply text-lg font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100;
+.tf-gradient-text {
+  background-image: linear-gradient(90deg, #0f5bbd, #6d5dfc, #22b8f0, #0f5bbd);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: tf-gradient-pan 8s ease-in-out infinite;
 }
 
-.blog-content p {
-  @apply mb-4 leading-relaxed text-gray-700 dark:text-gray-300;
+.tf-grid-bg {
+  background-image:
+    linear-gradient(to right, rgb(15 91 189 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(15 91 189 / 0.08) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 100%);
 }
 
-.blog-content ul,
-.blog-content ol {
-  @apply mb-4 ml-6 space-y-2;
+.dark .tf-grid-bg {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
 }
 
-.blog-content ul {
-  @apply list-disc;
+.tf-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.blog-content ol {
-  @apply list-decimal;
+/* Rotating conic border — wrap content in .tf-spin-border > inner */
+.tf-spin-border {
+  position: relative;
+  isolation: isolate;
+}
+.tf-spin-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(from var(--tf-angle), transparent 0 60%, #3b82f6 75%, #8b5cf6 85%, transparent 95%);
+  animation: tf-border-spin 6s linear infinite;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.tf-spin-border:hover::before,
+.tf-spin-border[data-active="true"]::before {
+  opacity: 1;
 }
 
-.blog-content li {
-  @apply text-gray-700 dark:text-gray-300 leading-relaxed;
+.tf-shine {
+  position: relative;
+  overflow: hidden;
+}
+.tf-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  transform: translateX(-120%) skewX(-20deg);
+  pointer-events: none;
+}
+.tf-shine:hover::after {
+  animation: tf-shine 0.9s ease;
 }
 
-.blog-content li p {
-  @apply mb-2;
+@media (prefers-reduced-motion: reduce) {
+  .tf-gradient-text,
+  .tf-spin-border::before,
+  .tf-shine:hover::after {
+    animation: none;
+  }
 }
 
-.blog-content img {
-  @apply w-full h-auto rounded-lg my-6 max-w-full;
-  max-height: 600px;
-  object-fit: contain;
+@keyframes tf-fill {
+  from { width: 0%; }
+  to { width: 100%; }
 }
 
-.blog-content code {
-  @apply bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-2 py-1 rounded text-sm font-mono;
-}
-
-.blog-content pre {
-  @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4;
-}
-
-.blog-content pre code {
-  @apply bg-transparent p-0 text-gray-800 dark:text-gray-200;
-}
-
-.blog-content a {
-  @apply text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline;
-}
-
-.blog-content hr {
-  @apply my-6 border-gray-300 dark:border-gray-600;
-}
-
-.blog-content strong {
-  @apply font-bold text-gray-900 dark:text-gray-100;
-}
-
-.blog-content em {
-  @apply italic;
-}
-
-.blog-content blockquote {
-  @apply border-l-4 border-blue-500 dark:border-blue-400 pl-4 italic my-4 text-gray-600 dark:text-gray-400;
-}
-
-.blog-content table {
-  @apply w-full border-collapse mb-4;
-}
-
-.blog-content table th {
-  @apply border border-gray-300 dark:border-gray-600 px-4 py-2 bg-gray-100 dark:bg-gray-800 font-semibold text-left;
-}
-
-.blog-content table td {
-  @apply border border-gray-300 dark:border-gray-600 px-4 py-2;
+/* Radix (Select / Dropdown / Dialog) locks scroll by hiding the scrollbar and
+   padding the body to compensate. We always reserve the scrollbar gutter, so
+   keep the bar visible and cancel the compensation to avoid a layout jump. */
+html body[data-scroll-locked] {
+  overflow-y: scroll !important;
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+  --removed-body-scroll-bar-size: 0px !important;
 }
