@@ -25,8 +25,7 @@ import {
 } from "react-icons/fi";
 import { VscGitPullRequestGoToChanges } from "react-icons/vsc";
 
-import LOGO from "@/assets/common/logo.png";
-import Image from "next/image";
+import { ThemoraMark } from "@/components/shared/Logo/ThemoraLogo";
 import { AuthContext } from "@/Providers/AuthProvider";
 import { useContext } from "react";
 import { UserRole } from "@/types/user";
@@ -167,15 +166,8 @@ export default function Sidebar() {
                 href="/dashboard"
                 className="text-xl lg:text-2xl font-bold text-[#0F5BBD] dark:text-white flex items-center gap-2"
               >
-                <Image
-                  src={LOGO}
-                  alt="Techfynite Logo"
-                  width={28}
-                  height={28}
-                  className="w-7 lg:w-9"
-                  style={{ width: 'auto', height: '1.75rem' }}
-                />
-                TechFynite
+                <ThemoraMark size={32} />
+                Themora
               </Link>
             )}
           </div>
