@@ -19,6 +19,7 @@ interface LoginFormValues {
 // Map NextAuth error codes to friendly messages
 const AUTH_ERRORS: Record<string, string> = {
   CredentialsSignin: "Invalid email or password",
+  AuthServiceUnavailable: "The sign-in service is unavailable. Check that the backend is running and its database schema is up to date.",
   AccessDenied: "Access denied. Please contact support.",
   Configuration: "Server configuration error. Please try again later.",
   Verification: "Please verify your email before logging in.",
