@@ -421,3 +421,70 @@ html body[data-scroll-locked] {
   padding-right: 0 !important;
   --removed-body-scroll-bar-size: 0px !important;
 }
+
+/* ===== Dashboard: same surfaces, gradients and grid as the public site ===== */
+@keyframes tf-aurora {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(48px, 32px, 0); }
+}
+
+.tf-aurora { animation: tf-aurora 18s ease-in-out infinite; }
+.tf-aurora-slow { animation: tf-aurora 22s ease-in-out infinite reverse; }
+
+/* shadcn tokens re-pointed at the public palette, only inside the dashboard */
+.tf-dashboard {
+  --primary: #1d6fe0;
+  --primary-foreground: #ffffff;
+  --ring: #1d6fe0;
+  --card: #fbfcfe;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #eaf1ff;
+  --accent-foreground: #0f5bbd;
+}
+.dark .tf-dashboard {
+  --card: #0b0f2e;
+  --card-foreground: #ffffff;
+  --border: rgb(255 255 255 / 0.1);
+  --input: rgb(255 255 255 / 0.12);
+  --muted: rgb(255 255 255 / 0.05);
+  --muted-foreground: #94a3b8;
+  --accent: rgb(29 111 224 / 0.15);
+  --accent-foreground: #8db8ff;
+}
+
+.tf-dashboard [data-slot="card"] {
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -20px rgb(15 53 167 / 0.25);
+}
+
+/* Default (primary) buttons -> brand gradient pill, like the public CTAs */
+.tf-dashboard [data-slot="button"].bg-primary,
+.tf-btn-primary {
+  border-radius: 9999px;
+  background-image: linear-gradient(90deg, #1d6fe0, #6d5dfc);
+  color: #fff;
+  box-shadow: 0 10px 24px -12px rgb(63 91 240 / 0.6);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+}
+.tf-dashboard [data-slot="button"].bg-primary:hover:not(:disabled),
+.tf-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.07);
+  box-shadow: 0 14px 30px -12px rgb(63 91 240 / 0.7);
+  transform: translateY(-1px);
+}
+
+/* Lifted card on hover, used by dashboard stat tiles */
+.tf-lift { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+.tf-lift:hover {
+  transform: translateY(-2px);
+  border-color: rgb(29 111 224 / 0.35);
+  box-shadow: 0 18px 40px -20px rgb(15 53 167 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-aurora, .tf-aurora-slow { animation: none; }
+  .tf-lift:hover, .tf-btn-primary:hover { transform: none; }
+}
