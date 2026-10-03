@@ -10,7 +10,7 @@ import {
 } from '@/types/order';
 
 // Get all orders
-export const useGetAllOrders = (query: OrderQuery) => {
+export const useGetAllOrders = (query: OrderQuery, enabled = true) => {
   return useQuery<PaginatedOrders>({
     queryKey: ['orders', 'all', query],
     queryFn: async () => {
@@ -36,6 +36,7 @@ export const useGetAllOrders = (query: OrderQuery) => {
         },
       };
     },
+    enabled,
   });
 };
 
@@ -52,7 +53,7 @@ export const useGetOrderById = (id: string) => {
 };
 
 // Get user orders
-export const useGetUserOrders = (query: Omit<OrderQuery, 'userId'>) => {
+export const useGetUserOrders = (query: Omit<OrderQuery, 'userId'>, enabled = true) => {
   return useQuery<PaginatedOrders>({
     queryKey: ['orders', 'user', query],
     queryFn: async () => {
@@ -77,17 +78,19 @@ export const useGetUserOrders = (query: Omit<OrderQuery, 'userId'>) => {
         },
       };
     },
+    enabled,
   });
 };
 
 // Get order statistics
-export const useGetOrderStats = () => {
+export const useGetOrderStats = (enabled = true) => {
   return useQuery<OrderStats>({
     queryKey: ['orders', 'stats'],
     queryFn: async () => {
       const response = await apiClient.get('/orders/stats');
       return response.data.data;
     },
+    enabled,
   });
 };
 
