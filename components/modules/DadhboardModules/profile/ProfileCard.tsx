@@ -1,120 +1,85 @@
-import React, { useContext } from "react";
+"use client";
+
 import Image from "next/image";
-import { User as UserIcon, Phone, Globe, DollarSign } from "lucide-react";
-import { FaEnvelopeOpen } from "react-icons/fa";
-import { Clock } from "lucide-react";
-import { IoCheckmarkCircleSharp } from "react-icons/io5";
+import { useContext } from "react";
 import { AuthContext } from "@/Providers/AuthProvider";
-import { RiAdminLine } from "react-icons/ri";
-import { IUser } from "@/types/auth";
 import { useCurrentUser } from "@/hooks/useAuth";
 import ErrorState from "@/components/shared/Feedback/ErrorState";
+import { IUser } from "@/types/auth";
+import SettingsSection from "./SettingsSection";
 
-const ProfileCard: React.FC = () => {
-  const { user: authContextUser, loading, error } = useContext(AuthContext) || {};
-  const { data: currentUserData } = useCurrentUser();
-  
-  // Prioritize fresh API data over cached context data
-  const user = currentUserData?.data?.user || authContextUser;
-  
-  
-  const displayName = user?.fullName || (user as any)?.name || "N/A";
-  const photoUrl = user?.profile?.avatarUrl || (user as any)?.image || "";
+function useProfileUser() {
+  const { user: contextUser } = useContext(AuthContext) || {};
+  const { data, isLoading, error, refetch } = useCurrentUser();
+  const user: IUser | undefined = data?.data?.user || contextUser || undefined;
+  return { user, isLoading, error, refetch };
+}
 
-  if (loading) {
+function formatDate(value?: string) {
+  return value ? new Date(value).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "—";
+}
+
+/* Compact page header: avatar, name, email, role */
+export default function ProfileCard() {
+  const { user, isLoading, error, refetch } = useProfileUser();
+
+  if (isLoading && !user) {
     return (
-      <div className="bg-white dark:bg-[#1A1D37] rounded-lg shadow p-6">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse mb-2"></div>
-          <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-          <div className="mt-4 space-y-2 w-full">
-            {[...Array(7)].map((_, index) => (
-              <div key={index}>
-                <div className="flex items-center gap-2 py-1">
-                  <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                  <div className="h-4 flex-1 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                </div>
-                <hr className="w-full border-dashed border-gray-400 mt-2" />
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="flex items-center gap-4">
+        <div className="h-14 w-14 animate-pulse rounded-full bg-slate-200 dark:bg-white/10" />
+        <div className="space-y-2"><div className="h-4 w-40 animate-pulse rounded bg-slate-200 dark:bg-white/10" /><div className="h-3 w-56 animate-pulse rounded bg-slate-100 dark:bg-white/[0.06]" /></div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center">
-        <ErrorState error={error} subject="your profile" compact />
-      </div>
-    );
+  if (error || !user) {
+    return <ErrorState error={error} subject="your profile" onRetry={refetch} compact />;
   }
+
+  const displayName = user.fullName || user.email.split("@")[0] || "Account";
+  const avatarUrl = user.profile?.avatarUrl;
 
   return (
-    <div className="bg-white dark:bg-[#1A1D37] rounded-lg shadow p-6">
-      <div className="flex flex-col items-center gap-2">
-        <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center mb-2">
-          {photoUrl ? (
-            <Image
-              src={photoUrl}
-              alt="user profile"
-              width={96}
-              height={96}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl">
-              {displayName && displayName !== "N/A"
-                ? displayName.trim().split(" ").length >= 2
-                  ? `${displayName.trim().split(" ")[0][0]}${
-                      displayName.trim().split(" ")[
-                        displayName.trim().split(" ").length - 1
-                      ][0]
-                    }`.toUpperCase()
-                  : displayName[0].toUpperCase()
-                : "U"}
-            </div>
-          )}
-        </div>
-        <h3 className="text-xl font-semibold">{displayName}</h3>
-        <p className="text-gray-500">
-          {user?.profile?.designation || "No designation"}
-        </p>
-
-        <div className="mt-4 space-y-2 w-full">
-          <div className="flex items-center gap-2 py-1">
-            <FaEnvelopeOpen className="text-2xl" /> {user?.email || "N/A"}
-          </div>
-          <hr className="w-full border-dashed border-gray-400" />
-          <div className="flex items-center gap-2 py-1">
-            <RiAdminLine className="text-2xl" /> {user?.role || "N/A"}
-          </div>
-          <hr className="w-full border-dashed border-gray-400" />
-          <div className="flex items-center gap-2 py-1">
-            <Phone className="text-2xl" /> {user?.profile?.phone || "N/A"}
-          </div>
-          <hr className="w-full border-dashed border-gray-400" />
-          <div className="flex items-center gap-2 py-1">
-            <Globe className="text-2xl" /> {user?.profile?.country || "N/A"}
-          </div>
-          <hr className="w-full border-dashed border-gray-400" />
-          <div className="flex items-center gap-2 py-1">
-            <IoCheckmarkCircleSharp className="text-green-500 text-2xl" />{" "}
-            Verified: {user?.otpVerified ? "Yes" : "No"}
-          </div>
-          <hr className="w-full border-dashed border-gray-400" />
-          <div className="flex items-center gap-2 py-1">
-            <Clock className="text-2xl" /> Member since:{" "}
-            {user?.createdAt
-              ? new Date(user.createdAt).toLocaleDateString()
-              : "N/A"}
-          </div>
-        </div>
+    <header className="flex min-w-0 items-center gap-4">
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#1D6FE0] to-[#6D5DFC] text-lg font-semibold text-white sm:h-16 sm:w-16">
+        {avatarUrl ? <Image src={avatarUrl} alt="" width={64} height={64} className="h-full w-full object-cover" /> : displayName.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}
       </div>
-    </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="truncate text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-white">{displayName}</h1>
+          <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:border-white/10 dark:text-slate-400">
+            {user.role === "ADMIN" ? "Admin" : "Member"}
+          </span>
+        </div>
+        <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+      </div>
+    </header>
   );
-};
+}
 
-export default ProfileCard;
+/* Read-only account facts, as a plain definition list */
+export function ProfileAccountDetails() {
+  const { user } = useProfileUser();
+  if (!user) return null;
+
+  const rows = [
+    { label: "Email status", value: user.otpVerified ? "Verified" : "Not verified", tone: user.otpVerified ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400" },
+    { label: "Member since", value: formatDate(user.createdAt) },
+    { label: "Last sign-in", value: formatDate(user.lastLoginAt) },
+    { label: "Sign-in method", value: user.provider ? user.provider[0].toUpperCase() + user.provider.slice(1) : "Email" },
+    { label: "Account ID", value: user.id, mono: true },
+  ];
+
+  return (
+    <SettingsSection title="Account" description="Read-only details about your account.">
+      <dl className="divide-y divide-slate-100 dark:divide-white/[0.06]">
+        {rows.map(({ label, value, tone, mono }) => (
+          <div key={label} className="flex flex-col gap-0.5 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <dt className="text-sm text-slate-500 dark:text-slate-400">{label}</dt>
+            <dd className={`min-w-0 break-all text-sm font-medium sm:text-right ${tone || "text-slate-900 dark:text-slate-100"} ${mono ? "font-mono text-xs" : ""}`}>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </SettingsSection>
+  );
+}
