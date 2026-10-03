@@ -23,7 +23,7 @@ export default function OrdersPage() {
           <div className="container mx-auto max-w-7xl px-4">
             <div className="text-center py-12">
               <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-slate-600 dark:text-slate-400">
                 You don't have permission to access this page.
               </p>
             </div>

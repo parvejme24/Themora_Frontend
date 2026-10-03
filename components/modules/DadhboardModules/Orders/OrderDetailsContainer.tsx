@@ -33,6 +33,7 @@ import { AuthContext } from "@/Providers/AuthProvider";
 import { useContext } from "react";
 import { UserRole } from "@/types/user";
 import ErrorState from "@/components/shared/Feedback/ErrorState";
+import apiClient from "@/lib/api-client";
 
 interface OrderDetailsContainerProps {
   orderId: string;
@@ -47,6 +48,7 @@ export default function OrderDetailsContainer({
   const isAdmin = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
 
   const [actionLoading, setActionLoading] = useState(false);
+  const [downloadingIndex, setDownloadingIndex] = useState<number | null>(null);
 
   const {
     data: order,
@@ -73,6 +75,21 @@ export default function OrderDetailsContainer({
     }
   };
 
+  const handleDownload = async (fileIndex: number) => {
+    if (!order?.templateId) return;
+    try {
+      setDownloadingIndex(fileIndex);
+      const response = await apiClient.get(`/templates/${order.templateId}/download/${fileIndex}`);
+      const downloadUrl = response.data.data?.downloadUrl;
+      if (!downloadUrl) throw new Error("Download is unavailable");
+      window.location.assign(downloadUrl);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || "Unable to download this file");
+    } finally {
+      setDownloadingIndex(null);
+    }
+  };
+
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
       case "COMPLETED":
@@ -84,9 +101,9 @@ export default function OrderDetailsContainer({
       case "CANCELLED":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "REFUNDED":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-slate-100 text-slate-800 dark:bg-[#0B0F2E] dark:text-slate-200";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-slate-100 text-slate-800 dark:bg-[#0B0F2E] dark:text-slate-200";
     }
   };
 
@@ -101,21 +118,21 @@ export default function OrderDetailsContainer({
   // Validate orderId
   if (!orderId || orderId.trim() === "") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FAFCFF] dark:from-[#000424] to-[#FAFCFF] dark:to-[#000424] flex items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="container mx-auto max-w-7xl px-4 lg:px-0 py-10">
-          <div className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl p-8 lg:p-12 text-center max-w-2xl mx-auto">
+          <div className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-xl p-8 lg:p-12 text-center max-w-2xl mx-auto">
             <div className="w-20 h-20 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <FiAlertCircle className="w-10 h-10 text-yellow-600 dark:text-yellow-400" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
               Invalid Order ID
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+            <p className="text-lg text-slate-600 dark:text-slate-400 mb-8">
               The order ID is missing or invalid.
             </p>
             <Button
               onClick={() => router.back()}
-              className="cursor-pointer bg-gradient-to-r from-[#0F35A7] to-[#0F59BC] hover:from-[#0F35A7]/90 hover:to-[#0F59BC]/90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              className="tf-btn-primary tf-shine cursor-pointer text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <FiArrowLeft className="w-5 h-5 mr-2" />
               Go Back
@@ -128,7 +145,7 @@ export default function OrderDetailsContainer({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FAFCFF] dark:from-[#000424] to-[#FAFCFF] dark:to-[#000424] flex items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#0F5BBD] border-t-transparent"></div>
       </div>
     );
@@ -157,19 +174,10 @@ export default function OrderDetailsContainer({
               Back
             </Button>
           </div>
-          <h1 
-            className="text-3xl lg:text-4xl font-bold mb-2"
-            style={{
-              background: "linear-gradient(90deg, #1f2937, #3b82f6, #8b5cf6, #1f2937)",
-              backgroundSize: "200% 100%",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text"
-            }}
-          >
-            Order Details
+          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+            Order <span className="tf-gradient-text">Details</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-600 dark:text-slate-400">
             Order ID: {order.lemonsqueezyOrderId}
           </p>
         </div>
@@ -178,17 +186,17 @@ export default function OrderDetailsContainer({
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Order Information */}
-            <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+            <Card className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
+                <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <div className="w-1 h-6 bg-gradient-to-b from-[#1D6FE0] to-[#6D5DFC] rounded-full"></div>
                   Order Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Order Status</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Order Status</p>
                     <span
                       className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(
                         order.status
@@ -198,26 +206,26 @@ export default function OrderDetailsContainer({
                     </span>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">License Type</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">License Type</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
                       {order.licenseType}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Total Amount</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Total Amount</p>
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                       {order.currency} {order.totalAmount.toFixed(2)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Payment Method</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Payment Method</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
                       {order.paymentMethod || "N/A"}
                     </p>
                   </div>
                 </div>
                 {isAdmin && (
-                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="pt-4 border-t border-slate-200 dark:border-white/10">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button 
@@ -248,22 +256,22 @@ export default function OrderDetailsContainer({
               </CardContent>
             </Card>
 
-            {/* Template Information */}
-            <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+            {/* Purchased product */}
+            <Card className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
-                  Template Details
+                <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <div className="w-1 h-6 bg-gradient-to-b from-[#1D6FE0] to-[#6D5DFC] rounded-full"></div>
+                  Purchase Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Template Name</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">
-                    {order.template.title}
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Product</p>
+                  <p className="text-xl font-bold text-slate-900 dark:text-white">
+                    {order.template?.title || order.pricingPlan?.title || "Themora purchase"}
                   </p>
                 </div>
-                {order.template.imageUrl && (
+                {order.template?.imageUrl && (
                   <div className="mt-4">
                     <img
                       src={order.template.imageUrl}
@@ -273,26 +281,34 @@ export default function OrderDetailsContainer({
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Description</p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {order.template.shortDescription}
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Description</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {order.template?.shortDescription || (order.planEntitlement?.isActive ? "All-template plan access is active." : "Plan access is not active.")}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Template Price</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {order.currency} {order.template.price.toFixed(2)}
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Purchase Price</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                    {order.currency} {(order.template?.price ?? order.pricingPlan?.price ?? order.totalAmount).toFixed(2)}
                   </p>
                 </div>
+                {order.pricingPlan && (
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Website licences</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {order.pricingPlan.websiteLimit ?? "Unlimited"}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Licenses */}
             {order.licenses && order.licenses.length > 0 && (
-              <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+              <Card className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
+                  <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div className="w-1 h-6 bg-gradient-to-b from-[#1D6FE0] to-[#6D5DFC] rounded-full"></div>
                     Licenses
                   </CardTitle>
                 </CardHeader>
@@ -301,18 +317,18 @@ export default function OrderDetailsContainer({
                     {order.licenses.map((license) => (
                       <div
                         key={license.id}
-                        className="p-4 bg-gray-50 dark:bg-[#0F1419] border border-gray-200 dark:border-gray-800 rounded-lg"
+                        className="p-4 bg-slate-50 dark:bg-[#05071A] border border-slate-200 dark:border-white/10 rounded-lg"
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
                               {license.licenseKey}
                             </p>
                             <div className="flex flex-wrap gap-3 text-sm">
-                              <span className="text-gray-500 dark:text-gray-400">
-                                Type: <span className="font-medium text-gray-700 dark:text-gray-300">{license.licenseType}</span>
+                              <span className="text-slate-500 dark:text-slate-400">
+                                Type: <span className="font-medium text-slate-700 dark:text-slate-300">{license.licenseType}</span>
                               </span>
-                              <span className="text-gray-500 dark:text-gray-400">
+                              <span className="text-slate-500 dark:text-slate-400">
                                 Status:{" "}
                                 <span
                                   className={
@@ -325,8 +341,8 @@ export default function OrderDetailsContainer({
                                 </span>
                               </span>
                               {license.expiresAt && (
-                                <span className="text-gray-500 dark:text-gray-400">
-                                  Expires: <span className="font-medium text-gray-700 dark:text-gray-300">{new Date(license.expiresAt).toLocaleDateString()}</span>
+                                <span className="text-slate-500 dark:text-slate-400">
+                                  Expires: <span className="font-medium text-slate-700 dark:text-slate-300">{new Date(license.expiresAt).toLocaleDateString()}</span>
                                 </span>
                               )}
                             </div>
@@ -341,31 +357,31 @@ export default function OrderDetailsContainer({
 
             {/* Download Links */}
             {order.downloadLinks && order.downloadLinks.length > 0 && (
-              <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+              <Card className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
+                  <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div className="w-1 h-6 bg-gradient-to-b from-[#1D6FE0] to-[#6D5DFC] rounded-full"></div>
                     Download Links
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {order.downloadLinks.map((link, index) => (
-                      <a
+                    {order.downloadLinks.map((fileIndex, index) => /^\d+$/.test(fileIndex) ? (
+                      <button
                         key={index}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block p-4 bg-gray-50 dark:bg-[#0F1419] border-2 border-gray-200 dark:border-gray-800 rounded-lg hover:border-[#0F35A7] dark:hover:border-[#0F59BC] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all cursor-pointer"
+                        type="button"
+                        onClick={() => handleDownload(Number(fileIndex))}
+                        disabled={downloadingIndex === Number(fileIndex)}
+                        className="block p-4 bg-slate-50 dark:bg-[#05071A] border-2 border-slate-200 dark:border-white/10 rounded-lg hover:border-[#1D6FE0] dark:hover:border-[#0F5BBD] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all cursor-pointer"
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                            Download Link {index + 1}
+                            {downloadingIndex === Number(fileIndex) ? "Preparing download..." : `Download file ${Number(fileIndex) + 1}`}
                           </span>
                           <FiDownload className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
-                      </a>
-                    ))}
+                      </button>
+                    ) : null)}
                   </div>
                 </CardContent>
               </Card>
@@ -375,41 +391,41 @@ export default function OrderDetailsContainer({
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Customer Information */}
-            <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+            <Card className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
+                <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <div className="w-1 h-6 bg-gradient-to-b from-[#1D6FE0] to-[#6D5DFC] rounded-full"></div>
                   Customer Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-2">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
                     <FiMail className="h-4 w-4" />
                     Email
                   </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {order.customerEmail}
                   </p>
                 </div>
                 {order.customerName && (
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-2">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
                       <FiUser className="h-4 w-4" />
                       Name
                     </p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
                       {order.customerName}
                     </p>
                   </div>
                 )}
                 {order.user && (
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">User Account</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">User Account</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
                       {order.user.fullName}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       {order.user.email}
                     </p>
                   </div>
@@ -419,17 +435,17 @@ export default function OrderDetailsContainer({
 
             {/* Billing Address */}
             {order.billingAddress && (
-              <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+              <Card className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
+                  <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div className="w-1 h-6 bg-gradient-to-b from-[#1D6FE0] to-[#6D5DFC] rounded-full"></div>
                     Billing Address
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+                  <div className="text-sm text-slate-700 dark:text-slate-300 space-y-2">
                     {order.billingAddress.firstName && order.billingAddress.lastName && (
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-slate-900 dark:text-white">
                         {order.billingAddress.firstName} {order.billingAddress.lastName}
                       </p>
                     )}
@@ -445,8 +461,8 @@ export default function OrderDetailsContainer({
                     )}
                     {order.billingAddress.country && <p>{order.billingAddress.country}</p>}
                     {order.billingAddress.phone && (
-                      <p className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-500 dark:text-gray-400">Phone: </span>
+                      <p className="pt-2 border-t border-slate-200 dark:border-white/10">
+                        <span className="text-slate-500 dark:text-slate-400">Phone: </span>
                         {order.billingAddress.phone}
                       </p>
                     )}
@@ -456,39 +472,39 @@ export default function OrderDetailsContainer({
             )}
 
             {/* Order Dates */}
-            <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+            <Card className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
+                <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <div className="w-1 h-6 bg-gradient-to-b from-[#1D6FE0] to-[#6D5DFC] rounded-full"></div>
                   Order Dates
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-2">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
                     <FiCalendar className="h-4 w-4" />
                     Created At
                   </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {new Date(order.createdAt).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-2">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
                     <FiCalendar className="h-4 w-4" />
                     Updated At
                   </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {new Date(order.updatedAt).toLocaleString()}
                   </p>
                 </div>
                 {order.expiresAt && (
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-2">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
                       <FiCalendar className="h-4 w-4" />
                       Expires At
                     </p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
                       {new Date(order.expiresAt).toLocaleString()}
                     </p>
                   </div>
