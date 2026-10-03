@@ -28,7 +28,7 @@ const BlogDescriptionSection: React.FC<BlogDescriptionSectionProps> = ({
           required
           className="cursor-text"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-slate-500 mt-1">
           Each line will become a separate paragraph in the description array
         </p>
       </CardContent>

@@ -1,630 +1,314 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import Swal from "sweetalert2";
+import { toast } from "sonner";
+import {
+  FiArrowLeft, FiBriefcase, FiChevronLeft, FiChevronRight, FiClock, FiDollarSign, FiInbox, FiMail, FiRefreshCw, FiSearch, FiSend, FiTrash2, FiX,
+} from "react-icons/fi";
 import apiClient from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  FiSearch,
-  FiRefreshCw,
-  FiFilter,
-  FiCalendar,
-  FiUser,
-  FiMail,
-  FiHome,
-  FiSend,
-} from "react-icons/fi";
-import { toast } from "sonner";
-import EmailModal from "./EmailModal";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/types/user";
-import ErrorState from "@/components/shared/Feedback/ErrorState";
+import { Contact } from "@/types/contact";
+import PageHeader from "../dashboard/PageHeader";
 
-// Skeleton Components
-const ServiceRequestSkeleton = () => (
-  <div className="min-h-screen py-8">
-    <div className="container mx-auto max-w-7xl px-4">
-      {/* Header Skeleton */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="h-8 w-64 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded mb-2 animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-            <div className="h-4 w-80 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-          </div>
-          <div className="flex gap-3">
-            <div className="h-10 w-24 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-            <div className="h-10 w-28 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-          </div>
-        </div>
-      </div>
+const PAGE_SIZE = 20;
+type Tab = "all" | "open" | "replied";
+type Pagination = { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean };
 
-      {/* Filters Skeleton */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <div className="h-10 w-full bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-        </div>
-        <div className="h-10 w-32 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-      </div>
+const formatDate = (value: Date | string, withTime = false) =>
+  new Date(value).toLocaleDateString(undefined, withTime ? { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" } : { day: "numeric", month: "short", year: "numeric" });
 
-      {/* Table Skeleton */}
-      <Card className="bg-white dark:bg-[#1A1D37]">
-        <CardHeader>
-          <div className="h-6 w-48 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  {[...Array(7)].map((_, index) => (
-                    <th key={index} className="text-left py-3 px-4">
-                      <div className="h-4 w-16 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[...Array(5)].map((_, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-gray-100 dark:border-gray-800"
-                  >
-                    {[...Array(7)].map((_, cellIndex) => (
-                      <td key={cellIndex} className="py-3 px-4">
-                        <div className="h-4 w-20 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-    <style jsx>{`
-      @keyframes shimmer {
-        0% {
-          background-position: -200% 0;
-        }
-        100% {
-          background-position: 200% 0;
-        }
-      }
-      .animate-shimmer {
-        animation: shimmer 2s infinite;
-      }
-    `}</style>
-  </div>
-);
-
-interface ServiceRequestContainerProps {
-  userRole?: string;
+function timeAgo(value: Date | string) {
+  const seconds = Math.round((Date.now() - new Date(value).getTime()) / 1000);
+  const units: [number, string][] = [[60, "s"], [60, "m"], [24, "h"], [7, "d"], [4.35, "w"], [12, "mo"]];
+  let amount = seconds;
+  for (const [step, label] of units) {
+    if (Math.abs(amount) < step) return `${Math.max(1, Math.floor(amount))}${label} ago`;
+    amount /= step;
+  }
+  return `${Math.floor(amount)}y ago`;
 }
 
-export default function ServiceRequestContainer({
-  userRole,
-}: ServiceRequestContainerProps) {
-  const isAdmin =
-    userRole === UserRole.ADMIN || userRole === UserRole.SUPER_ADMIN;
-  const isUser = userRole === UserRole.USER;
+function errorMessage(error: unknown, fallback: string) {
+  return (error as { response?: { data?: { message?: string } } })?.response?.data?.message || fallback;
+}
 
-  const {
-    data: serviceRequests,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["serviceRequests", "all"],
-    queryFn: async () => {
-      try {
-        const res = await apiClient.get("/contacts");
-        console.log("API Response:", res.data); // Debug log
+function ReplyBadge({ contact }: { contact: Contact }) {
+  const replied = (contact.replies?.length ?? 0) > 0;
+  return (
+    <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${replied ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${replied ? "bg-emerald-500" : "bg-amber-500"}`} />
+      {replied ? "Replied" : "Awaiting reply"}
+    </span>
+  );
+}
 
-        // Backend returns { success: true, data: [...contacts...], pagination: {...} }
-        if (res.data.success && Array.isArray(res.data.data)) {
-          return res.data.data;
-        } else {
-          console.error("Invalid API response structure:", res.data);
-          return [];
-        }
-      } catch (error) {
-        console.error("Error fetching contacts:", error);
-        throw error;
+export default function ServiceRequestContainer({ userRole }: { userRole?: string }) {
+  const { user } = useAuth();
+  const isAdmin = userRole === UserRole.ADMIN || userRole === UserRole.SUPER_ADMIN;
+
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [tab, setTab] = useState<Tab>("all");
+  const [page, setPage] = useState(1);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const detailRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const id = setTimeout(() => { setSearch(searchInput.trim()); setPage(1); }, 300);
+    return () => clearTimeout(id);
+  }, [searchInput]);
+
+  // Admins page through every request on the server; members only see their own requests
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey: ["serviceRequests", isAdmin ? "all" : "mine", isAdmin ? { page, search } : user?.email],
+    enabled: isAdmin || !!user?.email,
+    queryFn: async (): Promise<{ contacts: Contact[]; pagination?: Pagination }> => {
+      if (isAdmin) {
+        const res = await apiClient.get("/contacts", { params: { page, limit: PAGE_SIZE, sortBy: "createdAt", sortOrder: "desc", ...(search ? { search } : {}) } });
+        return { contacts: res.data.data ?? [], pagination: res.data.pagination };
       }
+      const res = await apiClient.get(`/contacts/email/${encodeURIComponent(user!.email)}`);
+      return { contacts: res.data.data ?? [] };
     },
   });
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [emailModal, setEmailModal] = useState<{
-    isOpen: boolean;
-    clientEmail: string;
-    clientName: string;
-    requestId?: string;
-  }>({
-    isOpen: false,
-    clientEmail: "",
-    clientName: "",
-    requestId: "",
+
+  const lastData = useRef<typeof data>(undefined);
+  if (data) lastData.current = data;
+  const shown = data ?? lastData.current;
+  const pagination = shown?.pagination;
+
+  const term = search.toLowerCase();
+  const contacts = useMemo(() => (shown?.contacts ?? []).filter((c) => {
+    const replied = (c.replies?.length ?? 0) > 0;
+    if (tab === "open" && replied) return false;
+    if (tab === "replied" && !replied) return false;
+    // Members' list isn't searched on the server
+    if (!isAdmin && term) return [c.fullName, c.email, c.companyName, c.serviceRequired, c.projectDetails].some((v) => (v ?? "").toLowerCase().includes(term));
+    return true;
+  }), [shown, tab, term, isAdmin]);
+
+  const selected = contacts.find((c) => c.id === selectedId) ?? (shown?.contacts ?? []).find((c) => c.id === selectedId) ?? null;
+  const openCount = (shown?.contacts ?? []).filter((c) => !c.replies?.length).length;
+
+  // Keep a request selected on wide screens
+  useEffect(() => {
+    if (!selectedId && contacts.length && window.matchMedia("(min-width: 1024px)").matches) setSelectedId(contacts[0].id);
+  }, [contacts, selectedId]);
+
+  useEffect(() => {
+    if (selected) setSubject(`Re: ${selected.serviceRequired || "Your request"}`);
+    setMessage("");
+  }, [selected?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const reply = useMutation({
+    mutationFn: async () => apiClient.post(`/contacts/${selected!.id}/reply`, { subject: subject.trim(), message: message.trim() }),
+    onSuccess: (res) => {
+      toast.success(res.data?.emailSent === false ? "Reply saved, but the email couldn't be delivered" : "Reply sent");
+      setMessage("");
+      refetch();
+    },
+    onError: (err) => toast.error(errorMessage(err, "Failed to send reply")),
   });
 
-  const [serviceModal, setServiceModal] = useState<{
-    isOpen: boolean;
-    serviceData: any | null;
-  }>({
-    isOpen: false,
-    serviceData: null
+  const remove = useMutation({
+    mutationFn: async (id: string) => apiClient.delete(`/contacts/${id}`),
+    onSuccess: () => { toast.success("Request deleted"); setSelectedId(null); refetch(); },
+    onError: (err) => toast.error(errorMessage(err, "Failed to delete request")),
   });
 
-  // Ensure serviceRequests is always an array
-  const requests = Array.isArray(serviceRequests) ? serviceRequests : [];
-
-  // Debug logging
-  console.log("Service Requests Data:", serviceRequests);
-  console.log("Processed Requests:", requests);
-  console.log("Is Loading:", isLoading);
-  console.log("Error:", error);
-
-  // Filter service requests based on search term and status
-  const filteredRequests = requests.filter((request) => {
-    const matchesSearch =
-      request.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (request.companyName || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      request.serviceRequired?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Since Contact doesn't have status field, we'll show all contacts when no specific filter is applied
-    const matchesStatus = filterStatus === "all";
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const handleRefresh = () => {
-    refetch();
-    toast.success("Service request list refreshed!");
-  };
-
-  const handleSendEmail = (
-    clientEmail: string,
-    clientName: string,
-    requestId?: string
-  ) => {
-    setEmailModal({
-      isOpen: true,
-      clientEmail,
-      clientName,
-      requestId,
+  const handleDelete = async (contact: Contact) => {
+    const { isConfirmed } = await Swal.fire({
+      title: "Delete this request?",
+      text: `The request from ${contact.fullName} and its replies will be removed permanently.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Delete",
+      reverseButtons: true,
+      focusCancel: true,
     });
+    if (isConfirmed) remove.mutate(contact.id);
   };
 
-  const handleViewService = (serviceId: string) => {
-    // Find the service data by ID
-    const serviceData = requests.find(request => request.id === serviceId);
-    if (serviceData) {
-      setServiceModal({
-        isOpen: true,
-        serviceData: serviceData
-      });
-    } else {
-      toast.error('Service request not found');
-    }
+  const select = (id: string) => {
+    setSelectedId(id);
+    if (window.matchMedia("(max-width: 1023px)").matches) requestAnimationFrame(() => detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
 
-  const closeEmailModal = () => {
-    setEmailModal({
-      isOpen: false,
-      clientEmail: "",
-      clientName: "",
-      requestId: "",
-    });
-  };
-
-  const closeServiceModal = () => {
-    setServiceModal({
-      isOpen: false,
-      serviceData: null
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    const statusLower = status?.toLowerCase() || "pending";
-    switch (statusLower) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "in-progress":
-      case "in_progress":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "completed":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "cancelled":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    const statusLower = status?.toLowerCase() || "pending";
-    switch (statusLower) {
-      case "pending":
-        return "Pending";
-      case "in-progress":
-      case "in_progress":
-        return "In Progress";
-      case "completed":
-        return "Completed";
-      case "cancelled":
-        return "Cancelled";
-      default:
-        return "Unknown";
-    }
-  };
-
-  // Show skeleton while loading
-  if (isLoading) {
-    return <ServiceRequestSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
-        <ErrorState error={error} subject="service requests" onRetry={refetch} />
-      </div>
-    );
-  }
+  const messageTooShort = message.trim().length < 10;
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="container mx-auto max-w-7xl px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Service Requests
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Manage and view all service requests from clients
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={handleRefresh}
-                variant="outline"
-                className="cursor-pointer"
-              >
-                <FiRefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white dark:bg-[#1A1D37]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Requests
-              </CardTitle>
-              <FiFilter className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{requests.length}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white dark:bg-[#1A1D37]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Contacts
-              </CardTitle>
-              <FiCalendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {requests.length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white dark:bg-[#1A1D37]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Month</CardTitle>
-              <FiFilter className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {
-                  requests.filter((r) => {
-                    const contactDate = new Date(r.createdAt);
-                    const now = new Date();
-                    return (
-                      contactDate.getMonth() === now.getMonth() &&
-                      contactDate.getFullYear() === now.getFullYear()
-                    );
-                  }).length
-                }
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white dark:bg-[#1A1D37]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                With Replies
-              </CardTitle>
-              <FiFilter className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">
-                {
-                  requests.filter((r) => r.replies && r.replies.length > 0)
-                    .length
-                }
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search by name, email, company, or service..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-
-        {/* Service Requests Table */}
-        <Card className="bg-white dark:bg-[#1A1D37]">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>
-                Service Request List ({filteredRequests.length} of{" "}
-                {requests.length})
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {filteredRequests.length === 0 ? (
-              <div className="text-center py-8">
-                <FiFilter className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium mb-2">
-                  No service requests found
-                </h3>
-                <p className="text-gray-500">
-                  {searchTerm || filterStatus !== "all"
-                    ? "Try adjusting your search or filters"
-                    : "No service requests yet"}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Client Info
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Project Details
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Service Required
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Budget
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Status
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Date
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRequests.map((request) => (
-                      <tr
-                        key={request.id}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      >
-                        <td className="py-3 px-4">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full mr-3 flex items-center justify-center">
-                              <FiUser className="w-5 h-5 text-gray-500" />
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {request.fullName}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-300 flex items-center">
-                                <FiMail className="w-3 h-3 mr-1" />
-                                {request.email}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-300 flex items-center">
-                                <FiHome className="w-3 h-3 mr-1" />
-                                {request.companyName || "N/A"}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="max-w-xs">
-                            <p className="text-sm text-gray-900 dark:text-white line-clamp-2">
-                              {request.projectDetails}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-sm text-gray-700 dark:text-gray-300">
-                            {request.serviceRequired}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {request.budget}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            Contact
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
-                          {new Date(request.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleViewService(request.id)}
-                              size="sm"
-                              variant="outline"
-                              className="border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800"
-                            >
-                              <FiUser className="w-3 h-3 mr-1" />
-                              View Service
-                            </Button>
-                            <Button
-                              onClick={() =>
-                                handleSendEmail(
-                                  request.email,
-                                  request.fullName,
-                                  request.id
-                                )
-                              }
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
-                            >
-                              <FiSend className="w-3 h-3 mr-1" />
-                              Send Email
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Email Modal */}
-      <EmailModal
-        isOpen={emailModal.isOpen}
-        onClose={closeEmailModal}
-        clientEmail={emailModal.clientEmail}
-        clientName={emailModal.clientName}
-        requestId={emailModal.requestId}
+    <div className="space-y-6">
+      <PageHeader
+        title="Service requests"
+        description={isAdmin ? `${pagination?.total ?? (shown?.contacts.length ?? 0)} requests · ${openCount} awaiting reply on this page` : "Project requests you've sent us, and our replies."}
+        actions={
+          <>
+            <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh" className="h-10 w-10 cursor-pointer rounded-full">
+              <FiRefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            </Button>
+            {!isAdmin && <Button asChild className="tf-btn-primary tf-shine h-10 cursor-pointer px-5"><Link href="/contact">New request</Link></Button>}
+          </>
+        }
       />
 
-      {/* Service Details Modal */}
-      {serviceModal.isOpen && serviceModal.serviceData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                  <FiUser className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{serviceModal.serviceData.fullName}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{serviceModal.serviceData.email}</p>
-                </div>
-              </div>
-              <button
-                onClick={closeServiceModal}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+      {/* Toolbar */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex w-fit rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Reply status">
+          {([["all", "All"], ["open", "Awaiting reply"], ["replied", "Replied"]] as const).map(([value, label]) => (
+            <button key={value} type="button" role="tab" aria-selected={tab === value} onClick={() => setTab(value)} className={`inline-flex h-8 cursor-pointer items-center rounded-full px-3 text-sm transition ${tab === value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="relative min-w-0 flex-1 sm:ml-auto sm:max-w-sm">
+          <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <input type="search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search name, email, company…" aria-label="Search requests" className="h-10 w-full rounded-full border border-slate-200 bg-white pl-10 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1D6FE0] focus:ring-[3px] focus:ring-[#1D6FE0]/15 dark:border-white/10 dark:bg-white/[0.03] dark:text-white" />
+          {searchInput && <button type="button" onClick={() => setSearchInput("")} aria-label="Clear search" className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10"><FiX className="h-3.5 w-3.5" /></button>}
+        </div>
+      </div>
 
-            {/* Modal Content */}
-            <div className="p-4 space-y-4">
-              {/* Service Info */}
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Service</span>
-                  <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-1 rounded">
-                    {serviceModal.serviceData.serviceRequired}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
-                  {serviceModal.serviceData.projectDetails}
-                </p>
-              </div>
+      {isLoading && !shown ? (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+          <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-[92px] animate-pulse rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0B0F2E]" />)}</div>
+          <div className="hidden h-[420px] animate-pulse rounded-2xl border border-slate-200 bg-white lg:block dark:border-white/10 dark:bg-[#0B0F2E]" />
+        </div>
+      ) : error && !shown ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-14 text-center dark:border-white/15">
+          <p className="text-sm text-slate-600 dark:text-slate-300">Couldn&apos;t load service requests.</p>
+          <Button variant="outline" onClick={() => refetch()} className="mt-4 cursor-pointer rounded-full">Try again</Button>
+        </div>
+      ) : contacts.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-16 text-center dark:border-white/15">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-white/5"><FiInbox className="h-5 w-5" /></span>
+          <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">{search || tab !== "all" ? "No requests match" : "No requests yet"}</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{search || tab !== "all" ? "Try another search or tab." : isAdmin ? "Requests from the contact form appear here." : "Tell us about your project and we'll get back to you."}</p>
+          {!isAdmin && !search && tab === "all" && <Button asChild className="tf-btn-primary mt-5 cursor-pointer px-5"><Link href="/contact">Start a request</Link></Button>}
+        </div>
+      ) : (
+        <div className={`grid items-start gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] ${isFetching ? "opacity-80" : ""}`}>
+          {/* Inbox list */}
+          <div className="min-w-0">
+            <ul className="space-y-2">
+              {contacts.map((c) => {
+                const active = c.id === selected?.id;
+                return (
+                  <li key={c.id}>
+                    <button type="button" onClick={() => select(c.id)} aria-current={active ? "true" : undefined} className={`w-full cursor-pointer rounded-2xl border p-4 text-left transition ${active ? "border-[#1D6FE0]/40 bg-[#EAF1FF]/50 ring-1 ring-[#1D6FE0]/20 dark:border-[#8DB8FF]/30 dark:bg-[#1D6FE0]/10" : "border-slate-200 bg-white hover:border-slate-300 dark:border-white/10 dark:bg-[#0B0F2E] dark:hover:border-white/20"}`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{c.fullName}</p>
+                          <p className="truncate text-xs text-slate-500 dark:text-slate-400">{c.companyName || c.email}</p>
+                        </div>
+                        <span className="shrink-0 text-[11px] text-slate-400">{timeAgo(c.createdAt)}</span>
+                      </div>
+                      <p className="mt-2 truncate text-sm font-medium text-slate-700 dark:text-slate-200">{c.serviceRequired}</p>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <span className="truncate text-xs text-slate-500 dark:text-slate-400">{c.budget}</span>
+                        <ReplyBadge contact={c} />
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
 
-              {/* Budget & Company */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Budget</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{serviceModal.serviceData.budget}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Company</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{serviceModal.serviceData.companyName || 'N/A'}</p>
-                </div>
-              </div>
+            {pagination && pagination.totalPages > 1 && (
+              <nav aria-label="Pagination" className="mt-4 flex items-center justify-between gap-2">
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={!pagination.hasPrev || isFetching} className="h-9 cursor-pointer rounded-full px-3"><FiChevronLeft className="h-4 w-4" /> Prev</Button>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{pagination.page} / {pagination.totalPages}</span>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={!pagination.hasNext || isFetching} className="h-9 cursor-pointer rounded-full px-3">Next <FiChevronRight className="h-4 w-4" /></Button>
+              </nav>
+            )}
+          </div>
 
-              {/* Date & Replies */}
-              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                <span>{new Date(serviceModal.serviceData.createdAt).toLocaleDateString()}</span>
-                <span>{serviceModal.serviceData.replies?.length || 0} replies</span>
-              </div>
-            </div>
+          {/* Detail pane */}
+          <div ref={detailRef} className="min-w-0 scroll-mt-24 lg:sticky lg:top-6">
+            {!selected ? (
+              <div className="hidden h-full min-h-[320px] items-center justify-center rounded-2xl border border-dashed border-slate-300 text-sm text-slate-400 lg:flex dark:border-white/15">Select a request to read it</div>
+            ) : (
+              <article className="rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0B0F2E]">
+                <header className="flex items-start justify-between gap-3 border-b border-slate-100 p-5 dark:border-white/[0.06]">
+                  <div className="min-w-0">
+                    <button type="button" onClick={() => setSelectedId(null)} className="mb-3 inline-flex cursor-pointer items-center gap-1 text-xs text-slate-500 hover:text-slate-900 lg:hidden dark:text-slate-400 dark:hover:text-white"><FiArrowLeft className="h-3.5 w-3.5" /> Close</button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{selected.serviceRequired}</h2>
+                      <ReplyBadge contact={selected} />
+                    </div>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{selected.fullName}{selected.companyName ? ` · ${selected.companyName}` : ""}</p>
+                  </div>
+                  {isAdmin && (
+                    <button type="button" onClick={() => handleDelete(selected)} disabled={remove.isPending} aria-label="Delete request" className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:hover:bg-red-500/10 dark:hover:text-red-400">
+                      <FiTrash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </header>
 
-            {/* Modal Footer */}
-            <div className="flex gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                onClick={closeServiceModal}
-                variant="outline"
-                size="sm"
-                className="cursor-pointer flex-1"
-              >
-                Close
-              </Button>
-              <Button
-                onClick={() => {
-                  closeServiceModal();
-                  handleSendEmail(
-                    serviceModal.serviceData.email,
-                    serviceModal.serviceData.fullName,
-                    serviceModal.serviceData.id
-                  );
-                }}
-                size="sm"
-                className="cursor-pointer flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <FiSend className="w-4 h-4 mr-1" />
-                Reply
-              </Button>
-            </div>
+                <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-b border-slate-100 p-5 text-sm sm:grid-cols-2 dark:border-white/[0.06]">
+                  {[
+                    { icon: FiMail, label: "Email", value: <a href={`mailto:${selected.email}`} className="text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">{selected.email}</a> },
+                    { icon: FiBriefcase, label: "Company", value: selected.companyName || "—" },
+                    { icon: FiDollarSign, label: "Budget", value: selected.budget || "—" },
+                    { icon: FiClock, label: "Received", value: formatDate(selected.createdAt, true) },
+                  ].map(({ icon: Icon, label, value }) => (
+                    <div key={label} className="flex min-w-0 items-start gap-2.5">
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                      <div className="min-w-0">
+                        <dt className="text-xs text-slate-500 dark:text-slate-400">{label}</dt>
+                        <dd className="mt-0.5 break-words font-medium text-slate-800 dark:text-slate-100">{value}</dd>
+                      </div>
+                    </div>
+                  ))}
+                </dl>
+
+                <section className="border-b border-slate-100 p-5 dark:border-white/[0.06]">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-slate-400">Project details</h3>
+                  <p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-slate-700 dark:text-slate-200">{selected.projectDetails}</p>
+                </section>
+
+                <section className="p-5">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-slate-400">Replies {selected.replies?.length ? `(${selected.replies.length})` : ""}</h3>
+                  {selected.replies?.length ? (
+                    <ol className="mt-3 space-y-3">
+                      {selected.replies.map((r) => (
+                        <li key={r.id} className="rounded-xl bg-slate-50 p-4 dark:bg-white/[0.03]">
+                          <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{r.subject}</p>
+                            <span className="text-[11px] text-slate-400">{r.user?.fullName ? `${r.user.fullName} · ` : ""}{formatDate(r.createdAt, true)}</span>
+                          </div>
+                          <p className="mt-1.5 whitespace-pre-line break-words text-sm leading-6 text-slate-600 dark:text-slate-300">{r.message}</p>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{isAdmin ? "No replies yet." : "We haven't replied yet. You'll get an email when we do."}</p>
+                  )}
+
+                  {isAdmin && (
+                    <form onSubmit={(e) => { e.preventDefault(); if (!messageTooShort && subject.trim()) reply.mutate(); }} className="mt-5 space-y-2 rounded-xl border border-slate-200 p-3 dark:border-white/10">
+                      <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" aria-label="Reply subject" disabled={reply.isPending} className="h-9 rounded-lg border-slate-200 shadow-none dark:border-white/10 dark:bg-white/[0.03]" />
+                      <Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder={`Write a reply to ${selected.fullName.split(" ")[0]}…`} aria-label="Reply message" rows={4} disabled={reply.isPending} className="rounded-lg border-slate-200 shadow-none dark:border-white/10 dark:bg-white/[0.03]" />
+                      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-xs text-slate-400">Sent to {selected.email} and saved on this request.</p>
+                        <Button type="submit" disabled={reply.isPending || messageTooShort || !subject.trim()} className="tf-btn-primary h-9 cursor-pointer px-4 text-sm">
+                          <FiSend className="h-4 w-4" /> {reply.isPending ? "Sending…" : "Send reply"}
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </section>
+              </article>
+            )}
           </div>
         </div>
       )}

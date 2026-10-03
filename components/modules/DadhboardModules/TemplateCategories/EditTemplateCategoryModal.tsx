@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FiTag, FiImage, FiUpload, FiX } from "react-icons/fi";
+import { FiTag, FiImage, FiUpload, FiLink, FiX } from "react-icons/fi";
 import { toast } from "sonner";
 import { useUpdateTemplateCategory } from "@/hooks/useTemplateCategoryApi";
 import { TemplateCategory } from "@/types/templateCategory";
@@ -40,9 +40,11 @@ export default function EditTemplateCategoryModal({
     slug: "",
     imageUrl: "",
   });
+  const [imageMode, setImageMode] = useState<"file" | "url">("file");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
+  const [directUrlInput, setDirectUrlInput] = useState("");
+
   const updateCategoryMutation = useUpdateTemplateCategory();
 
   // Auto-generate slug from title
@@ -55,7 +57,6 @@ export default function EditTemplateCategoryModal({
       .trim();
   };
 
-  // Populate form when category data is loaded
   useEffect(() => {
     if (category) {
       setFormData({
@@ -63,15 +64,19 @@ export default function EditTemplateCategoryModal({
         slug: category.slug || "",
         imageUrl: category.image || "",
       });
-      // Set preview URL for existing image
       if (category.image) {
         setPreviewUrl(category.image);
+        setDirectUrlInput(category.image);
+      } else {
+        setPreviewUrl(null);
+        setDirectUrlInput("");
       }
+      setSelectedImage(null);
     }
   }, [category]);
 
   const handleTitleChange = (title: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       title,
       slug: generateSlug(title),
@@ -79,7 +84,7 @@ export default function EditTemplateCategoryModal({
   };
 
   const handleSlugChange = (slug: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ""),
     }));
@@ -88,13 +93,10 @@ export default function EditTemplateCategoryModal({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         toast.error("Please select a valid image file");
         return;
       }
-
-      // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image size must be less than 5MB");
         return;
@@ -103,17 +105,30 @@ export default function EditTemplateCategoryModal({
       setSelectedImage(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-      setFormData(prev => ({ ...prev, imageUrl: url }));
+      setFormData((prev) => ({ ...prev, imageUrl: url }));
+    }
+  };
+
+  const handleDirectUrlChange = (url: string) => {
+    setDirectUrlInput(url);
+    if (url.trim()) {
+      setPreviewUrl(url.trim());
+      setFormData((prev) => ({ ...prev, imageUrl: url.trim() }));
+      setSelectedImage(null);
+    } else {
+      setPreviewUrl(null);
+      setFormData((prev) => ({ ...prev, imageUrl: "" }));
     }
   };
 
   const removeImage = () => {
     setSelectedImage(null);
-    if (previewUrl) {
+    setDirectUrlInput("");
+    if (previewUrl && previewUrl.startsWith("blob:")) {
       URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
     }
-    setFormData(prev => ({ ...prev, imageUrl: "" }));
+    setPreviewUrl(null);
+    setFormData((prev) => ({ ...prev, imageUrl: "" }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,13 +148,14 @@ export default function EditTemplateCategoryModal({
       const updateData = {
         id: category.id,
         title: formData.title.trim(),
-        slug: formData.slug.trim() || undefined, // Backend will auto-generate if empty
+        slug: formData.slug.trim() || undefined,
         imageFile: selectedImage || undefined,
+        imageUrl: imageMode === "url" || (!selectedImage && previewUrl) ? previewUrl || "" : undefined,
       };
 
-      await updateCategoryMutation.mutateAsync(updateData);
-      
-      toast.success("Template category updated successfully!");
+      await updateCategoryMutation.mutateAsync(updateData as any);
+
+      toast.success("Theme category updated successfully!");
       onSuccess?.();
       onClose();
     } catch (error) {
@@ -156,100 +172,159 @@ export default function EditTemplateCategoryModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="rounded-2xl sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FiTag className="w-5 h-5" />
-            Edit Template Category
+          <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-[#1D6FE0] dark:text-[#8DB8FF]">
+              <FiTag className="h-4 w-4" />
+            </span>
+            Edit Theme Category
           </DialogTitle>
           <DialogDescription>
-            Update the category information.
+            Update theme category title, slug, and thumbnail.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           <div className="space-y-2">
-            <Label htmlFor="title">Category Title *</Label>
+            <Label htmlFor="title" className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              Category Title *
+            </Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => handleTitleChange(e.target.value)}
-              placeholder="e.g., Web Design, Mobile App, E-commerce"
+              placeholder="e.g. Portfolio, SaaS"
               required
               disabled={updateCategoryMutation.isPending}
+              className="h-10 rounded-xl border-slate-200 dark:border-white/10 dark:bg-white/[0.04]"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="slug">Slug *</Label>
-            <Input
-              id="slug"
-              value={formData.slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
-              placeholder="e.g., web-design, mobile-app, e-commerce"
-              required
-              disabled={updateCategoryMutation.isPending}
-            />
-            <p className="text-xs text-gray-500">
-              URL-friendly version of the title. Will be used in URLs.
+            <Label htmlFor="slug" className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              Slug *
+            </Label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-400">
+                /
+              </span>
+              <Input
+                id="slug"
+                value={formData.slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                placeholder="portfolio"
+                required
+                disabled={updateCategoryMutation.isPending}
+                className="h-10 pl-6 font-mono text-sm rounded-xl border-slate-200 dark:border-white/10 dark:bg-white/[0.04]"
+              />
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              URL-friendly slug used in marketplace routing.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Category Image (Optional)</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Category Image
+              </Label>
+              <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs dark:border-white/10 dark:bg-white/5">
+                <button
+                  type="button"
+                  onClick={() => setImageMode("file")}
+                  className={`rounded-md px-2 py-0.5 font-medium transition cursor-pointer ${
+                    imageMode === "file"
+                      ? "bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                  }`}
+                >
+                  <FiUpload className="inline mr-1 h-3 w-3" /> Upload
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImageMode("url")}
+                  className={`rounded-md px-2 py-0.5 font-medium transition cursor-pointer ${
+                    imageMode === "url"
+                      ? "bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                  }`}
+                >
+                  <FiLink className="inline mr-1 h-3 w-3" /> Image URL
+                </button>
+              </div>
+            </div>
+
             {previewUrl ? (
-              <div className="relative">
-                <img
-                  src={previewUrl}
-                  alt="Category preview"
-                  className="w-full h-32 object-contain rounded-lg border"
-                />
+              <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 dark:border-white/10 dark:bg-white/[0.02]">
+                <div className="relative h-28 w-full flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={previewUrl}
+                    alt="Category preview"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
                 <Button
                   type="button"
                   variant="destructive"
                   size="sm"
                   onClick={removeImage}
-                  className="absolute top-2 right-2 cursor-pointer"
+                  className="absolute right-2 top-2 h-7 w-7 rounded-full p-0 cursor-pointer shadow-md"
                 >
-                  <FiX className="w-4 h-4" />
+                  <FiX className="h-4 w-4" />
                 </Button>
               </div>
-            ) : (
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-                <FiImage className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-500 mb-2">Upload category image</p>
+            ) : imageMode === "file" ? (
+              <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-5 text-center dark:border-white/10 dark:bg-white/[0.02]">
+                <FiImage className="mx-auto mb-1.5 h-6 w-6 text-slate-400" />
+                <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
+                  Upload SVG, PNG or WebP (max 5MB)
+                </p>
                 <Label
-                  htmlFor="edit-category-image"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 cursor-pointer"
+                  htmlFor="edit-template-category-image"
+                  className="tf-btn-primary tf-shine inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold text-white cursor-pointer"
                 >
-                  <FiUpload className="w-4 h-4" />
-                  Choose Image
+                  <FiUpload className="h-3.5 w-3.5" />
+                  Choose File
                 </Label>
                 <Input
-                  id="edit-category-image"
+                  id="edit-template-category-image"
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
                 />
               </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Input
+                  value={directUrlInput}
+                  onChange={(e) => handleDirectUrlChange(e.target.value)}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="h-10 text-sm rounded-xl border-slate-200 dark:border-white/10 dark:bg-white/[0.04]"
+                />
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Paste a direct link to any hosted image or icon.
+                </p>
+              </div>
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-2.5 pt-3">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={updateCategoryMutation.isPending}
-              className="cursor-pointer"
+              className="rounded-xl cursor-pointer"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={updateCategoryMutation.isPending || !formData.title.trim() || !formData.slug.trim()}
-              className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
+              disabled={updateCategoryMutation.isPending || !formData.title.trim()}
+              className="tf-btn-primary tf-shine rounded-xl cursor-pointer"
             >
               {updateCategoryMutation.isPending ? "Updating..." : "Update Category"}
             </Button>

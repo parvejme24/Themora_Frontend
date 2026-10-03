@@ -2,38 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-// Mock pricing hooks - in real app, these would be imported from your API hooks
-const usePricingById = (id: string) => {
-  return {
-    data: {
-      id: id,
-      title: "Sample Plan",
-      price: 29.99,
-      license: "Standard",
-      duration: "monthly",
-      features: ["Feature 1", "Feature 2"],
-      recommended: false,
-    } as any, // Mock data for now
-    isLoading: false,
-    error: null,
-  };
-};
-
-const useUpdatePricing = () => {
-  return {
-    mutateAsync: async (data: any) => {
-      // Mock implementation - in real app, this would call your backend API
-      console.log("Mock pricing update with data:", data);
-      return Promise.resolve({ success: true });
-    },
-    isPending: false,
-  };
-};
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FiSave, FiRotateCcw, FiArrowLeft, FiPlus, FiX } from "react-icons/fi";
 import Link from "next/link";
@@ -41,22 +13,24 @@ import { toast } from "sonner";
 import { UpdatePricingData } from "@/types/pricing";
 import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 import ErrorState from "@/components/shared/Feedback/ErrorState";
+import { useGetPricingPlan, useUpdatePricingPlan } from "@/hooks/usePricingApi";
 
 export default function EditPricingPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   
-  const { data: pricingPlan, isLoading, error } = usePricingById(id);
-  const updatePricingMutation = useUpdatePricing();
+  const { data: pricingPlan, isLoading, error } = useGetPricingPlan(id);
+  const updatePricingMutation = useUpdatePricingPlan();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<UpdatePricingData>({
     id: "",
     title: "",
+    description: "",
     price: 0,
-    license: "Standard",
-    duration: "monthly",
+    websiteLimit: 3,
+    lemonsqueezyVariantId: "",
     features: [""],
     recommended: false,
   });
@@ -66,10 +40,11 @@ export default function EditPricingPage() {
     if (pricingPlan) {
       setFormData({
         id: pricingPlan.id,
+        description: pricingPlan.description,
         title: pricingPlan.title,
         price: pricingPlan.price,
-        license: pricingPlan.license,
-        duration: pricingPlan.duration,
+        websiteLimit: pricingPlan.websiteLimit,
+        lemonsqueezyVariantId: pricingPlan.lemonsqueezyVariantId || "",
         features: pricingPlan.features.length > 0 ? pricingPlan.features : [""],
         recommended: pricingPlan.recommended,
       });
@@ -108,10 +83,11 @@ export default function EditPricingPage() {
     if (pricingPlan) {
       setFormData({
         id: pricingPlan.id,
+        description: pricingPlan.description,
         title: pricingPlan.title,
         price: pricingPlan.price,
-        license: pricingPlan.license,
-        duration: pricingPlan.duration,
+        websiteLimit: pricingPlan.websiteLimit,
+        lemonsqueezyVariantId: pricingPlan.lemonsqueezyVariantId || "",
         features: pricingPlan.features.length > 0 ? pricingPlan.features : [""],
         recommended: pricingPlan.recommended,
       });
@@ -136,14 +112,18 @@ export default function EditPricingPage() {
       // Filter out empty features
       const filteredFeatures = (formData.features || [""]).filter(feature => feature.trim());
 
-      const pricingData = {
-        ...formData,
-        title: formData.title.trim(),
-        features: filteredFeatures,
-      };
-
-      const result = await updatePricingMutation.mutateAsync(pricingData);
-      console.log("Pricing plan updated successfully:", result);
+      await updatePricingMutation.mutateAsync({
+        id: formData.id,
+        data: {
+          title: formData.title.trim(),
+          description: formData.description?.trim(),
+          price: formData.price,
+          websiteLimit: formData.websiteLimit,
+          lemonsqueezyVariantId: formData.lemonsqueezyVariantId?.trim() || null,
+          features: filteredFeatures,
+          recommended: formData.recommended,
+        },
+      });
 
       toast.success("Pricing plan updated successfully!");
       router.push("/dashboard/pricing");
@@ -176,7 +156,7 @@ export default function EditPricingPage() {
         {/* Back Button */}
         <div className="mb-6">
           <Link href="/dashboard/pricing">
-            <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+            <Button variant="outline" className="flex items-center gap-2 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
               <FiArrowLeft className="w-4 h-4" />
               Back to Pricing
             </Button>
@@ -184,28 +164,28 @@ export default function EditPricingPage() {
         </div>
 
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Edit Pricing Plan
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white mb-2">
+            Edit Pricing <span className="tf-gradient-text">Plan</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-600 dark:text-slate-400">
             Update the details of your pricing plan
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
-            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+          <Card className="border border-slate-200 dark:border-white/10 shadow-sm">
+            <CardHeader className="border-b border-slate-200 dark:border-white/10">
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
                 Basic Information
               </CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Essential details about your pricing plan
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="title" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Plan Title *
                   </Label>
                   <Input
@@ -214,11 +194,11 @@ export default function EditPricingPage() {
                     onChange={(e) => handleInputChange("title", e.target.value)}
                     placeholder="e.g., Basic Plan, Pro Plan"
                     required
-                    className="border-gray-300 dark:border-gray-600 focus:border-gray-500 focus:ring-gray-500"
+                    className="border-slate-300 dark:border-slate-600 focus:border-slate-500 focus:ring-slate-500"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="price" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Price *
                   </Label>
                   <Input
@@ -230,53 +210,34 @@ export default function EditPricingPage() {
                     onChange={(e) => handleInputChange("price", parseFloat(e.target.value) || 0)}
                     placeholder="0.00"
                     required
-                    className="border-gray-300 dark:border-gray-600 focus:border-gray-500 focus:ring-gray-500"
+                    className="border-slate-300 dark:border-slate-600 focus:border-slate-500 focus:ring-slate-500"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="description">Plan description *</Label>
+                <Input id="description" value={formData.description || ""} onChange={(e) => handleInputChange("description", e.target.value)} required maxLength={240} />
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="license" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    License
-                  </Label>
-                  <Select value={formData.license || "Standard"} onValueChange={(value) => handleInputChange("license", value)}>
-                    <SelectTrigger className="border-gray-300 dark:border-gray-600 focus:border-gray-500 focus:ring-gray-500">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Standard">Standard</SelectItem>
-                      <SelectItem value="Extended">Extended</SelectItem>
-                      <SelectItem value="Commercial">Commercial</SelectItem>
-                      <SelectItem value="Enterprise">Enterprise</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="websiteLimit">Website licences (blank means unlimited)</Label>
+                  <Input id="websiteLimit" type="number" min="1" value={formData.websiteLimit ?? ""} onChange={(e) => handleInputChange("websiteLimit", e.target.value ? Number(e.target.value) : null)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="duration" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Duration
-                  </Label>
-                  <Select value={formData.duration || "monthly"} onValueChange={(value) => handleInputChange("duration", value)}>
-                    <SelectTrigger className="border-gray-300 dark:border-gray-600 focus:border-gray-500 focus:ring-gray-500">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
-                      <SelectItem value="lifetime">Lifetime</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="lemonsqueezyVariantId">Lemon Squeezy variant ID</Label>
+                  <Input id="lemonsqueezyVariantId" value={formData.lemonsqueezyVariantId || ""} onChange={(e) => handleInputChange("lemonsqueezyVariantId", e.target.value)} placeholder="Configure in Lemon Squeezy" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
-            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+          <Card className="border border-slate-200 dark:border-white/10 shadow-sm">
+            <CardHeader className="border-b border-slate-200 dark:border-white/10">
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
                 Features
               </CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 List the features included in this plan
               </CardDescription>
             </CardHeader>
@@ -287,7 +248,7 @@ export default function EditPricingPage() {
                     value={feature}
                     onChange={(e) => updateFeature(index, e.target.value)}
                     placeholder={`Feature ${index + 1} (e.g., 10GB Storage)`}
-                    className="flex-1 border-gray-300 dark:border-gray-600 focus:border-gray-500 focus:ring-gray-500"
+                    className="flex-1 border-slate-300 dark:border-slate-600 focus:border-slate-500 focus:ring-slate-500"
                   />
                   <Button
                     type="button"
@@ -304,7 +265,7 @@ export default function EditPricingPage() {
                 type="button"
                 variant="outline"
                 onClick={addFeature}
-                className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="w-full border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-white/[0.06]"
               >
                 <FiPlus className="w-4 h-4 mr-2" />
                 Add Feature
@@ -312,12 +273,12 @@ export default function EditPricingPage() {
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
-            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+          <Card className="border border-slate-200 dark:border-white/10 shadow-sm">
+            <CardHeader className="border-b border-slate-200 dark:border-white/10">
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
                 Settings
               </CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Configure plan settings
               </CardDescription>
             </CardHeader>
@@ -328,7 +289,7 @@ export default function EditPricingPage() {
                   checked={formData.recommended || false}
                   onCheckedChange={(checked) => handleInputChange("recommended", checked)}
                 />
-                <Label htmlFor="recommended" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label htmlFor="recommended" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Mark as Recommended Plan
                 </Label>
               </div>
@@ -341,7 +302,7 @@ export default function EditPricingPage() {
               type="button"
               variant="outline"
               onClick={resetForm}
-              className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="px-6 py-2 border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-white/[0.06]"
             >
               <FiRotateCcw className="w-4 h-4 mr-2" />
               Reset Form
@@ -349,7 +310,7 @@ export default function EditPricingPage() {
             <Button
               type="submit"
               disabled={isSubmitting || updatePricingMutation.isPending}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="tf-btn-primary tf-shine flex items-center gap-2 px-6 py-2 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FiSave className="w-4 h-4" />
               {isSubmitting || updatePricingMutation.isPending ? "Updating..." : "Update Plan"}

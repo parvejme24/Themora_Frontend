@@ -1,89 +1,58 @@
-import React from "react";
-import {
-  FiUsers,
-  FiFileText,
-  FiEye,
-  FiTrendingUp,
-  FiTrendingDown,
-} from "react-icons/fi";
+"use client";
 
-const stats = [
-  {
-    title: "Active Users",
-    value: "1,234",
-    change: "+12%",
-    trend: "up",
-    icon: FiUsers,
-    color: "bg-blue-500",
-  },
-  {
-    title: "Total Downloads",
-    value: "456",
-    change: "+8%",
-    trend: "up",
-    icon: FiFileText,
-    color: "bg-green-500",
-  },
-  {
-    title: "Total Templates",
-    value: "45.6K",
-    change: "-3%",
-    trend: "down",
-    icon: FiEye,
-    color: "bg-purple-500",
-  },
-  {
-    title: "Total Earnings",
-    value: "45.6K",
-    change: "-3%",
-    trend: "down",
-    icon: FiEye,
-    color: "bg-purple-500",
-  },
-];
+import { Banknote, Boxes, PackageCheck, ReceiptText, ShoppingBag, UsersRound } from "lucide-react";
+import { useAuth, useGetUserStats } from "@/hooks/useAuth";
+import { useGetTemplateStats } from "@/hooks/useTemplateApi";
+import { useGetOrderStats, useGetUserOrders } from "@/hooks/useOrderApi";
 
-const StatsGrid: React.FC = () => {
+const userOrdersQuery = { page: 1, limit: 100, sortBy: "createdAt" as const, sortOrder: "desc" as const };
+
+export default function StatsGrid() {
+  const { isAdmin } = useAuth();
+  const { data: userStatsResponse, isLoading: usersLoading } = useGetUserStats();
+  const { data: templateStats, isLoading: templatesLoading } = useGetTemplateStats();
+  const { data: orderStats, isLoading: adminOrdersLoading } = useGetOrderStats(isAdmin);
+  const { data: userOrdersData, isLoading: userOrdersLoading } = useGetUserOrders(userOrdersQuery, !isAdmin);
+
+  const userStats = userStatsResponse?.data;
+  const userOrders = userOrdersData?.orders ?? [];
+  const completedOrders = userOrders.filter((order) => order.status === "COMPLETED");
+  const completedPlans = completedOrders.filter((order) => order.pricingPlan && order.planEntitlement?.isActive).length;
+  const userSpend = completedOrders.reduce((total, order) => total + order.totalAmount, 0);
+  const loading = templatesLoading || (isAdmin ? usersLoading || adminOrdersLoading : userOrdersLoading);
+
+  const metrics = isAdmin
+    ? [
+        { label: "Total users", value: userStats?.totalUsers, icon: UsersRound, note: `${userStats?.activeUsers ?? 0} active accounts` },
+        { label: "Active users", value: userStats?.activeUsers, icon: PackageCheck, note: `${userStats?.recentRegistrations ?? 0} joined this month` },
+        { label: "Themes in catalog", value: templateStats?.totalTemplates, icon: Boxes, note: `${templateStats?.totalDownloads ?? 0} total downloads` },
+        { label: "Gross revenue", value: orderStats?.totalRevenue, icon: Banknote, currency: true, note: `${orderStats?.totalOrders ?? 0} recorded orders` },
+      ]
+    : [
+        { label: "Your orders", value: userOrdersData?.pagination.total, icon: ReceiptText, note: `${completedOrders.length} completed in this list` },
+        { label: "Completed purchases", value: completedOrders.length, icon: PackageCheck, note: `${completedPlans} active plans` },
+        { label: "Total spent", value: userSpend, icon: Banknote, currency: true, note: "Across completed orders" },
+        { label: "Themes available", value: templateStats?.totalTemplates, icon: ShoppingBag, note: "Browse the marketplace" },
+      ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {stats.map((stat) => (
-        <div
-          key={stat.title}
-          className="bg-white dark:bg-[#1A1D37] p-6 rounded-xl shadow-sm"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                {stat.title}
-              </p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
-                {stat.value}
+    <section aria-label="Account overview" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {metrics.map(({ label, value, icon: Icon, note, currency }) => (
+        <article key={label} className="tf-lift relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-5 backdrop-blur dark:border-white/10 dark:bg-[#0B0F2E]/80">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+              <p className="mt-3 truncate text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                {loading ? "..." : value == null ? "—" : currency ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value) : value.toLocaleString()}
               </p>
             </div>
-            <div className={`${stat.color} p-3 rounded-lg text-white`}>
-              <stat.icon className="w-6 h-6" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            {stat.trend === "up" ? (
-              <FiTrendingUp className="w-4 h-4 text-green-500" />
-            ) : (
-              <FiTrendingDown className="w-4 h-4 text-red-500" />
-            )}
-            <span
-              className={`text-sm font-medium ml-2 ${
-                stat.trend === "up" ? "text-green-500" : "text-red-500"
-              }`}
-            >
-              {stat.change}
-            </span>
-            <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
-              from last month&apos;s data
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D6FE0] to-[#6D5DFC] text-white shadow-lg shadow-[#3F5BF0]/25">
+              <Icon size={19} aria-hidden="true" />
             </span>
           </div>
-        </div>
+          <p className="mt-3 truncate text-xs text-slate-500 dark:text-slate-500">{note}</p>
+        </article>
       ))}
-    </div>
+    </section>
   );
-};
-
-export default StatsGrid;
+}

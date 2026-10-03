@@ -1,225 +1,90 @@
-import React, { useState, useMemo } from "react";
-import { FiDownload, FiDollarSign } from "react-icons/fi";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+"use client";
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement);
+import { useMemo } from "react";
+import { Bar } from "react-chartjs-2";
+import { BarElement, CategoryScale, Chart as ChartJS, LinearScale, Tooltip } from "chart.js";
+import { useAuth } from "@/hooks/useAuth";
+import { useGetAllOrders, useGetUserOrders } from "@/hooks/useOrderApi";
 
-// Time period filter options
-const timePeriods = [
-  { label: 'Last 3 Months', value: '3m' },
-  { label: 'Last 6 Months', value: '6m' },
-  { label: 'Last Year', value: '1y' },
-  { label: 'Last 2 Years', value: '2y' },
-  { label: 'All Time', value: 'all' },
-];
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
-// Sample data for multiple years
-const yearlyData = {
-  '2023': [45, 52, 38, 45, 58, 62, 55, 48, 52, 58, 62, 65],
-  '2022': [35, 42, 28, 35, 48, 52, 45, 38, 42, 48, 52, 55],
-  '2021': [25, 32, 18, 25, 38, 42, 35, 28, 32, 38, 42, 45],
-};
+const orderQuery = { page: 1, limit: 100, sortBy: "createdAt" as const, sortOrder: "desc" as const };
+const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
-const barChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
+export default function RevenueChart() {
+  const { isAdmin } = useAuth();
+  const adminQuery = useGetAllOrders({ ...orderQuery, sortBy: "createdAt", sortOrder: "desc" }, isAdmin);
+  const userQuery = useGetUserOrders(orderQuery, !isAdmin);
+  const orders = (isAdmin ? adminQuery.data?.orders : userQuery.data?.orders) ?? [];
+  const isLoading = isAdmin ? adminQuery.isLoading : userQuery.isLoading;
+  const hasError = isAdmin ? adminQuery.isError : userQuery.isError;
+
+  const { labels, totals } = useMemo(() => {
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, index) => new Date(now.getFullYear(), now.getMonth() - 5 + index, 1));
+    const sums = months.map((month) => orders
+      .filter((order) => {
+        const createdAt = new Date(order.createdAt);
+        return order.status === "COMPLETED" && createdAt.getFullYear() === month.getFullYear() && createdAt.getMonth() === month.getMonth();
+      })
+      .reduce((total, order) => total + order.totalAmount, 0));
+    return {
+      labels: months.map((month) => month.toLocaleDateString("en-US", { month: "short" })),
+      totals: sums,
+    };
+  }, [orders]);
+
+  const totalRevenue = totals.reduce((sum, amount) => sum + amount, 0);
+  const data = {
+    labels,
+    datasets: [{
+      data: totals,
+      backgroundColor: "#1D6FE0",
+      hoverBackgroundColor: "#0F5BBD",
+      borderRadius: 4,
+      maxBarThickness: 34,
+    }],
+  };
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: (context: { raw: unknown }) => money.format(Number(context.raw)) } },
     },
-    tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      padding: 12,
-      titleFont: {
-        size: 14,
-        weight: 'bold' as const,
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { color: "rgba(34, 55, 47, 0.08)" },
+        ticks: { callback: (value: string | number) => money.format(Number(value)) },
       },
-      bodyFont: {
-        size: 13,
-      },
-      callbacks: {
-        label: function(context: any) {
-          return `${context.label}: $${context.raw}K`;
-        }
-      }
-    }
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(0, 0, 0, 0.1)',
-      },
-      ticks: {
-        callback: function(value: any) {
-          return `$${value}K`;
-        }
-      }
+      x: { grid: { display: false } },
     },
-    x: {
-      grid: {
-        display: false,
-      }
-    }
-  },
-  animation: {
-    duration: 1000,
-    easing: 'easeOutQuart' as const,
-  }
-};
-
-const RevenueChart: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('all');
-  const [selectedYear, setSelectedYear] = useState('2023');
-
-  const handleExportRevenue = () => {
-    const headers = ['Month', 'Revenue (K$)'];
-    const rows = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, index) => [
-      month,
-      yearlyData[selectedYear as keyof typeof yearlyData][index]
-    ]);
-    
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `revenue_data_${selectedYear}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
-  const filteredData = useMemo(() => {
-    const data = yearlyData[selectedYear as keyof typeof yearlyData];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    let filteredMonths = months;
-    let filteredValues = data;
-
-    switch (selectedPeriod) {
-      case '3m':
-        filteredMonths = months.slice(-3);
-        filteredValues = data.slice(-3);
-        break;
-      case '6m':
-        filteredMonths = months.slice(-6);
-        filteredValues = data.slice(-6);
-        break;
-      case '1y':
-        // Already showing full year
-        break;
-      case '2y':
-        // This would require data from multiple years
-        break;
-      case 'all':
-        // Already showing full year
-        break;
-    }
-
-    return {
-      labels: filteredMonths,
-      datasets: [{
-        label: 'Revenue (in thousands)',
-        data: filteredValues,
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.8)',
-          'rgba(54, 162, 235, 0.8)',
-          'rgba(255, 206, 86, 0.8)',
-          'rgba(75, 192, 192, 0.8)',
-          'rgba(153, 102, 255, 0.8)',
-          'rgba(255, 159, 64, 0.8)',
-          'rgba(199, 199, 199, 0.8)',
-          'rgba(83, 102, 255, 0.8)',
-          'rgba(255, 99, 255, 0.8)',
-          'rgba(99, 255, 132, 0.8)',
-          'rgba(255, 159, 64, 0.8)',
-          'rgba(54, 162, 235, 0.8)'
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)',
-          'rgba(199, 199, 199, 1)',
-          'rgba(83, 102, 255, 1)',
-          'rgba(255, 99, 255, 1)',
-          'rgba(99, 255, 132, 1)',
-          'rgba(255, 159, 64, 1)',
-          'rgba(54, 162, 235, 1)'
-        ],
-        borderWidth: 2,
-        borderRadius: 10,
-      }]
-    };
-  }, [selectedPeriod, selectedYear]);
-
-  const totalRevenue = useMemo(() => {
-    const data = yearlyData[selectedYear as keyof typeof yearlyData];
-    return data.reduce((a, b) => a + b, 0);
-  }, [selectedYear]);
-
   return (
-    <div className="bg-white dark:bg-[#1A1D37] rounded-xl shadow-sm p-6">
-      <div className="flex items-center justify-between mb-4">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#0B0F2E] sm:p-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Revenue Distribution
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Total Revenue: ${totalRevenue}K
-          </p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Confirmed revenue</p>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{isLoading ? "Loading…" : money.format(totalRevenue)}</h2>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleExportRevenue}
-            className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-            title="Export Data"
-          >
-            <FiDownload className="w-5 h-5" />
-          </button>
-          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-            <FiDollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <p className="text-xs text-slate-500 dark:text-slate-500">Last six months · completed orders</p>
+      </div>
+      <div className="mt-6 h-64 sm:h-72">
+        {isLoading ? (
+          <div className="h-full animate-pulse rounded-md bg-slate-100 dark:bg-white/[0.06]" />
+        ) : hasError ? (
+          <div className="flex h-full items-center justify-center text-sm text-rose-600 dark:text-rose-300">Revenue data is unavailable right now.</div>
+        ) : totalRevenue === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+            <span className="font-mono text-xs uppercase tracking-widest text-[#1D6FE0] dark:text-[#8DB8FF]">No completed payments</span>
+            <p className="text-sm text-slate-500 dark:text-slate-500">Confirmed revenue will appear here.</p>
           </div>
-        </div>
+        ) : (
+          <Bar data={data} options={options} />
+        )}
       </div>
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
-        <select
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
-          className="px-3 py-2 bg-white dark:bg-[#1A1D37] border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {Object.keys(yearlyData).map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-        <select
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value)}
-          className="px-3 py-2 bg-white dark:bg-[#1A1D37] border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {timePeriods.map((period) => (
-            <option key={period.value} value={period.value}>
-              {period.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="h-[300px]">
-        <Bar data={filteredData} options={barChartOptions} />
-      </div>
-    </div>
+    </section>
   );
-};
-
-export default RevenueChart;
+}

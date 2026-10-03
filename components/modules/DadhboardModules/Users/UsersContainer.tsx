@@ -1,17 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import Swal from "sweetalert2";
+import { toast } from "sonner";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  FiChevronLeft, FiChevronRight, FiDownload, FiMoreHorizontal, FiRefreshCw, FiRotateCcw, FiSearch, FiShield, FiTrash2, FiUser, FiUserCheck, FiUsers, FiUserX, FiX,
+} from "react-icons/fi";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,22 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  FiUsers,
-  FiSearch,
-  FiRefreshCw,
-  FiMoreVertical,
-  FiUserCheck,
-  FiUserX,
-  FiTrash2,
-  FiShield,
-  FiUser,
-  FiUserPlus,
-  FiDownload,
-} from "react-icons/fi";
-import { toast } from "sonner";
-import Swal from "sweetalert2";
-import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import {
   useGetAllUsersQuery,
@@ -46,885 +26,284 @@ import {
   useRestoreUserMutation,
   useChangeUserRoleMutation,
 } from "@/redux/services/authApi";
-import { IUser, IUserStats, UserRole } from "@/types/auth";
-import ErrorState from "@/components/shared/Feedback/ErrorState";
+import { IUser, UserRole } from "@/types/auth";
+import PageHeader from "../dashboard/PageHeader";
+import FilterSelect from "../dashboard/FilterSelect";
 
-// Skeleton Components
-const StatsCardSkeleton = () => (
-  <Card className="bg-white dark:bg-[#1A1D37]">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <div className="h-4 w-24 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-      <div className="h-4 w-4 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-    </CardHeader>
-    <CardContent>
-      <div className="h-8 w-16 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-    </CardContent>
-  </Card>
-);
+const PAGE_SIZE = 15;
+type StatusTab = "active" | "banned" | "trashed";
+type RoleFilter = "all" | "USER" | "ADMIN";
 
-const TableRowSkeleton = () => (
-  <tr className="border-b border-gray-100 dark:border-gray-800">
-    <td className="py-3 px-4">
-      <div className="flex items-center">
-        <div className="w-10 h-10 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded-full mr-3 animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-        <div className="h-4 w-32 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-      </div>
-    </td>
-    <td className="py-3 px-4">
-      <div className="h-4 w-20 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-    </td>
-    <td className="py-3 px-4">
-      <div className="h-6 w-16 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded-full animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-    </td>
-    <td className="py-3 px-4">
-      <div className="h-4 w-20 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-    </td>
-    <td className="py-3 px-4">
-      <div className="h-4 w-20 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-    </td>
-  </tr>
-);
+const formatDate = (value?: string) => (value ? new Date(value).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "Never");
+const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join("").toUpperCase().slice(0, 2) || "?";
 
-const UsersSkeleton = () => (
-  <div className="min-h-screen py-8">
-    <div className="container mx-auto max-w-7xl px-4">
-      {/* Header Skeleton */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="h-8 w-64 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded mb-2 animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-            <div className="h-4 w-80 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-          </div>
-          <div className="flex gap-3">
-            <div className="h-10 w-24 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-            <div className="h-10 w-28 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-          </div>
-        </div>
-      </div>
+function errorMessage(error: unknown, fallback: string) {
+  return (error as { data?: { message?: string } })?.data?.message || fallback;
+}
 
-      {/* Stats Cards Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <StatsCardSkeleton />
-        <StatsCardSkeleton />
-        <StatsCardSkeleton />
-        <StatsCardSkeleton />
-      </div>
+function Avatar({ user }: { user: IUser }) {
+  return user.profile?.avatarUrl ? (
+    <Image src={user.profile.avatarUrl} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-full object-cover" />
+  ) : (
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#1D6FE0] to-[#6D5DFC] text-xs font-semibold text-white">{initials(user.fullName || user.email)}</span>
+  );
+}
 
-      {/* Filters Skeleton */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <div className="h-10 w-full bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-        </div>
-        <div className="h-10 w-32 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-      </div>
+function RoleBadge({ role }: { role: string }) {
+  const admin = role === "ADMIN" || role === "SUPER_ADMIN";
+  return (
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${admin ? "bg-[#EAF1FF] text-[#0F5BBD] dark:bg-[#1D6FE0]/15 dark:text-[#8DB8FF]" : "bg-slate-100 text-slate-600 dark:bg-white/[0.06] dark:text-slate-300"}`}>
+      {admin && <FiShield className="h-3 w-3" />}{role === "SUPER_ADMIN" ? "Super admin" : admin ? "Admin" : "User"}
+    </span>
+  );
+}
 
-      {/* Table Skeleton */}
-      <Card className="bg-white dark:bg-[#1A1D37]">
-        <CardHeader>
-          <div className="h-6 w-48 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-3 px-4">
-                    <div className="h-4 w-16 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-                  </th>
-                  <th className="text-left py-3 px-4">
-                    <div className="h-4 w-12 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-                  </th>
-                  <th className="text-left py-3 px-4">
-                    <div className="h-4 w-16 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-                  </th>
-                  <th className="text-left py-3 px-4">
-                    <div className="h-4 w-24 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-                  </th>
-                  <th className="text-left py-3 px-4">
-                    <div className="h-4 w-20 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 rounded animate-pulse bg-[length:200%_100%] animate-shimmer"></div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...Array(5)].map((_, index) => (
-                  <TableRowSkeleton key={index} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-    <style jsx>{`
-      @keyframes shimmer {
-        0% {
-          background-position: -200% 0;
-        }
-        100% {
-          background-position: 200% 0;
-        }
-      }
-      .animate-shimmer {
-        animation: shimmer 2s infinite;
-      }
-    `}</style>
-  </div>
-);
+function StatusBadge({ user }: { user: IUser }) {
+  const [label, style, dot] = user.isTrashed
+    ? ["Trashed", "bg-slate-100 text-slate-600 dark:bg-white/[0.06] dark:text-slate-300", "bg-slate-400"]
+    : user.isBanned
+      ? ["Banned", "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300", "bg-red-500"]
+      : ["Active", "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300", "bg-emerald-500"];
+  return <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${style}`}><span className={`h-1.5 w-1.5 rounded-full ${dot}`} />{label}</span>;
+}
+
+function csvCell(value: string) {
+  return `"${value.replace(/"/g, '""')}"`;
+}
 
 export default function UsersContainer() {
   const { user: currentUser } = useAuth();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterRole, setFilterRole] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<StatusTab>("active");
+  const [role, setRole] = useState<RoleFilter>("all");
+  const [page, setPage] = useState(1);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  // API hooks
-  const {
-    data: usersData,
-    isLoading: usersLoading,
-    error: usersError,
-    refetch: refetchUsers,
-  } = useGetAllUsersQuery({
-    page: 1,
-    limit: 100,
-    search: searchTerm,
-    role: filterRole !== "all" ? (filterRole as UserRole) : undefined,
-    isBanned:
-      filterStatus === "banned"
-        ? true
-        : filterStatus === "active"
-        ? false
-        : undefined,
-    isTrashed:
-      filterStatus === "trashed"
-        ? true
-        : filterStatus === "active"
-        ? false
-        : filterStatus === "all"
-        ? false // Hide trashed users by default when "all" is selected
-        : undefined,
+  useEffect(() => {
+    const id = setTimeout(() => { setSearch(searchInput.trim()); setPage(1); }, 300);
+    return () => clearTimeout(id);
+  }, [searchInput]);
+
+  const { data: usersData, isLoading, isFetching, error, refetch } = useGetAllUsersQuery({
+    page,
+    limit: PAGE_SIZE,
+    ...(search ? { search } : {}),
+    ...(role !== "all" ? { role: role as UserRole } : {}),
+    isTrashed: status === "trashed",
+    ...(status !== "trashed" ? { isBanned: status === "banned" } : {}),
   });
+  const { data: statsData, refetch: refetchStats } = useGetUserStatsQuery();
 
-  const {
-    data: statsData,
-    isLoading: statsLoading,
-    error: statsError,
-  } = useGetUserStatsQuery();
-
-  // Mutation hooks
   const [banUser] = useBanUserMutation();
   const [unbanUser] = useUnbanUserMutation();
   const [trashUser] = useTrashUserMutation();
   const [restoreUser] = useRestoreUserMutation();
   const [changeUserRole] = useChangeUserRoleMutation();
 
-  const users = usersData?.data || [];
+  const users = usersData?.data ?? [];
+  const pagination = usersData?.pagination as { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean } | undefined;
   const stats = statsData?.data;
+  const adminCount = stats?.usersByRole.filter((r) => r.role !== "USER").reduce((sum, r) => sum + r.count, 0);
 
-  // Use users directly since API already filters them
-  const filteredUsers = users;
+  const tabs: { value: StatusTab; label: string; count?: number }[] = [
+    { value: "active", label: "Active", count: stats?.activeUsers },
+    { value: "banned", label: "Banned", count: stats?.bannedUsers },
+    { value: "trashed", label: "Trash", count: stats?.trashedUsers },
+  ];
 
-  const handleRefresh = () => {
-    refetchUsers();
-    toast.success("Users list refreshed!");
+  const confirm = async (title: string, text: string, confirmButtonText: string, danger = true) =>
+    (await Swal.fire({ title, text, icon: danger ? "warning" : "question", showCancelButton: true, confirmButtonColor: danger ? "#ef4444" : "#1d6fe0", cancelButtonColor: "#6b7280", confirmButtonText, cancelButtonText: "Cancel", reverseButtons: true, focusCancel: true })).isConfirmed;
+
+  const run = async (target: IUser, action: () => Promise<unknown>, success: string, failure: string) => {
+    setBusyId(target.id);
+    try {
+      await action();
+      toast.success(success);
+      refetchStats();
+    } catch (err) {
+      toast.error(errorMessage(err, failure));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleBan = async (u: IUser) => {
+    if (await confirm("Ban this user?", `${u.fullName} won't be able to sign in until unbanned.`, "Ban user"))
+      run(u, () => banUser(u.id).unwrap(), "User banned", "Failed to ban user");
+  };
+  const handleTrash = async (u: IUser) => {
+    if (await confirm("Move to trash?", `${u.fullName} will be hidden from the active list. You can restore them later.`, "Move to trash"))
+      run(u, () => trashUser(u.id).unwrap(), "User moved to trash", "Failed to move user to trash");
+  };
+  const handleRole = async (u: IUser, next: "ADMIN" | "USER") => {
+    const text = next === "ADMIN" ? `${u.fullName} will get full access to the dashboard.` : `${u.fullName} will lose admin access.`;
+    if (await confirm(next === "ADMIN" ? "Make admin?" : "Remove admin access?", text, next === "ADMIN" ? "Make admin" : "Set as user", next !== "ADMIN"))
+      run(u, () => changeUserRole({ id: u.id, role: next }).unwrap(), next === "ADMIN" ? "User is now an admin" : "Admin access removed", "Failed to change role");
   };
 
   const handleExport = () => {
-    const csvContent = [
-      ["Name", "Email", "Role", "Status", "Country", "Created At"],
-      ...filteredUsers.map((user) => [
-        user.fullName,
-        user.email,
-        user.role,
-        user.isBanned ? "Banned" : user.isTrashed ? "Trashed" : "Active",
-        user.profile?.country || "N/A",
-        new Date(user.createdAt).toLocaleDateString(),
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
+    const rows = [
+      ["Name", "Email", "Role", "Status", "Country", "Joined", "Last login"],
+      ...users.map((u) => [u.fullName, u.email, u.role, u.isTrashed ? "Trashed" : u.isBanned ? "Banned" : "Active", u.profile?.country || "", formatDate(u.createdAt), formatDate(u.lastLoginAt)]),
+    ];
+    const blob = new Blob([rows.map((row) => row.map(csvCell).join(",")).join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `users-export-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `users-${status}-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
-    window.URL.revokeObjectURL(url);
-    toast.success("Users exported successfully!");
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${users.length} user${users.length === 1 ? "" : "s"}`);
   };
 
-  const handleBanUser = async (userId: string) => {
-    const result = await Swal.fire({
-      title: "Ban User",
-      text: "Are you sure you want to ban this user?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, ban user",
-      cancelButtonText: "Cancel",
-    });
+  const from = pagination && pagination.total ? (pagination.page - 1) * pagination.limit + 1 : 0;
+  const to = pagination ? Math.min(pagination.page * pagination.limit, pagination.total) : 0;
+  const hasFilters = !!(search || role !== "all");
 
-    if (!result.isConfirmed) return;
-
-    setActionLoading(userId);
-    try {
-      await banUser(userId).unwrap();
-
-      Swal.fire({
-        title: "User Banned!",
-        text: "The user has been banned successfully.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error: any) {
-      // Fallback: Try direct fetch
-      try {
-        const token = localStorage.getItem("nextAuthSecret");
-        const response = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_API_URL ||
-            "https://tech-fynite-backend.vercel.app/api/v1"
-          }/auth/users/${userId}/ban`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        Swal.fire({
-          title: "User Banned!",
-          text: "The user has been banned successfully.",
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-
-        refetchUsers();
-      } catch (directError: any) {
-        Swal.fire({
-          title: "CORS Error!",
-          text: `Failed to ban user due to CORS policy. Please update your backend CORS configuration to allow PATCH requests. Error: ${directError.message}`,
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      }
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleUnbanUser = async (userId: string) => {
-    const result = await Swal.fire({
-      title: "Unban User",
-      text: "Are you sure you want to unban this user?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#10b981",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, unban user",
-      cancelButtonText: "Cancel",
-    });
-
-    if (!result.isConfirmed) return;
-
-    setActionLoading(userId);
-    try {
-      await unbanUser(userId).unwrap();
-
-      Swal.fire({
-        title: "User Unbanned!",
-        text: "The user has been unbanned successfully.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error: any) {
-      Swal.fire({
-        title: "Error!",
-        text: error?.data?.message || "Failed to unban user. Please try again.",
-        icon: "error",
-      });
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleTrashUser = async (userId: string) => {
-    const result = await Swal.fire({
-      title: "Move to Trash",
-      text: "Are you sure you want to move this user to trash?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#f59e0b",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, move to trash",
-      cancelButtonText: "Cancel",
-    });
-
-    if (!result.isConfirmed) return;
-
-    setActionLoading(userId);
-    try {
-      await trashUser(userId).unwrap();
-
-      Swal.fire({
-        title: "User Moved to Trash!",
-        text: "The user has been moved to trash successfully.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error: any) {
-      Swal.fire({
-        title: "Error!",
-        text:
-          error?.data?.message ||
-          "Failed to move user to trash. Please try again.",
-        icon: "error",
-      });
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleRestoreUser = async (userId: string) => {
-    const result = await Swal.fire({
-      title: "Restore User",
-      text: "Are you sure you want to restore this user?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#10b981",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, restore user",
-      cancelButtonText: "Cancel",
-    });
-
-    if (!result.isConfirmed) return;
-
-    setActionLoading(userId);
-    try {
-      await restoreUser(userId).unwrap();
-
-      Swal.fire({
-        title: "User Restored!",
-        text: "The user has been restored successfully.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error: any) {
-      Swal.fire({
-        title: "Error!",
-        text:
-          error?.data?.message || "Failed to restore user. Please try again.",
-        icon: "error",
-      });
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleChangeRole = async (userId: string, newRole: string) => {
-    const result = await Swal.fire({
-      title: "Change Role",
-      text: `Are you sure you want to change this user's role to ${newRole}?`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#3b82f6",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, change role",
-      cancelButtonText: "Cancel",
-    });
-
-    if (!result.isConfirmed) return;
-
-    setActionLoading(userId);
-    try {
-      // Try Redux API first
-      await changeUserRole({
-        id: userId,
-        role: newRole as "ADMIN" | "USER",
-      }).unwrap();
-
-      Swal.fire({
-        title: "Role Changed!",
-        text: `User role has been changed to ${newRole} successfully.`,
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error: any) {
-      // Fallback: Try direct fetch with proper CORS handling
-      try {
-        const token = localStorage.getItem("nextAuthSecret");
-        const response = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_API_URL ||
-            "https://tech-fynite-backend.vercel.app/api/v1"
-          }/auth/users/${userId}/role`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ role: newRole }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        Swal.fire({
-          title: "Role Changed!",
-          text: `User role has been changed to ${newRole} successfully.`,
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-
-        // Refresh the users list
-        refetchUsers();
-      } catch (directError: any) {
-        Swal.fire({
-          title: "CORS Error!",
-          text: `Failed to change user role due to CORS policy. Please update your backend CORS configuration to allow PATCH requests. Error: ${directError.message}`,
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      }
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const getStatusBadge = (user: IUser) => {
-    if (user.isTrashed) {
-      return (
-        <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-          Trashed
-        </Badge>
-      );
-    }
-    if (user.isBanned) {
-      return (
-        <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-          Banned
-        </Badge>
-      );
-    }
+  const actions = (u: IUser) => {
+    const isSelf = u.id === currentUser?.id;
+    const isAdmin = u.role === "ADMIN";
     return (
-      <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-        Active
-      </Badge>
-    );
-  };
-
-  const getRoleBadge = (role: string) => {
-    const colors = {
-      USER: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      ADMIN:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      SUPER_ADMIN:
-        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    };
-    return (
-      <Badge className={colors[role as keyof typeof colors] || colors.USER}>
-        {role}
-      </Badge>
-    );
-  };
-
-  // Show skeleton while loading
-  if (usersLoading || statsLoading) {
-    return <UsersSkeleton />;
-  }
-
-  // Show error state
-  if (usersError || statsError) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
-        <ErrorState error={usersError || statsError} subject="users" onRetry={handleRefresh} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen py-8">
-      <div className="container mx-auto max-w-7xl px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                User Management
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Manage all users, roles, and permissions
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={handleRefresh}
-                variant="outline"
-                className="cursor-pointer"
-              >
-                <FiRefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-              <Button
-                onClick={handleExport}
-                className="bg-green-600 hover:bg-green-700 cursor-pointer"
-              >
-                <FiDownload className="w-4 h-4 mr-2" />
-                Export CSV
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div
-          className={`grid gap-6 mb-8 ${
-            filterStatus === "trashed"
-              ? "grid-cols-1"
-              : "grid-cols-1 md:grid-cols-4"
-          }`}
-        >
-          <Card className="bg-white dark:bg-[#1A1D37]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {filterStatus === "trashed"
-                  ? "Trashed Users"
-                  : filterStatus === "banned"
-                  ? "Banned Users"
-                  : filterStatus === "active"
-                  ? "Active Users"
-                  : "Active Users"}
-              </CardTitle>
-              <FiUsers className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {filterStatus === "trashed"
-                  ? stats?.trashedUsers || 0
-                  : filterStatus === "banned"
-                  ? stats?.bannedUsers || 0
-                  : filterStatus === "active"
-                  ? stats?.activeUsers || 0
-                  : stats?.activeUsers || 0}
-              </div>
-            </CardContent>
-          </Card>
-
-          {filterStatus !== "trashed" && (
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <button type="button" disabled={busyId === u.id} aria-label={`Actions for ${u.fullName}`} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">
+            {busyId === u.id ? <FiRefreshCw className="h-4 w-4 animate-spin" /> : <FiMoreHorizontal className="h-4 w-4" />}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-52 rounded-xl">
+          {isSelf ? (
+            <DropdownMenuLabel className="text-xs font-normal text-slate-500">This is your account</DropdownMenuLabel>
+          ) : u.isTrashed ? (
+            <DropdownMenuItem onClick={() => run(u, () => restoreUser(u.id).unwrap(), "User restored", "Failed to restore user")} className="cursor-pointer gap-2"><FiRotateCcw className="h-4 w-4" /> Restore</DropdownMenuItem>
+          ) : (
             <>
-              <Card className="bg-white dark:bg-[#1A1D37]">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Active Users
-                  </CardTitle>
-                  <FiUserCheck className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
-                    {stats?.activeUsers || 0}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-white dark:bg-[#1A1D37]">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Banned Users
-                  </CardTitle>
-                  <FiUserX className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-red-600">
-                    {stats?.bannedUsers || 0}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-white dark:bg-[#1A1D37]">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Trashed Users
-                  </CardTitle>
-                  <FiTrash2 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-orange-600">
-                    {stats?.trashedUsers || 0}
-                  </div>
-                </CardContent>
-              </Card>
+              {isAdmin
+                ? <DropdownMenuItem onClick={() => handleRole(u, "USER")} className="cursor-pointer gap-2"><FiUser className="h-4 w-4" /> Set as user</DropdownMenuItem>
+                : <DropdownMenuItem onClick={() => handleRole(u, "ADMIN")} className="cursor-pointer gap-2"><FiShield className="h-4 w-4" /> Make admin</DropdownMenuItem>}
+              {u.isBanned
+                ? <DropdownMenuItem onClick={() => run(u, () => unbanUser(u.id).unwrap(), "User unbanned", "Failed to unban user")} className="cursor-pointer gap-2"><FiUserCheck className="h-4 w-4" /> Unban</DropdownMenuItem>
+                : <DropdownMenuItem onClick={() => handleBan(u)} className="cursor-pointer gap-2"><FiUserX className="h-4 w-4" /> Ban</DropdownMenuItem>}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleTrash(u)} className="cursor-pointer gap-2 text-red-600 focus:text-red-600 dark:text-red-400"><FiTrash2 className="h-4 w-4" /> Move to trash</DropdownMenuItem>
             </>
           )}
-        </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
 
-        {/* Filters */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search by name or email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Users"
+        description="Manage accounts, roles and access."
+        actions={
+          <>
+            <Button variant="outline" size="icon" onClick={() => { refetch(); refetchStats(); }} disabled={isFetching} aria-label="Refresh" className="h-10 w-10 cursor-pointer rounded-full">
+              <FiRefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            </Button>
+            <Button variant="outline" onClick={handleExport} disabled={!users.length} className="h-10 cursor-pointer rounded-full px-4">
+              <FiDownload className="h-4 w-4" /> <span className="hidden sm:inline">Export CSV</span>
+            </Button>
+          </>
+        }
+      />
+
+      <dl className="grid grid-cols-2 overflow-hidden rounded-2xl border border-slate-200 bg-white lg:grid-cols-4 dark:border-white/10 dark:bg-[#0B0F2E]">
+        {[
+          { label: "Total users", value: stats?.totalUsers },
+          { label: "Admins", value: adminCount },
+          { label: "New this week", value: stats?.recentRegistrations },
+          { label: "Signed in now", value: stats?.loggedInUsers },
+        ].map(({ label, value }, i) => (
+          <div key={label} className={`min-w-0 border-slate-100 px-4 py-4 sm:px-5 dark:border-white/[0.06] ${i % 2 ? "border-l" : ""} ${i > 1 ? "border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
+            <dt className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">{label}</dt>
+            <dd className="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">{value === undefined ? "…" : value.toLocaleString()}</dd>
           </div>
-          <div className="flex gap-2 items-center">
-            <Select value={filterRole} onValueChange={setFilterRole}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="USER">User</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Active Users</SelectItem>
-                <SelectItem value="active">Active Only</SelectItem>
-                <SelectItem value="banned">Banned Only</SelectItem>
-                <SelectItem value="trashed">Trashed Users</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        ))}
+      </dl>
+
+      {/* Toolbar */}
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+        <div className="flex w-fit rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Status">
+          {tabs.map((tab) => (
+            <button key={tab.value} type="button" role="tab" aria-selected={status === tab.value} onClick={() => { setStatus(tab.value); setPage(1); }} className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm transition ${status === tab.value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}>
+              {tab.label}{tab.count !== undefined && <span className="text-xs opacity-60">{tab.count}</span>}
+            </button>
+          ))}
         </div>
-
-        {/* Users Table */}
-        <Card className="bg-white dark:bg-[#1A1D37]">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>
-                {filterStatus === "trashed"
-                  ? `Trashed Users (${filteredUsers.length})`
-                  : filterStatus === "banned"
-                  ? `Banned Users (${filteredUsers.length})`
-                  : filterStatus === "active"
-                  ? `Active Users (${filteredUsers.length})`
-                  : `Active Users (${filteredUsers.length})`}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {filteredUsers.length === 0 ? (
-              <div className="text-center py-8">
-                <FiUsers className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium mb-2">No users found</h3>
-                <p className="text-gray-500">
-                  {searchTerm || filterRole !== "all" || filterStatus !== "all"
-                    ? "Try adjusting your search or filters"
-                    : "No active users found"}
-                </p>
-                {!searchTerm &&
-                  filterRole === "all" &&
-                  filterStatus === "all" && (
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-400">
-                        Users will appear here once they register on your
-                        platform.
-                      </p>
-                    </div>
-                  )}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        User
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Role
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Status
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Location
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Last Login
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr
-                        key={user.id}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      >
-                        <td className="py-3 px-4">
-                          <div className="flex items-center">
-                            {user.profile?.avatarUrl ? (
-                              <Image
-                                src={user.profile.avatarUrl}
-                                alt={user.fullName}
-                                width={40}
-                                height={40}
-                                className="w-10 h-10 rounded-full mr-3 object-cover"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mr-3 flex items-center justify-center text-white font-semibold text-sm">
-                                {user.fullName
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .toUpperCase()
-                                  .slice(0, 2)}
-                              </div>
-                            )}
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {user.fullName}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {user.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">{getRoleBadge(user.role)}</td>
-                        <td className="py-3 px-4">{getStatusBadge(user)}</td>
-                        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
-                          {user.profile?.country || "N/A"}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
-                          {user.lastLoginAt
-                            ? new Date(user.lastLoginAt).toLocaleDateString()
-                            : "Never"}
-                        </td>
-                        <td className="py-3 px-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                disabled={actionLoading === user.id}
-                                className="cursor-pointer"
-                              >
-                                {actionLoading === user.id ? (
-                                  <FiRefreshCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <FiMoreVertical className="w-4 h-4" />
-                                )}
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>
-                                User Actions
-                              </DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-
-                              {/* Role Change */}
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleChangeRole(user.id, "USER")
-                                }
-                                disabled={
-                                  user.role === "USER" ||
-                                  actionLoading === user.id
-                                }
-                                className="cursor-pointer"
-                              >
-                                <FiUser className="w-4 h-4 mr-2" />
-                                Set as User
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleChangeRole(user.id, "ADMIN")
-                                }
-                                disabled={
-                                  user.role === "ADMIN" ||
-                                  actionLoading === user.id
-                                }
-                                className="cursor-pointer"
-                              >
-                                <FiShield className="w-4 h-4 mr-2" />
-                                Set as Admin
-                              </DropdownMenuItem>
-
-                              <DropdownMenuSeparator />
-
-                              {/* Ban/Unban */}
-                              {!user.isBanned ? (
-                                <DropdownMenuItem
-                                  onClick={() => handleBanUser(user.id)}
-                                  disabled={actionLoading === user.id}
-                                  className="text-red-600 cursor-pointer"
-                                >
-                                  <FiUserX className="w-4 h-4 mr-2" />
-                                  Ban User
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem
-                                  onClick={() => handleUnbanUser(user.id)}
-                                  disabled={actionLoading === user.id}
-                                  className="text-green-600 cursor-pointer"
-                                >
-                                  <FiUserCheck className="w-4 h-4 mr-2" />
-                                  Unban User
-                                </DropdownMenuItem>
-                              )}
-
-                              {/* Trash/Restore */}
-                              {!user.isTrashed ? (
-                                <DropdownMenuItem
-                                  onClick={() => handleTrashUser(user.id)}
-                                  disabled={actionLoading === user.id}
-                                  className="text-orange-600 cursor-pointer"
-                                >
-                                  <FiTrash2 className="w-4 h-4 mr-2" />
-                                  Move to Trash
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem
-                                  onClick={() => handleRestoreUser(user.id)}
-                                  disabled={actionLoading === user.id}
-                                  className="text-green-600 cursor-pointer"
-                                >
-                                  <FiUserPlus className="w-4 h-4 mr-2" />
-                                  Restore User
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="flex flex-1 flex-col gap-2 sm:flex-row lg:justify-end">
+          <div className="relative min-w-0 flex-1 sm:max-w-sm">
+            <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+            <input type="search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search name or email…" aria-label="Search users" className="h-10 w-full rounded-full border border-slate-200 bg-white pl-10 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1D6FE0] focus:ring-[3px] focus:ring-[#1D6FE0]/15 dark:border-white/10 dark:bg-white/[0.03] dark:text-white" />
+            {searchInput && <button type="button" onClick={() => setSearchInput("")} aria-label="Clear search" className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10"><FiX className="h-3.5 w-3.5" /></button>}
+          </div>
+          <FilterSelect ariaLabel="Filter by role" value={role} onChange={(v) => { setRole(v as RoleFilter); setPage(1); }} className="sm:w-40" options={[{ value: "all", label: "All roles" }, { value: "USER", label: "Users" }, { value: "ADMIN", label: "Admins" }]} />
+        </div>
       </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-[68px] animate-pulse rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0B0F2E]" />)}</div>
+      ) : error ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-14 text-center dark:border-white/15">
+          <p className="text-sm text-slate-600 dark:text-slate-300">Couldn&apos;t load users.</p>
+          <Button variant="outline" onClick={() => refetch()} className="mt-4 cursor-pointer rounded-full">Try again</Button>
+        </div>
+      ) : users.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-16 text-center dark:border-white/15">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-white/5"><FiUsers className="h-5 w-5" /></span>
+          <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">{hasFilters ? "No users match" : status === "active" ? "No users yet" : `No ${status} users`}</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{hasFilters ? "Try another name, email or role." : status === "active" ? "Users appear here once they register." : "Nothing to show here."}</p>
+          {hasFilters && <Button variant="outline" onClick={() => { setSearchInput(""); setRole("all"); }} className="mt-5 cursor-pointer rounded-full">Clear filters</Button>}
+        </div>
+      ) : (
+        <div className={`transition-opacity ${isFetching ? "opacity-60" : ""}`}>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0B0F2E]">
+            <div className="hidden grid-cols-[minmax(0,1.6fr)_100px_100px_minmax(0,0.8fr)_110px_110px_40px] gap-4 border-b border-slate-100 px-4 py-2.5 text-xs font-medium text-slate-500 md:grid dark:border-white/[0.06] dark:text-slate-400">
+              <span>User</span><span>Role</span><span>Status</span><span>Location</span><span>Joined</span><span>Last login</span><span />
+            </div>
+            <ul className="divide-y divide-slate-100 dark:divide-white/[0.06]">
+              {users.map((u) => (
+                <li key={u.id} className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 px-4 py-3 transition hover:bg-slate-50/70 md:grid-cols-[minmax(0,1.6fr)_100px_100px_minmax(0,0.8fr)_110px_110px_40px] dark:hover:bg-white/[0.02] ${busyId === u.id ? "opacity-50" : ""}`}>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Avatar user={u} />
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-1.5 truncate text-sm font-medium text-slate-900 dark:text-white">
+                        <span className="truncate">{u.fullName || "Unnamed"}</span>
+                        {u.id === currentUser?.id && <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-white/10 dark:text-slate-300">You</span>}
+                      </p>
+                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">{u.email}</p>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5 md:hidden">
+                        <RoleBadge role={u.role} /><StatusBadge user={u} />
+                        <span className="text-[11px] text-slate-400">Joined {formatDate(u.createdAt)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="hidden md:block"><RoleBadge role={u.role} /></span>
+                  <span className="hidden md:block"><StatusBadge user={u} /></span>
+                  <span className="hidden truncate text-sm text-slate-600 md:block dark:text-slate-300">{[u.profile?.city, u.profile?.country].filter(Boolean).join(", ") || "—"}</span>
+                  <span className="hidden text-sm text-slate-500 md:block dark:text-slate-400">{formatDate(u.createdAt)}</span>
+                  <span className="hidden text-sm text-slate-500 md:block dark:text-slate-400">{formatDate(u.lastLoginAt)}</span>
+                  {actions(u)}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {pagination && pagination.totalPages > 1 && (
+            <nav aria-label="Pagination" className="mt-6 flex flex-col items-center justify-between gap-3 sm:flex-row">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Showing {from}–{to} of {pagination.total}</p>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={!pagination.hasPrev || isFetching} className="h-9 cursor-pointer rounded-full px-3.5"><FiChevronLeft className="h-4 w-4" /> Prev</Button>
+                <span className="min-w-[4.5rem] text-center text-sm text-slate-600 dark:text-slate-300">{pagination.page} / {pagination.totalPages}</span>
+                <Button variant="outline" onClick={() => setPage((p) => p + 1)} disabled={!pagination.hasNext || isFetching} className="h-9 cursor-pointer rounded-full px-3.5">Next <FiChevronRight className="h-4 w-4" /></Button>
+              </div>
+            </nav>
+          )}
+        </div>
+      )}
     </div>
   );
 }

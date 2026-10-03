@@ -43,7 +43,7 @@ const ActionButtonsSection: React.FC<ActionButtonsSectionProps> = ({
               <Button
                 type="submit"
                 disabled={isCreating}
-                className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700"
+                className="tf-btn-primary tf-shine w-full cursor-pointer"
                 onClick={onSubmit}
               >
                 <FiSave className="w-4 h-4 mr-2" />
@@ -69,7 +69,7 @@ const ActionButtonsSection: React.FC<ActionButtonsSectionProps> = ({
               <Button
                 type="submit"
                 disabled={isCreating}
-                className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700"
+                className="tf-btn-primary tf-shine w-full cursor-pointer"
                 onClick={onSubmit}
               >
                 <FiSave className="w-4 h-4 mr-2" />

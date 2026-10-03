@@ -31,7 +31,7 @@ export default function BlogDetailsContainer({
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="bg-white dark:bg-[#1A1D37] p-5 rounded-md">
+      <div className="bg-white dark:bg-[#0B0F2E] p-5 rounded-md">
         <Image
           src={blog.imageUrl}
           alt={blog.title}
@@ -63,7 +63,7 @@ export default function BlogDetailsContainer({
       </div>
 
       {/* comments for this blogs  */}
-      <div className="bg-white dark:bg-[#1A1D37] p-5 rounded-md"></div>
+      <div className="bg-white dark:bg-[#0B0F2E] p-5 rounded-md"></div>
 
       <div className="mt-10">
         <h4 className="text-xl font-bold">Leave a Comment</h4>
@@ -73,17 +73,17 @@ export default function BlogDetailsContainer({
         <form className="space-y-4 mt-5">
           <textarea
             placeholder="Add a comment"
-            className="bg-white dark:bg-[#1A1D37] rounded-md border-none"
+            className="bg-white dark:bg-[#0B0F2E] rounded-md border-none"
           />
           <input
             placeholder="Full Name"
             type="text"
-            className="bg-white dark:bg-[#1A1D37] rounded-md border-none"
+            className="bg-white dark:bg-[#0B0F2E] rounded-md border-none"
           />
           <input
             placeholder="Email"
             type="email"
-            className="bg-white dark:bg-[#1A1D37] rounded-md border-none"
+            className="bg-white dark:bg-[#0B0F2E] rounded-md border-none"
           />
           <button className="cursor-pointer">Post Comment</button>
         </form>

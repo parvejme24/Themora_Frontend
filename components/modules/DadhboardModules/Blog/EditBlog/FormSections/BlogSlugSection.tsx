@@ -26,7 +26,7 @@ const BlogSlugSection: React.FC<BlogSlugSectionProps> = ({
           placeholder="url-friendly-slug"
           className="cursor-text font-mono"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-slate-500 mt-1">
           Auto-generated from title (editable)
         </p>
       </CardContent>

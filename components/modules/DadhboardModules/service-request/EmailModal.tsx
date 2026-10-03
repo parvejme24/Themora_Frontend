@@ -79,7 +79,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96">
-      <Card className={`bg-white dark:bg-[#1A1D37] shadow-2xl border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
+      <Card className={`bg-white dark:bg-[#0B0F2E] shadow-2xl border-2 border-slate-200 dark:border-white/10 transition-all duration-300 ease-in-out ${
         isMinimized ? 'h-16' : 'h-[600px]'
       }`}>
         <CardHeader className={`flex flex-row items-center justify-between space-y-0 pb-4 ${isMinimized ? 'pb-2' : ''}`}>
@@ -92,7 +92,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
               variant="ghost"
               size="sm"
               onClick={() => setIsMinimized(!isMinimized)}
-              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-white/[0.06]"
             >
               {isMinimized ? <FiMaximize2 className="w-3 h-3" /> : <FiMinimize2 className="w-3 h-3" />}
             </Button>
@@ -100,7 +100,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
               variant="ghost"
               size="sm"
               onClick={handleClose}
-              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-white/[0.06]"
             >
               <FiX className="w-3 h-3" />
             </Button>
@@ -111,12 +111,12 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
           <CardContent className="h-[calc(600px-80px)] overflow-y-auto">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Client Info */}
-              <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+              <div className="bg-slate-50 dark:bg-white/[0.04] p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <FiUser className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Client Information</span>
+                  <FiUser className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Client Information</span>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-slate-600 dark:text-slate-400">
                   <p><strong>Name:</strong> {clientName}</p>
                   <p><strong>Email:</strong> {clientEmail}</p>
                   {requestId && <p><strong>Request ID:</strong> {requestId}</p>}
@@ -125,7 +125,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
 
               {/* To Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   To Email
                 </label>
                 <Input
@@ -141,7 +141,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
 
               {/* Subject */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Subject *
                 </label>
                 <Input
@@ -157,7 +157,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
 
               {/* Message */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Message *
                 </label>
                 <Textarea
@@ -172,7 +172,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
 
               {/* Quick Templates */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Quick Templates
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -225,7 +225,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
                 <Button
                   type="button"
                   variant="outline"
@@ -238,7 +238,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
                 <Button
                   type="submit"
                   disabled={sendEmailMutation.isPending || !emailData.subject.trim() || !emailData.message.trim()}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="tf-btn-primary tf-shine "
                   size="sm"
                 >
                   {sendEmailMutation.isPending ? (

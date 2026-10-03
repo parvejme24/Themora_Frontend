@@ -35,7 +35,7 @@ const FeaturedImageSection: React.FC<FeaturedImageSectionProps> = ({
           <div className="space-y-3">
             {/* Image Preview with Perfect Aspect Ratio */}
             <div
-              className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 cursor-pointer"
+              className="relative w-full aspect-video rounded-lg overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0B0F2E] cursor-pointer"
               onClick={() =>
                 document.getElementById("image-upload")?.click()
               }
@@ -62,7 +62,7 @@ const FeaturedImageSection: React.FC<FeaturedImageSectionProps> = ({
             </div>
 
             {/* Image Details */}
-            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
               <p>Recommended: 1200x630px (16:9 ratio)</p>
               <p>Max size: 5MB</p>
             </div>
@@ -71,7 +71,7 @@ const FeaturedImageSection: React.FC<FeaturedImageSectionProps> = ({
             <div className="flex gap-2">
               <Label
                 htmlFor="image-upload"
-                className="flex-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm inline-flex items-center justify-center gap-2"
+                className="tf-btn-primary tf-shine flex-1 cursor-pointer text-white px-3 py-2 rounded-md text-sm inline-flex items-center justify-center gap-2"
               >
                 <FiUpload className="w-4 h-4" />
                 Change Image
@@ -99,7 +99,7 @@ const FeaturedImageSection: React.FC<FeaturedImageSectionProps> = ({
           <div className="space-y-3">
             {/* Upload Area */}
             <div
-              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200 cursor-pointer"
+              className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200 cursor-pointer"
               onClick={() =>
                 document.getElementById("image-upload")?.click()
               }
@@ -107,16 +107,16 @@ const FeaturedImageSection: React.FC<FeaturedImageSectionProps> = ({
               onDragOver={onImageDragOver}
             >
               <div className="space-y-3">
-                <FiImage className="w-12 h-12 mx-auto text-gray-400" />
+                <FiImage className="w-12 h-12 mx-auto text-slate-400" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Upload Featured Image
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Drag & drop or click to browse
                   </p>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
                   <p>Recommended: 1200x630px (16:9 ratio)</p>
                   <p>Supports: JPG, PNG, WebP</p>
                   <p>Max size: 5MB</p>

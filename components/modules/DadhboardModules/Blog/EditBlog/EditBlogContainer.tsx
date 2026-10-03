@@ -395,10 +395,10 @@ export default function EditBlogContainer({
       <div className="container mx-auto max-w-6xl px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Edit Blog Post
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white mb-2">
+            Edit Blog <span className="tf-gradient-text">Post</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-600 dark:text-slate-400">
             Update your blog post
           </p>
         </div>
@@ -437,7 +437,7 @@ export default function EditBlogContainer({
                     placeholder="url-friendly-slug"
                     className="cursor-text font-mono"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Auto-generated from title (editable)
                   </p>
                 </CardContent>
@@ -458,7 +458,7 @@ export default function EditBlogContainer({
                     required
                     className="cursor-text"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     A brief summary of your blog post
                   </p>
                 </CardContent>
@@ -542,7 +542,7 @@ export default function EditBlogContainer({
                     max="60"
                     className="cursor-text"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Estimated reading time in minutes
                   </p>
                 </CardContent>
@@ -557,7 +557,7 @@ export default function EditBlogContainer({
                   {previewUrl ? (
                     <div className="space-y-3">
                       <div
-                        className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 cursor-pointer"
+                        className="relative w-full aspect-video rounded-lg overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0B0F2E] cursor-pointer"
                         onClick={() =>
                           document.getElementById("featured-image-upload")?.click()
                         }
@@ -576,7 +576,7 @@ export default function EditBlogContainer({
                         </div>
                       </div>
 
-                      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                      <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
                         <p>Recommended: 1200x630px (16:9 ratio)</p>
                         <p>Max size: 5MB</p>
                       </div>
@@ -584,7 +584,7 @@ export default function EditBlogContainer({
                       <div className="flex gap-2">
                         <Label
                           htmlFor="featured-image-upload"
-                          className="flex-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm inline-flex items-center justify-center gap-2"
+                          className="tf-btn-primary tf-shine flex-1 cursor-pointer text-white px-3 py-2 rounded-md text-sm inline-flex items-center justify-center gap-2"
                         >
                           <FiUpload className="w-4 h-4" />
                           Change Image
@@ -611,7 +611,7 @@ export default function EditBlogContainer({
                   ) : (
                     <div className="space-y-3">
                       <div
-                        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200 cursor-pointer"
+                        className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200 cursor-pointer"
                         onClick={() =>
                           document.getElementById("featured-image-upload")?.click()
                         }
@@ -619,16 +619,16 @@ export default function EditBlogContainer({
                         onDragOver={handleFeaturedImageDragOver}
                       >
                         <div className="space-y-3">
-                          <FiImage className="w-12 h-12 mx-auto text-gray-400" />
+                          <FiImage className="w-12 h-12 mx-auto text-slate-400" />
                           <div>
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                               Upload Featured Image
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                               Drag & drop or click to browse
                             </p>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
                             <p>Recommended: 1200x630px (16:9 ratio)</p>
                             <p>Supports: JPG, PNG, WebP</p>
                             <p>Max size: 5MB</p>
@@ -655,7 +655,7 @@ export default function EditBlogContainer({
                     <Button
                       type="submit"
                       disabled={isUpdating}
-                      className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700"
+                      className="tf-btn-primary tf-shine w-full cursor-pointer"
                     >
                       <FiSave className="w-4 h-4 mr-2" />
                       {isUpdating

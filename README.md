@@ -10,7 +10,7 @@
 [![Firebase](https://img.shields.io/badge/Firebase-Authentication-orange?style=flat-square&logo=firebase)](https://firebase.google.com/)
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Site-green?style=for-the-badge)](https://techfynite.vercel.app)
-[![GitHub](https://img.shields.io/badge/📱_GitHub-View_Code-black?style=for-the-badge&logo=github)](https://github.com/yourusername/techfynite-frontend)
+[![GitHub](https://img.shields.io/badge/📱_GitHub-View_Code-black?style=for-the-badge&logo=github)](https://github.com/yourusername/themora-frontend)
 
 </div>
 
@@ -113,8 +113,8 @@ Firebase Firestore      // NoSQL database
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/techfynite-frontend.git
-cd techfynite-frontend
+git clone https://github.com/yourusername/themora-frontend.git
+cd themora-frontend
 
 # Install dependencies
 npm install
@@ -179,7 +179,7 @@ npm run type-check   # Run TypeScript checks
 
 ### **Project Structure**
 ```
-techfynite-frontend/
+themora-frontend/
 ├── 📁 app/                          # Next.js App Router
 │   ├── (WithCommonLayout)/        # Public pages
 │   │   ├── (home)/                 # Homepage
@@ -394,7 +394,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **⭐ Star this repository if you found it helpful!**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/techfynite-frontend?style=social)](https://github.com/yourusername/techfynite-frontend)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/techfynite-frontend?style=social)](https://github.com/yourusername/techfynite-frontend)
+[![GitHub stars](https://img.shields.io/github/stars/yourusername/themora-frontend?style=social)](https://github.com/yourusername/themora-frontend)
+[![GitHub forks](https://img.shields.io/github/forks/yourusername/themora-frontend?style=social)](https://github.com/yourusername/themora-frontend)
 
 </div>

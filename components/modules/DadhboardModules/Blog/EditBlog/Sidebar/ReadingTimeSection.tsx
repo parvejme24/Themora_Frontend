@@ -28,7 +28,7 @@ const ReadingTimeSection: React.FC<ReadingTimeSectionProps> = ({
           max="60"
           className="cursor-text"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-slate-500 mt-1">
           Estimated reading time in minutes
         </p>
       </CardContent>

@@ -197,27 +197,27 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
 
   if (!editor) {
     return (
-      <div className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 min-h-[400px] flex items-center justify-center">
+      <div className="border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-white/[0.04] min-h-[400px] flex items-center justify-center">
         <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+    <div className="border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-white/[0.04]">
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-2 p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-wrap gap-2 p-3 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0B0F2E]">
         {/* Headings */}
-        <div className="flex items-center gap-1 border-r border-gray-300 dark:border-gray-600 pr-2">
+        <div className="flex items-center gap-1 border-r border-slate-300 dark:border-slate-600 pr-2">
           <button
             type="button"
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 1 }).run()
             }
-            className={`px-3 py-1.5 text-sm font-semibold rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm font-semibold rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("heading", { level: 1 })
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Heading 1 - Apply to selected text"
           >
@@ -228,10 +228,10 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 2 }).run()
             }
-            className={`px-3 py-1.5 text-sm font-semibold rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm font-semibold rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("heading", { level: 2 })
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Heading 2 - Apply to selected text"
           >
@@ -242,10 +242,10 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 3 }).run()
             }
-            className={`px-3 py-1.5 text-sm font-semibold rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm font-semibold rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("heading", { level: 3 })
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Heading 3 - Apply to selected text"
           >
@@ -254,14 +254,14 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         </div>
 
         {/* Text Formatting */}
-        <div className="flex items-center gap-1 border-r border-gray-300 dark:border-gray-600 px-2">
+        <div className="flex items-center gap-1 border-r border-slate-300 dark:border-slate-600 px-2">
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("bold")
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Bold - Select text and click"
           >
@@ -270,10 +270,10 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("italic")
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Italic - Select text and click"
           >
@@ -282,10 +282,10 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={`px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("strike")
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Strikethrough - Select text and click"
           >
@@ -294,14 +294,14 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         </div>
 
         {/* Lists */}
-        <div className="flex items-center gap-1 border-r border-gray-300 dark:border-gray-600 px-2">
+        <div className="flex items-center gap-1 border-r border-slate-300 dark:border-slate-600 px-2">
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("bulletList")
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Bullet List"
           >
@@ -310,10 +310,10 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("orderedList")
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Numbered List"
           >
@@ -322,10 +322,10 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("blockquote")
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Blockquote"
           >
@@ -334,7 +334,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         </div>
 
         {/* Image Upload */}
-        <div className="flex items-center gap-1 border-r border-gray-300 dark:border-gray-600 px-2">
+        <div className="flex items-center gap-1 border-r border-slate-300 dark:border-slate-600 px-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -346,10 +346,10 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
             type="button"
             onClick={handleImageButtonClick}
             disabled={isUploading}
-            className={`px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-1 ${
+            className={`px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors flex items-center gap-1 ${
               isUploading
                 ? "opacity-50 cursor-not-allowed"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Upload Image - Click to select image file"
           >
@@ -359,7 +359,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         </div>
 
         {/* Links */}
-        <div className="flex items-center gap-1 border-r border-gray-300 dark:border-gray-600 px-2">
+        <div className="flex items-center gap-1 border-r border-slate-300 dark:border-slate-600 px-2">
           <button
             type="button"
             onClick={() => {
@@ -368,10 +368,10 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
                 editor.chain().focus().setLink({ href: url }).run();
               }
             }}
-            className={`px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors ${
               editor.isActive("link")
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : "text-gray-700 dark:text-gray-300"
+                : "text-slate-700 dark:text-slate-300"
             }`}
             title="Add Link - Select text and click"
           >
@@ -380,7 +380,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           <button
             type="button"
             onClick={() => editor.chain().focus().unsetLink().run()}
-            className="px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 disabled:opacity-50"
+            className="px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors text-slate-700 dark:text-slate-300 disabled:opacity-50"
             disabled={!editor.isActive("link")}
             title="Remove Link"
           >
@@ -393,7 +393,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           <button
             type="button"
             onClick={() => editor.chain().focus().undo().run()}
-            className="px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+            className="px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors text-slate-700 dark:text-slate-300"
             title="Undo"
           >
             ↶
@@ -401,7 +401,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           <button
             type="button"
             onClick={() => editor.chain().focus().redo().run()}
-            className="px-3 py-1.5 text-sm rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+            className="px-3 py-1.5 text-sm rounded hover:bg-slate-200 dark:hover:bg-white/[0.06] transition-colors text-slate-700 dark:text-slate-300"
             title="Redo"
           >
             ↷

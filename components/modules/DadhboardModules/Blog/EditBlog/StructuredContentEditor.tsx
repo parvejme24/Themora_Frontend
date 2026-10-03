@@ -235,13 +235,13 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
   };
 
   return (
-    <div className="border border-gray-300 dark:border-gray-600 rounded-lg">
+    <div className="border border-slate-300 dark:border-slate-600 rounded-lg">
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-2 p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <div className="flex flex-wrap gap-2 p-3 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04]">
         <button
           type="button"
           onClick={() => addElement("heading")}
-          className="px-3 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+          className="px-3 py-1 text-sm bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer"
           title="Add Heading"
         >
           H1
@@ -249,7 +249,7 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
         <button
           type="button"
           onClick={() => addElement("subheading")}
-          className="px-3 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+          className="px-3 py-1 text-sm bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer"
           title="Add Subheading"
         >
           H2
@@ -257,7 +257,7 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
         <button
           type="button"
           onClick={() => addElement("paragraph")}
-          className="px-3 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+          className="px-3 py-1 text-sm bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer"
           title="Add Paragraph"
         >
           📝 Paragraph
@@ -265,7 +265,7 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
         <button
           type="button"
           onClick={() => addElement("list")}
-          className="px-3 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+          className="px-3 py-1 text-sm bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer"
           title="Add List"
         >
           • List
@@ -273,15 +273,15 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
         <button
           type="button"
           onClick={() => addElement("numbered-list")}
-          className="px-3 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+          className="px-3 py-1 text-sm bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer"
           title="Add Numbered List"
         >
           1. List
         </button>
-        <div className="border-l border-gray-300 dark:border-gray-600 mx-1"></div>
+        <div className="border-l border-slate-300 dark:border-slate-600 mx-1"></div>
         <Label
           htmlFor="content-image-upload"
-          className="px-3 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-1"
+          className="px-3 py-1 text-sm bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer flex items-center gap-1"
           title="Upload Image"
         >
           <FiFileText className="w-4 h-4" />
@@ -302,7 +302,7 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
       {/* Content Elements */}
       <div className="p-4 space-y-4 min-h-[400px]">
         {!value.sections || value.sections.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-500 w-full h-full">
+          <div className="flex flex-col items-center justify-center py-16 text-slate-500 w-full h-full">
             <FiFileText className="w-12 h-12 mb-4 opacity-50" />
             <p className="text-center">Click the buttons above to add content elements</p>
           </div>
@@ -310,10 +310,10 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
           value.sections.map((section, index) => (
             <div
               key={section.id}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
+              className="border border-slate-200 dark:border-white/10 rounded-lg p-4 bg-white dark:bg-white/[0.04]"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                   {section.type === "heading" && "Heading 1"}
                   {section.type === "subheading" && "Heading 2"}
                   {section.type === "paragraph" && "Paragraph"}
@@ -367,7 +367,7 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
 
               {section.type === "image" && (
                 <div className="space-y-3">
-                  <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0B0F2E]">
                     <img
                       src={section.content}
                       alt="Content image"
@@ -390,7 +390,7 @@ const StructuredContentEditor: React.FC<StructuredContentEditorProps> = ({
                 <div className="space-y-2">
                   {section.items?.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500 w-6">
+                      <span className="text-sm text-slate-500 w-6">
                         {section.type === "list" ? "•" : `${itemIndex + 1}.`}
                       </span>
                       <Input

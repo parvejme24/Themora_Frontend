@@ -19,7 +19,7 @@ if (typeof window !== "undefined") {
     {
       ssr: false,
       loading: () => (
-        <div className="border border-gray-300 dark:border-none rounded-lg bg-white dark:bg-gray-900 min-h-[400px] flex items-center justify-center">
+        <div className="border border-slate-300 dark:border-none rounded-lg bg-white dark:bg-[#0B0F2E] min-h-[400px] flex items-center justify-center">
           <Spinner />
         </div>
       ),
@@ -36,7 +36,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
 
   if (!isClient || !TiptapEditor) {
     return (
-      <div className="border border-gray-300 dark:border-none rounded-lg bg-white dark:bg-gray-950 min-h-[400px] flex items-center justify-center">
+      <div className="border border-slate-300 dark:border-none rounded-lg bg-white dark:bg-slate-950 min-h-[400px] flex items-center justify-center">
         <Spinner />
       </div>
     );

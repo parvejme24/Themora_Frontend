@@ -78,9 +78,9 @@ const pieChartOptions = {
 
 const TrafficChart: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-[#1A1D37] rounded-xl shadow-sm p-6">
+    <div className="bg-white dark:bg-[#0B0F2E] rounded-2xl shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
           Traffic by Location
         </h2>
         <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
@@ -92,27 +92,27 @@ const TrafficChart: React.FC = () => {
           <Pie data={trafficData} options={pieChartOptions} />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {trafficData.datasets[0].data.reduce((a, b) => a + b, 0)}%
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Traffic</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Total Traffic</p>
             </div>
           </div>
         </div>
         <div className="w-1/2 pl-6">
           <div className="space-y-4">
             {trafficData.labels.map((label, index) => (
-              <div key={label} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
+              <div key={label} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/[0.04] rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors duration-200">
                 <div className="flex items-center">
                   <div 
                     className="w-3 h-3 rounded-full mr-3"
                     style={{ backgroundColor: trafficData.datasets[0].backgroundColor[index] }}
                   />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {label}
                   </span>
                 </div>
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">
                   {trafficData.datasets[0].data[index]}%
                 </span>
               </div>

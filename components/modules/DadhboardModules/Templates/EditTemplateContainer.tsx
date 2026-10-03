@@ -253,27 +253,27 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
       <div className="min-h-screen py-8">
         <div className="container mx-auto max-w-6xl px-4">
           <div className="mb-8">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-64 animate-pulse"></div>
+            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-64 animate-pulse"></div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="p-6 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse">
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4"></div>
+                <div key={i} className="p-6 bg-slate-100 dark:bg-white/[0.04] rounded-lg animate-pulse">
+                  <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-32 mb-4"></div>
                   <div className="space-y-3">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full"></div>
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
                   </div>
                 </div>
               ))}
             </div>
             <div className="space-y-6">
-              <div className="p-6 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-4"></div>
+              <div className="p-6 bg-slate-100 dark:bg-white/[0.04] rounded-lg animate-pulse">
+                <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-24 mb-4"></div>
                 <div className="space-y-3">
-                  <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                  <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded"></div>
                 </div>
               </div>
             </div>
@@ -307,10 +307,10 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
               Back to Templates
             </Button>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Edit Template
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white mb-2">
+            Edit <span className="tf-gradient-text">Template</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-600 dark:text-slate-400">
             Update template information and settings
           </p>
         </div>
@@ -446,7 +446,7 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                       disabled={updateTemplateMutation.isPending}
                       className="resize-y"
                     />
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-slate-500">
                       You can write multiple paragraphs in this field. Press Enter to create new paragraphs.
                     </p>
                   </div>
@@ -490,7 +490,7 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                         placeholder="e.g., 12345"
                         disabled={updateTemplateMutation.isPending}
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-slate-500">
                         Your LemonSqueezy product identifier
                       </p>
                     </div>
@@ -504,7 +504,7 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                         placeholder="e.g., 67890"
                         disabled={updateTemplateMutation.isPending}
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-slate-500">
                         Specific variant for this template
                       </p>
                     </div>
@@ -519,7 +519,7 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                       placeholder="https://example.com/checkout"
                       disabled={updateTemplateMutation.isPending}
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500">
                       Direct checkout link for this template (optional)
                     </p>
                   </div>
@@ -534,7 +534,7 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                       placeholder="https://example.com/preview"
                       disabled={updateTemplateMutation.isPending}
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500">
                       Link to preview or demo of the template (optional)
                     </p>
                   </div>
@@ -548,13 +548,13 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                       placeholder="https://yourstore.lemonsqueezy.com/checkout/buy/..."
                       disabled={updateTemplateMutation.isPending}
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500">
                       LemonSqueezy-specific checkout link (optional)
                     </p>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                  <div className="bg-slate-50 dark:bg-white/[0.04] rounded-lg p-3">
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
                       <strong>Note:</strong> All LemonSqueezy fields are optional. Leave empty if you're not using LemonSqueezy for this template.
                     </p>
                   </div>
@@ -679,12 +679,12 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                         </Button>
                       </div>
                     ) : (
-                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-                        <FiLayers className="w-10 h-10 mx-auto mb-3 text-gray-400" />
-                        <p className="text-gray-500 mb-3 text-sm">Upload template image</p>
+                      <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center">
+                        <FiLayers className="w-10 h-10 mx-auto mb-3 text-slate-400" />
+                        <p className="text-slate-500 mb-3 text-sm">Upload template image</p>
                         <Label
                           htmlFor="edit-template-image"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer text-sm"
+                          className="tf-btn-primary tf-shine inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg cursor-pointer text-sm"
                         >
                           <FiUpload className="w-4 h-4" />
                           Choose Image
@@ -703,7 +703,7 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                   {/* Source Files */}
                   <div className="space-y-2">
                     <Label>Source Files</Label>
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                    <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-4">
                       <Label
                         htmlFor="edit-source-files"
                         className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer text-sm"
@@ -722,7 +722,7 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                       {selectedSourceFiles.length > 0 && (
                         <div className="mt-3 space-y-2">
                           {selectedSourceFiles.map((file, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-800 rounded text-sm">
+                            <div key={index} className="flex items-center justify-between p-2 bg-slate-100 dark:bg-white/[0.04] rounded text-sm">
                               <span className="truncate flex-1">{file.name}</span>
                               <Button
                                 type="button"
@@ -750,7 +750,7 @@ export default function EditTemplateContainer({ templateId }: EditTemplateContai
                   <Button
                     type="submit"
                     disabled={updateTemplateMutation.isPending || !formData.title?.trim() || !formData.categoryId || !formData.shortDescription?.trim()}
-                    className="w-full bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                    className="tf-btn-primary tf-shine w-full cursor-pointer"
                   >
                     <FiSave className="w-4 h-4 mr-2" />
                     {updateTemplateMutation.isPending ? "Updating..." : "Update Template"}

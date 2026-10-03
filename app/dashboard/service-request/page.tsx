@@ -1,42 +1,23 @@
 "use client";
 
+import React, { useContext } from "react";
 import { AuthContext } from "@/Providers/AuthProvider";
 import { UserRole } from "@/types/user";
-import React, { useContext } from "react";
-import { useContactApi } from "@/hooks/useContactApi";
 import ServiceRequestContainer from "@/components/modules/DadhboardModules/service-request/ServiceRequestContainer";
 
 export default function ServiceRequestPage() {
   const { user } = useContext(AuthContext) || {};
   const role = (user as { role?: UserRole })?.role;
-  const isAdmin = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
-  const isUser = role === UserRole.USER;
+  const allowed = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN || role === UserRole.USER;
 
-  const contactApi = useContactApi();
-  const { data, isLoading } = contactApi.getAllContacts({
-    page: 1,
-    limit: 10,
-    search: "",
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  });
+  if (!allowed) {
+    return (
+      <div className="py-16 text-center">
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Access denied</h1>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">You don&apos;t have permission to view this page.</p>
+      </div>
+    );
+  }
 
-  return (
-    <div>
-      {isAdmin || isUser ? (
-        <ServiceRequestContainer userRole={role as string} />
-      ) : (
-        <div className="min-h-screen py-8">
-          <div className="container mx-auto max-w-7xl px-4">
-            <div className="text-center py-12">
-              <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                You don't have permission to access this page.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  return <ServiceRequestContainer userRole={role} />;
 }
