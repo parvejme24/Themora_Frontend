@@ -3,66 +3,9 @@ import React from "react";
 import { motion } from "framer-motion";
 import { FiCheck, FiLock, FiRefreshCw, FiZap } from "react-icons/fi";
 import PricingCard from "./PricingCard/PricingCard";
+import { useGetPricingPlans } from "@/hooks/usePricingApi";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
-
-const pricingList = [
-  {
-    id: 1,
-    title: "Personal",
-    description: "3 Website Licenses",
-    price: "10",
-    recommended: false,
-    features: [
-      "Access to All Templates",
-      "SP Page Builder Pro",
-      "Access to All Extensions",
-      "Access to All Layout Bundles",
-      "3 Websites License",
-      "1 Year Support & Updates",
-    ],
-  },
-  {
-    id: 2,
-    title: "Business",
-    description: "10 Website Licenses",
-    price: "199",
-    recommended: true,
-    features: [
-      "Access to All Templates",
-      "SP Page Builder Pro",
-      "Access to All Extensions",
-      "Access to All Layout Bundles",
-      "10 Websites License",
-      "1 Year Support & Updates",
-    ],
-  },
-  {
-    id: 3,
-    title: "Agency",
-    description: "Unlimited Website Licenses",
-    price: "499",
-    recommended: false,
-    features: [
-      "Access to All Templates",
-      "SP Page Builder Pro",
-      "Access to All Extensions",
-      "Access to All Layout Bundles",
-      "Unlimited Websites License",
-      "1 Year Support & Updates",
-    ],
-  },
-];
-
-// Rows for the comparison table; licences differ per plan, everything else is shared
-const COMPARE_ROWS = [
-  { label: "Website licences", values: ["3", "10", "Unlimited"] },
-  { label: "Access to all templates", values: [true, true, true] },
-  { label: "SP Page Builder Pro", values: [true, true, true] },
-  { label: "Access to all extensions", values: [true, true, true] },
-  { label: "Access to all layout bundles", values: [true, true, true] },
-  { label: "Support & updates", values: ["1 year", "1 year", "1 year"] },
-];
 
 const trust = [
   { icon: FiLock, label: "SSL secure payments" },
@@ -71,6 +14,16 @@ const trust = [
 ];
 
 export default function PublicPricingList() {
+  const { data: plans = [], isLoading, isError } = useGetPricingPlans();
+  const compareRows = [
+    { label: "Website licences", values: plans.map((plan) => plan.websiteLimit ?? "Unlimited") },
+    { label: "Access to all templates", values: plans.map((plan) => plan.features.some((feature) => /all templates/i.test(feature))) },
+    { label: "SP Page Builder Pro", values: plans.map((plan) => plan.features.some((feature) => /page builder pro/i.test(feature))) },
+    { label: "Access to all extensions", values: plans.map((plan) => plan.features.some((feature) => /all extensions/i.test(feature))) },
+    { label: "Access to all layout bundles", values: plans.map((plan) => plan.features.some((feature) => /all layout bundles/i.test(feature))) },
+    { label: "Support & updates", values: plans.map((plan) => plan.features.find((feature) => /support/i.test(feature)) ?? "Not included") },
+  ];
+
   return (
     <>
       {/* Hero */}
@@ -117,17 +70,129 @@ export default function PublicPricingList() {
       {/* Plans */}
       <section className="py-8 lg:py-12">
         <div className="mx-auto grid max-w-md items-stretch gap-6 lg:max-w-none lg:grid-cols-3 lg:gap-7">
-          {pricingList.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.7, delay: i * 0.1, ease: EASE }}
-            >
-              <PricingCard plan={item} />
-            </motion.div>
-          ))}
+          {isLoading && (
+            <>
+              {[0, 1, 2].map((idx) => {
+                const isFeatured = idx === 1;
+                return (
+                  <div
+                    key={idx}
+                    className={`relative h-full rounded-[28px] ${isFeatured ? "lg:-my-4" : ""}`}
+                  >
+                    <div
+                      className={`relative flex h-full flex-col overflow-hidden rounded-[28px] border p-7 sm:p-8 animate-pulse ${
+                        isFeatured
+                          ? "border-transparent bg-[#070B2A] text-white shadow-2xl shadow-[#3F5BF0]/20"
+                          : "border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0B0F2E]"
+                      }`}
+                    >
+                      {/* Top icon and badge skeleton */}
+                      <div className="flex items-center justify-between">
+                        <div
+                          className={`h-12 w-12 rounded-2xl ${
+                            isFeatured
+                              ? "bg-white/15"
+                              : "bg-slate-200 dark:bg-white/10"
+                          }`}
+                        />
+                        {isFeatured && (
+                          <div className="h-6 w-24 rounded-full bg-gradient-to-r from-amber-300/40 to-amber-500/40" />
+                        )}
+                      </div>
+
+                      {/* Title & Description skeleton */}
+                      <div
+                        className={`mt-6 h-6 w-36 rounded-lg ${
+                          isFeatured ? "bg-white/20" : "bg-slate-200 dark:bg-white/10"
+                        }`}
+                      />
+                      <div
+                        className={`mt-2.5 h-4 w-48 rounded-md ${
+                          isFeatured ? "bg-white/10" : "bg-slate-200/70 dark:bg-white/5"
+                        }`}
+                      />
+
+                      {/* Price skeleton */}
+                      <div className="mt-6 flex items-baseline gap-2">
+                        <div
+                          className={`h-11 w-28 rounded-lg ${
+                            isFeatured ? "bg-white/20" : "bg-slate-200 dark:bg-white/10"
+                          }`}
+                        />
+                        <div
+                          className={`h-4 w-10 rounded ${
+                            isFeatured ? "bg-white/10" : "bg-slate-200/60 dark:bg-white/5"
+                          }`}
+                        />
+                      </div>
+
+                      {/* Button skeleton */}
+                      <div
+                        className={`mt-7 h-12 w-full rounded-full ${
+                          isFeatured ? "bg-white/25" : "bg-slate-200 dark:bg-white/10"
+                        }`}
+                      />
+
+                      {/* Divider */}
+                      <div
+                        className={`my-7 h-px ${
+                          isFeatured ? "bg-white/10" : "bg-slate-100 dark:bg-white/10"
+                        }`}
+                      />
+
+                      {/* Included label */}
+                      <div
+                        className={`h-3 w-28 rounded ${
+                          isFeatured ? "bg-white/15" : "bg-slate-200/60 dark:bg-white/5"
+                        }`}
+                      />
+
+                      {/* Features list skeleton */}
+                      <div className="mt-4 space-y-3.5">
+                        {[1, 2, 3, 4, 5].map((item) => (
+                          <div key={item} className="flex items-center gap-3">
+                            <div
+                              className={`h-5 w-5 shrink-0 rounded-full ${
+                                isFeatured
+                                  ? "bg-white/20"
+                                  : "bg-slate-200 dark:bg-white/10"
+                              }`}
+                            />
+                            <div
+                              className={`h-4 rounded-md ${
+                                item % 2 === 0 ? "w-40" : "w-52"
+                              } ${
+                                isFeatured
+                                  ? "bg-white/15"
+                                  : "bg-slate-200/70 dark:bg-white/5"
+                              }`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+          {isError && (
+            <p className="col-span-full py-12 text-center text-sm text-rose-600">
+              Pricing plans are temporarily unavailable.
+            </p>
+          )}
+          {!isLoading &&
+            plans.map((item, i) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.7, delay: i * 0.1, ease: EASE }}
+              >
+                <PricingCard plan={item} />
+              </motion.div>
+            ))}
         </div>
       </section>
 
@@ -148,29 +213,45 @@ export default function PublicPricingList() {
             <thead>
               <tr className="border-b border-slate-100 dark:border-white/10">
                 <th className="px-6 py-5 text-left font-medium text-slate-400">Features</th>
-                {pricingList.map((p) => (
-                  <th key={p.id} className="px-6 py-5 text-center">
-                    <span className={`text-base font-semibold ${p.recommended ? "tf-gradient-text" : "text-slate-900 dark:text-white"}`}>{p.title}</span>
-                    <span className="block text-xs font-normal text-slate-400">${p.price}</span>
-                  </th>
-                ))}
+                {isLoading ? (
+                  <>
+                    <th className="px-6 py-5 text-center"><div className="mx-auto h-4 w-20 animate-pulse rounded bg-slate-200 dark:bg-white/10" /></th>
+                    <th className="px-6 py-5 text-center"><div className="mx-auto h-4 w-20 animate-pulse rounded bg-slate-200 dark:bg-white/10" /></th>
+                    <th className="px-6 py-5 text-center"><div className="mx-auto h-4 w-20 animate-pulse rounded bg-slate-200 dark:bg-white/10" /></th>
+                  </>
+                ) : (
+                  plans.map((p) => (
+                    <th key={p.id} className="px-6 py-5 text-center">
+                      <span className={`text-base font-semibold ${p.recommended ? "tf-gradient-text" : "text-slate-900 dark:text-white"}`}>{p.title}</span>
+                      <span className="block text-xs font-normal text-slate-400">${p.price}</span>
+                    </th>
+                  ))
+                )}
               </tr>
             </thead>
             <tbody>
-              {COMPARE_ROWS.map((row) => (
+              {compareRows.map((row) => (
                 <tr key={row.label} className="border-b border-slate-100 last:border-0 dark:border-white/5">
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{row.label}</td>
-                  {row.values.map((v, i) => (
-                    <td key={i} className={`px-6 py-4 text-center ${pricingList[i]?.recommended ? "bg-[#1D6FE0]/[0.04] dark:bg-white/[0.03]" : ""}`}>
-                      {v === true ? (
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                          <FiCheck className="h-3.5 w-3.5" />
-                        </span>
-                      ) : (
-                        <span className="font-semibold text-slate-900 dark:text-white">{v}</span>
-                      )}
-                    </td>
-                  ))}
+                  {isLoading ? (
+                    <>
+                      <td className="px-6 py-4 text-center"><div className="mx-auto h-4 w-12 animate-pulse rounded bg-slate-200/70 dark:bg-white/5" /></td>
+                      <td className="px-6 py-4 text-center"><div className="mx-auto h-4 w-12 animate-pulse rounded bg-slate-200/70 dark:bg-white/5" /></td>
+                      <td className="px-6 py-4 text-center"><div className="mx-auto h-4 w-12 animate-pulse rounded bg-slate-200/70 dark:bg-white/5" /></td>
+                    </>
+                  ) : (
+                    row.values.map((v, i) => (
+                      <td key={i} className={`px-6 py-4 text-center ${plans[i]?.recommended ? "bg-[#1D6FE0]/[0.04] dark:bg-white/[0.03]" : ""}`}>
+                        {v === true ? (
+                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <FiCheck className="h-3.5 w-3.5" />
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-slate-900 dark:text-white">{v}</span>
+                        )}
+                      </td>
+                    ))
+                  )}
                 </tr>
               ))}
             </tbody>
