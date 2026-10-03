@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
+import { extractErrorMessage } from "@/lib/errorHandler";
+import apiClient from "@/lib/api-client";
 import { FiArrowLeft, FiArrowRight, FiCheck, FiLock, FiMail } from "react-icons/fi";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { AuthInput, FormAlert, SubmitButton } from "../AuthFields";
@@ -19,15 +21,11 @@ export interface RegisterFormValues {
 
 const STEPS = ["Email", "Verify", "New password"];
 
-/*
- * NOTE: the backend has no password-reset endpoints yet, so sending/verifying
- * the code below is still simulated (same behaviour as before the redesign).
- */
 export default function ForgetPasswordForm() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [otp, setOtp] = useState("");
-  const [sentOtp, setSentOtp] = useState("");
   const [otpError, setOtpError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const router = useRouter();
 
@@ -38,31 +36,51 @@ export default function ForgetPasswordForm() {
     formState: { errors },
   } = useForm<RegisterFormValues>({ defaultValues: { name: "", email: "", password: "", confirmPassword: "" }, mode: "onTouched" });
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async ({ email }: RegisterFormValues) => {
     setBusy(true);
-    setTimeout(() => {
-      setSentOtp("123456");
-      setBusy(false);
+    setFormError(null);
+    try {
+      await apiClient.post("/auth/password-reset/request", { email });
       setStep(2);
-    }, 800);
-  };
-
-  const handleVerifyOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp === sentOtp) {
-      setOtpError(null);
-      setStep(3);
-    } else {
-      setOtpError("That code doesn't match. Please check and try again.");
+      toast.success("If this email has an account, a reset code has been sent.");
+    } catch (error) {
+      setFormError(extractErrorMessage(error, "Unable to send the reset code. Please try again."));
+    } finally {
+      setBusy(false);
     }
   };
 
-  const handleResetPassword = () => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
     setBusy(true);
-    setTimeout(() => {
+    setOtpError(null);
+    try {
+      await apiClient.post("/auth/password-reset/verify", { email: getValues("email"), otp });
+      setOtpError(null);
+      setStep(3);
+    } catch (error) {
+      setOtpError(extractErrorMessage(error, "That code is invalid or expired. Please try again."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleResetPassword = async ({ password }: RegisterFormValues) => {
+    setBusy(true);
+    setFormError(null);
+    try {
+      await apiClient.post("/auth/password-reset/confirm", {
+        email: getValues("email"),
+        otp,
+        newPassword: password,
+      });
       toast.success("Password reset! You can now sign in.");
       router.push("/login");
-    }, 800);
+    } catch (error) {
+      setFormError(extractErrorMessage(error, "Unable to reset your password. Please try again."));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -97,6 +115,7 @@ export default function ForgetPasswordForm() {
         <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.3 }}>
           {step === 1 && (
             <form onSubmit={handleSubmit(handleSendOtp)} noValidate className="space-y-5">
+              <FormAlert title="Could not send reset code" message={formError} />
               <AuthInput
                 label="Email"
                 icon={FiMail}
@@ -118,7 +137,7 @@ export default function ForgetPasswordForm() {
           {step === 2 && (
             <form onSubmit={handleVerifyOtp} className="space-y-5">
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Enter the 6-digit code we sent to <span className="font-semibold text-slate-900 dark:text-white">{getValues("email")}</span>
+                If an account exists, enter the 6-digit code sent to <span className="font-semibold text-slate-900 dark:text-white">{getValues("email")}</span>
               </p>
               <InputOTP maxLength={6} value={otp} onChange={(v) => setOtp(v.replace(/\D/g, ""))} autoFocus containerClassName="justify-between">
                 <InputOTPGroup className="w-full justify-between gap-2">
@@ -132,7 +151,7 @@ export default function ForgetPasswordForm() {
                 </InputOTPGroup>
               </InputOTP>
               <FormAlert title="Invalid code" message={otpError} />
-              <SubmitButton>
+              <SubmitButton loading={busy}>
                 Verify code <FiArrowRight className="transition-transform group-hover:translate-x-1" />
               </SubmitButton>
               <button type="button" onClick={() => setStep(1)} className="inline-flex w-full items-center justify-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
@@ -143,6 +162,7 @@ export default function ForgetPasswordForm() {
 
           {step === 3 && (
             <form onSubmit={handleSubmit(handleResetPassword)} noValidate className="space-y-5">
+              <FormAlert title="Could not reset password" message={formError} />
               <AuthInput
                 label="New password"
                 icon={FiLock}
