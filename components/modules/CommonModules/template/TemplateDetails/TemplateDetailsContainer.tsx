@@ -33,6 +33,9 @@ import ProductCard from "@/components/modules/HomePage/NewProducts/ProductCard";
 import { getTechIcon } from "@/components/modules/HomePage/PopularCategories/techIcons";
 import TemplateDetailsSkeleton from "./TemplateDetailsSkeleton";
 import ErrorState from "@/components/shared/Feedback/ErrorState";
+import { useAuth } from "@/hooks/useAuth";
+import { useGetUserOrders } from "@/hooks/useOrderApi";
+import apiClient from "@/lib/api-client";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const FEATURE_ICONS = [FiZap, FiSmartphone, FiLayers, FiCode, FiEye, FiTag];
@@ -80,10 +83,38 @@ const SectionTitle = ({ eyebrow, title }: { eyebrow: string; title: string }) =>
 export default function TemplateDetailsContainer({ id }: { id: string }) {
   const router = useRouter();
   const { data: template, isLoading, error, refetch } = useGetTemplateById(id);
+  const { isAuthenticated } = useAuth();
+  const { data: userOrders, isLoading: ordersLoading } = useGetUserOrders({
+    page: 1,
+    limit: 100,
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  }, isAuthenticated);
 
   const [activeImage, setActiveImage] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("overview");
+  const [downloadingIndex, setDownloadingIndex] = useState<number | null>(null);
+
+  const hasPurchaseAccess = userOrders?.orders.some((order) =>
+    order.status === "COMPLETED" && (
+      order.templateId === id || Boolean(order.pricingPlanId && order.planEntitlement?.isActive)
+    )
+  ) ?? false;
+
+  const downloadFile = async (fileIndex: number) => {
+    try {
+      setDownloadingIndex(fileIndex);
+      const response = await apiClient.get(`/templates/${id}/download/${fileIndex}`);
+      const downloadUrl = response.data.data?.downloadUrl;
+      if (!downloadUrl) throw new Error("Download is unavailable");
+      window.location.assign(downloadUrl);
+    } catch (downloadError: any) {
+      toast.error(downloadError?.response?.data?.message || downloadError?.message || "Unable to download this file");
+    } finally {
+      setDownloadingIndex(null);
+    }
+  };
 
   const { data: relatedData } = useGetAllTemplates({
     page: 1,
@@ -358,9 +389,22 @@ export default function TemplateDetailsContainer({ id }: { id: string }) {
                     </div>
 
                     <div className="mt-6 grid gap-3">
-                      <button type="button" onClick={buy} className={`${primaryBtn} w-full`}>
-                        <FiShoppingCart className="h-4 w-4" /> Buy now
-                      </button>
+                      {isAuthenticated && ordersLoading ? (
+                        <button type="button" disabled className={`${primaryBtn} w-full opacity-60`}>Checking your access...</button>
+                      ) : hasPurchaseAccess ? (
+                        <>
+                          {Array.from({ length: template?.sourceFileCount ?? 0 }, (_, fileIndex) => (
+                            <button key={fileIndex} type="button" onClick={() => downloadFile(fileIndex)} disabled={downloadingIndex === fileIndex} className={`${primaryBtn} w-full`}>
+                              <FiDownload className="h-4 w-4" /> {downloadingIndex === fileIndex ? "Preparing download..." : `Download file ${fileIndex + 1}`}
+                            </button>
+                          ))}
+                          <Link href="/dashboard/purchases" className={`${secondaryBtn} w-full`}>Manage purchase</Link>
+                        </>
+                      ) : (
+                        <button type="button" onClick={buy} className={`${primaryBtn} w-full`}>
+                          <FiShoppingCart className="h-4 w-4" /> Buy now
+                        </button>
+                      )}
                       {previewLink ? (
                         <Link href={previewLink} target="_blank" rel="noopener noreferrer" className={`${secondaryBtn} w-full`}>
                           <FiEye className="h-4 w-4" /> Live preview
