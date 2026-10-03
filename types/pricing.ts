@@ -1,27 +1,26 @@
-export enum Duration {
-  MONTHLY = 'MONTHLY',
-  YEARLY = 'YEARLY',
-  HALFYEARLY = 'HALFYEARLY',
-}
-
 export interface Pricing {
   id: string;
+  slug: string;
   title: string;
+  description: string;
   price: number;
-  license: string;
+  currency: string;
   recommended: boolean;
-  duration: Duration;
   features: string[];
+  websiteLimit: number | null;
+  lemonsqueezyVariantId: string | null;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreatePricingData {
   title: string;
+  description: string;
   price: number;
-  license: string;
-  recommended?: boolean;
-  duration: string;
+  websiteLimit: number | null;
+  lemonsqueezyVariantId: string;
+  recommended: boolean;
   features: string[];
 }
 
