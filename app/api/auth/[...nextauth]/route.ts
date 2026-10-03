@@ -39,6 +39,10 @@ const authOptions: NextAuthOptions = {
           });
 
           if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            if (response.status >= 500 || errorData?.message === "Failed to login" || errorData?.message === "Internal server error") {
+              throw new Error("AuthServiceUnavailable");
+            }
             return null;
           }
 
@@ -61,7 +65,8 @@ const authOptions: NextAuthOptions = {
 
           return null;
         } catch (error) {
-          return null;
+          if (error instanceof Error && error.message === "AuthServiceUnavailable") throw error;
+          throw new Error("AuthServiceUnavailable");
         }
       }
     })
@@ -131,8 +136,8 @@ const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
+    signIn: "/login",
+    error: "/login",
   },
   session: {
     strategy: "jwt",
