@@ -179,9 +179,10 @@ export const useGetBlogsByAuthor = (authorId: string, query?: IBlogQuery) => {
 };
 
 // Get blog stats
-export const useGetBlogStats = () => {
+export const useGetBlogStats = (enabled: boolean = true) => {
   return useQuery<BlogStatsResponse, Error>({
     queryKey: ['blogs', 'stats'],
+    enabled,
     queryFn: async () => {
       const response = await apiClient.get('/blogs/stats');
       return response.data;
