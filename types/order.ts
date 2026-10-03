@@ -2,7 +2,8 @@
 export interface Order {
   id: string;
   userId?: string | null;
-  templateId: string;
+  templateId: string | null;
+  pricingPlanId?: string | null;
   lemonsqueezyOrderId: string;
   lemonsqueezyInvoiceId?: string | null;
   status: "PENDING" | "PROCESSING" | "COMPLETED" | "CANCELLED" | "REFUNDED";
@@ -28,7 +29,18 @@ export interface Order {
     price: number;
     imageUrl?: string | null;
     shortDescription: string;
-  };
+  } | null;
+  pricingPlan?: {
+    id: string;
+    title: string;
+    price: number;
+    websiteLimit: number | null;
+  } | null;
+  planEntitlement?: {
+    isActive: boolean;
+    websitesAllowed: number | null;
+    supportExpiresAt: string | null;
+  } | null;
   licenses: Array<{
     id: string;
     licenseKey: string;
