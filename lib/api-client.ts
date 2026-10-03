@@ -95,7 +95,7 @@ apiClient.interceptors.response.use(
       // Clear auth data and redirect to login
       if (typeof window !== 'undefined') {
         localStorage.removeItem('nextAuthSecret');
-        window.location.href = '/auth/signin';
+        window.location.href = '/login';
       }
     }
     
