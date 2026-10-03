@@ -133,7 +133,7 @@ export const BlogSpotlight = ({ blog }: { blog: IBlog }) => (
       fill
       priority
       sizes="(min-width: 1024px) 60vw, 100vw"
-      className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+      className="object-contain transition-transform duration-[1200ms] ease-out group-hover:scale-105"
     />
     <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/0" />
     <div className="relative mt-auto w-full p-7 sm:p-10">
