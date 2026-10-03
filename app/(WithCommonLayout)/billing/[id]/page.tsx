@@ -6,8 +6,6 @@ export default async function BillingPage({ params }: { params: Promise<{ id: st
   const resolvedParams = params instanceof Promise ? await params : params;
   
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <BillingContainer pricingPlanId={resolvedParams.id} />
-    </div>
+    <BillingContainer pricingPlanId={resolvedParams.id} />
   )
 }
