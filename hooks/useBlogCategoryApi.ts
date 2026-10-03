@@ -84,6 +84,8 @@ export const useCreateBlogCategory = () => {
       
       if (data.imageFile) {
         formData.append('image', data.imageFile);
+      } else if (data.imageUrl) {
+        formData.append('imageUrl', data.imageUrl);
       }
 
       const response = await apiClient.post('/blog-categories', formData, {
@@ -124,7 +126,11 @@ export const useUpdateBlogCategory = () => {
       
       if (data.title) formData.append('title', data.title);
       if (data.slug) formData.append('slug', data.slug);
-      if (data.imageFile) formData.append('image', data.imageFile);
+      if (data.imageFile) {
+        formData.append('image', data.imageFile);
+      } else if (data.imageUrl !== undefined) {
+        formData.append('imageUrl', data.imageUrl);
+      }
 
       const response = await apiClient.put(`/blog-categories/${id}`, formData, {
         headers: {
