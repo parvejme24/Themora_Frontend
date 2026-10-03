@@ -10,7 +10,7 @@ interface Pricing {
   id: string | number; // Support both string (UUID) and number IDs
   title: string;
   description: string;
-  price: string;
+  price: string | number;
   recommended: boolean;
   features: string[];
   templateId?: string; // Optional templateId if pricing plan is linked to a specific template
