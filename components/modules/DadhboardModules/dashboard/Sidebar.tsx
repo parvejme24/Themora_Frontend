@@ -1,303 +1,147 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  FiHome,
-  FiUser,
-  FiMail,
-  FiUsers,
-  FiMenu,
-  FiX,
-  FiShoppingBag,
-  FiCreditCard,
-  FiBell,
-  FiSettings,
-  FiDollarSign,
-  FiLayers,
-  FiTag,
-  FiBookOpen,
-  FiFolder,
-  FiChevronDown,
-  FiChevronRight,
-  FiPackage,
-} from "react-icons/fi";
-import { VscGitPullRequestGoToChanges } from "react-icons/vsc";
-
+  BookOpen, ChevronDown, ChevronRight, CreditCard, FolderKanban, LayoutDashboard,
+  Layers3, LifeBuoy, Mail, PackageCheck, PanelLeftClose, ShoppingBag, Tags, UsersRound, X,
+} from "lucide-react";
 import { ThemoraMark } from "@/components/shared/Logo/ThemoraLogo";
-import { AuthContext } from "@/Providers/AuthProvider";
-import { useContext } from "react";
-import { UserRole } from "@/types/user";
+import { useAuth } from "@/hooks/useAuth";
+import { UserRole } from "@/types/auth";
 
-interface NavigationItem {
-  name: string;
-  href?: string;
-  icon: any;
-  isDropdown?: boolean;
-  children?: NavigationItem[];
+type NavLink = { label: string; href: string; icon: typeof LayoutDashboard };
+type NavGroup = { label: string; icon: typeof LayoutDashboard; children: NavLink[] };
+type NavItem = NavLink | NavGroup;
+
+const adminNav: NavItem[] = [
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Profile", href: "/dashboard/profile", icon: UsersRound },
+  { label: "Themes", icon: Layers3, children: [
+    { label: "All themes", href: "/dashboard/templates", icon: Layers3 },
+    { label: "Categories", href: "/dashboard/templates-categories", icon: Tags },
+  ] },
+  { label: "Publishing", icon: BookOpen, children: [
+    { label: "Blogs", href: "/dashboard/blogs", icon: BookOpen },
+    { label: "Blog categories", href: "/dashboard/blog-categories", icon: FolderKanban },
+  ] },
+  { label: "Orders", href: "/dashboard/orders", icon: PackageCheck },
+  { label: "Users", href: "/dashboard/users", icon: UsersRound },
+  { label: "Pricing", href: "/dashboard/pricing", icon: CreditCard },
+  { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail },
+  { label: "Service requests", href: "/dashboard/service-request", icon: LifeBuoy },
+];
+
+const userNav: NavLink[] = [
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Profile", href: "/dashboard/profile", icon: UsersRound },
+  { label: "My purchases", href: "/dashboard/purchases", icon: ShoppingBag },
+  { label: "My orders", href: "/dashboard/orders", icon: PackageCheck },
+  { label: "Payment history", href: "/dashboard/payment", icon: CreditCard },
+  { label: "Service requests", href: "/dashboard/service-request", icon: LifeBuoy },
+];
+
+// Same active / hover treatment as the public navbar pills
+const activePill = "bg-white text-slate-900 shadow-[0_1px_2px_rgb(0_0_0/0.06),0_4px_12px_-4px_rgb(15_53_167/0.25)] ring-1 ring-slate-200/80 dark:bg-white/10 dark:text-white dark:ring-white/10";
+const idleLink = "text-slate-500 hover:bg-slate-200/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white";
+
+function isGroup(item: NavItem): item is NavGroup {
+  return "children" in item;
 }
 
-const adminNavigation: NavigationItem[] = [
-  { name: "Overview", href: "/dashboard", icon: FiHome },
-  { name: "Profile", href: "/dashboard/profile", icon: FiUser },
-  {
-    name: "Templates",
-    icon: FiLayers,
-    isDropdown: true,
-    children: [
-      {
-        name: "Templates Categories",
-        href: "/dashboard/templates-categories",
-        icon: FiFolder,
-      },
-      { name: "Templates", href: "/dashboard/templates", icon: FiLayers },
-    ],
-  },
-  {
-    name: "Blogs",
-    icon: FiBookOpen,
-    isDropdown: true,
-    children: [
-      {
-        name: "Blog Categories",
-        href: "/dashboard/blog-categories",
-        icon: FiTag,
-      },
-      { name: "Blogs", href: "/dashboard/blogs", icon: FiBookOpen },
-    ],
-  },
-  { name: "Newsletter", href: "/dashboard/newsletter", icon: FiMail },
-  { name: "Users", href: "/dashboard/users", icon: FiUsers },
-  { name: "Orders", href: "/dashboard/orders", icon: FiPackage },
-  {
-    name: "Service Request",
-    href: "/dashboard/service-request",
-    icon: VscGitPullRequestGoToChanges,
-  },
-];
+function isActive(pathname: string, href: string) {
+  return pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+}
 
-const userNavigation: NavigationItem[] = [
-  { name: "Profile", href: "/dashboard/profile", icon: FiUser },
-  { name: "My Orders", href: "/dashboard/orders", icon: FiPackage },
-  { name: "My Purchases", href: "/dashboard/purchases", icon: FiShoppingBag },
-  { name: "Payment History", href: "/dashboard/payment", icon: FiCreditCard },
-  {
-    name: "Service Request",
-    href: "/dashboard/service-request",
-    icon: VscGitPullRequestGoToChanges,
-  },
-  { name: "Notifications", href: "/dashboard/notifications", icon: FiBell },
-  { name: "Settings", href: "/dashboard/settings", icon: FiSettings },
-];
-
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdowns, setOpenDropdowns] = useState<string[]>([]);
-  const { user, loading } = useContext(AuthContext) || {};
-  const role = (user as { role?: UserRole })?.role;
-  const isAdmin = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
-  const isUser = role === UserRole.USER;
+  const { user } = useAuth();
+  const isAdmin = user?.role === UserRole.ADMIN;
+  const items = isAdmin ? adminNav : userNav;
+  const [expanded, setExpanded] = useState<string[]>([]);
 
-  const toggleDropdown = (itemName: string) => {
-    setOpenDropdowns((prev) =>
-      prev.includes(itemName)
-        ? prev.filter((name) => name !== itemName)
-        : [...prev, itemName]
-    );
-  };
+  useEffect(() => {
+    setExpanded((current) => {
+      const activeGroups = adminNav.filter(isGroup).filter((group) => group.children.some((child) => isActive(pathname, child.href))).map((group) => group.label);
+      return Array.from(new Set([...current, ...activeGroups]));
+    });
+  }, [pathname]);
 
-  const isDropdownOpen = (itemName: string) => {
-    return openDropdowns.includes(itemName);
-  };
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
 
-  const isChildActive = (children: NavigationItem[] | undefined) => {
-    return children?.some((child) => pathname === child.href) || false;
-  };
+  const displayName = user?.fullName || user?.email?.split("@")[0] || "Account";
+  const initials = displayName.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase();
 
   return (
     <>
-      {/* Mobile menu button */}
-      {loading ? (
-        <div className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md animate-pulse">
-          <div className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded"></div>
+      {isOpen && <button aria-label="Close navigation" onClick={onClose} className="fixed inset-0 z-40 cursor-pointer bg-slate-900/40 backdrop-blur-[2px] lg:hidden" />}
+      <aside aria-label="Dashboard navigation" className={`isolate overflow-hidden fixed inset-y-0 left-0 z-50 flex w-[264px] shrink-0 flex-col border-r border-slate-200/70 bg-[#F5F7FB] text-slate-600 transition-transform duration-200 lg:relative lg:z-auto lg:translate-x-0 dark:border-white/[0.06] dark:bg-[#05071A] dark:text-slate-300 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div aria-hidden="true" className="pointer-events-none absolute -left-24 -top-24 -z-10 h-64 w-64 rounded-full bg-[#3B82F6]/15 blur-[90px] dark:bg-[#2563EB]/20" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -right-24 -z-10 h-64 w-64 rounded-full bg-[#8B5CF6]/10 blur-[90px] dark:bg-[#7C3AED]/20" />
+        <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-slate-200/70 px-5 dark:border-white/[0.06]">
+          <Link href="/dashboard" onClick={onClose} className="inline-flex items-center gap-2.5 rounded-full text-slate-900 dark:text-white">
+            <ThemoraMark size={31} />
+            <span className="text-lg font-semibold tracking-tight">Themora</span>
+          </Link>
+          <button type="button" onClick={onClose} aria-label="Close menu" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-slate-900 lg:hidden dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:text-white">
+            <X size={18} />
+          </button>
+          <span className="hidden text-slate-400 lg:block"><PanelLeftClose size={17} aria-hidden="true" /></span>
         </div>
-      ) : (
-        <button
-          className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none cursor-pointer"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? (
-            <FiX className="h-6 w-6" />
-          ) : (
-            <FiMenu className="h-6 w-6" />
-          )}
-        </button>
-      )}
 
-      {/* Backdrop overlay to close sidebar on outside click (mobile only) */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-[1px] lg:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
+        <div className="px-5 pb-2 pt-5">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#1D6FE0] dark:text-[#8DB8FF]">Workspace</p>
+        </div>
 
-      {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:static lg:inset-auto lg:z-auto bg-white dark:bg-[#000424] border-r border-gray-200 dark:border-gray-800`}
-      >
-        <div className="h-full flex flex-col">
-          {/* Logo */}
-          <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-800">
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-7 lg:w-9 h-7 lg:h-9 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
-                <div
-                  className="h-6 lg:h-8 w-24 lg:w-32 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"
-                  style={{ animationDelay: "200ms" }}
-                ></div>
-              </div>
-            ) : (
-              <Link
-                href="/dashboard"
-                className="text-xl lg:text-2xl font-bold text-[#0F5BBD] dark:text-white flex items-center gap-2"
-              >
-                <ThemoraMark size={32} />
-                Themora
-              </Link>
-            )}
+        <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-5" aria-label="Main">
+          {items.map((item) => {
+            if (isGroup(item)) {
+              const open = expanded.includes(item.label);
+              const groupActive = item.children.some((child) => isActive(pathname, child.href));
+              const GroupIcon = item.icon;
+              return (
+                <div key={item.label}>
+                  <button type="button" aria-expanded={open} onClick={() => setExpanded((current) => open ? current.filter((label) => label !== item.label) : [...current, item.label])} className={`flex min-h-10 w-full items-center gap-3 rounded-full px-3.5 text-left text-sm font-medium transition ${groupActive ? "text-slate-900 dark:text-white" : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white"}`}>
+                    <GroupIcon size={17} aria-hidden="true" className={groupActive ? "text-[#1D6FE0] dark:text-[#8DB8FF]" : undefined} />
+                    <span className="flex-1">{item.label}</span>
+                    {open ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronRight size={15} aria-hidden="true" />}
+                  </button>
+                  {open && <div className="ml-[23px] mt-1 space-y-1 border-l border-slate-200 pl-3 dark:border-white/10">
+                    {item.children.map((child) => {
+                      const ChildIcon = child.icon;
+                      const active = isActive(pathname, child.href);
+                      return <Link key={child.href} href={child.href} onClick={onClose} aria-current={active ? "page" : undefined} className={`flex min-h-9 items-center gap-2.5 rounded-full px-3 text-[13px] transition ${active ? activePill : idleLink}`}><ChildIcon size={15} aria-hidden="true" className={active ? "text-[#1D6FE0] dark:text-[#8DB8FF]" : undefined} />{child.label}</Link>;
+                    })}
+                  </div>}
+                </div>
+              );
+            }
+
+            const Icon = item.icon;
+            const active = isActive(pathname, item.href);
+            return <Link key={item.href} href={item.href} onClick={onClose} aria-current={active ? "page" : undefined} className={`relative flex min-h-10 items-center gap-3 rounded-full px-3.5 text-sm font-medium transition ${active ? activePill : idleLink}`}><Icon size={17} aria-hidden="true" className={active ? "text-[#1D6FE0] dark:text-[#8DB8FF]" : undefined} />{item.label}{active && <span aria-hidden="true" className="ml-auto h-1.5 w-1.5 rounded-full bg-gradient-to-r from-[#1D6FE0] to-[#7C5CFC]" />}</Link>;
+          })}
+        </nav>
+
+        <div className="shrink-0 border-t border-slate-200/70 p-3 dark:border-white/[0.06]">
+          <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+            <span className="shrink-0 rounded-full bg-gradient-to-br from-[#1D6FE0] via-[#6D5DFC] to-[#22B8F0] p-[2px]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-xs font-bold text-white ring-2 ring-white dark:ring-[#05071A]">{initials}</span>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">{displayName}</span>
+              <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">{isAdmin ? "Administrator" : "Member"}</span>
+            </span>
           </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-            {loading ? (
-              // Skeleton loading for navigation items
-              <>
-                {[...Array(6)].map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center px-4 py-3 rounded-lg"
-                    style={{
-                      animationDelay: `${index * 100}ms`,
-                    }}
-                  >
-                    <div className="w-5 h-5 bg-gray-300 dark:bg-gray-600 rounded mr-3 animate-pulse"></div>
-                    <div
-                      className={`h-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse ${
-                        index === 0
-                          ? "w-20"
-                          : index === 1
-                          ? "w-16"
-                          : index === 2
-                          ? "w-24"
-                          : index === 3
-                          ? "w-12"
-                          : index === 4
-                          ? "w-28"
-                          : "w-20"
-                      }`}
-                    ></div>
-                  </div>
-                ))}
-              </>
-            ) : (
-              (isAdmin ? adminNavigation : isUser ? userNavigation : []).map(
-                (item) => {
-                  if (item.isDropdown) {
-                    const isOpen = isDropdownOpen(item.name);
-                    const hasActiveChild = isChildActive(item.children);
-
-                    return (
-                      <div key={item.name}>
-                        <button
-                          onClick={() => toggleDropdown(item.name)}
-                          className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                            hasActiveChild
-                              ? "bg-[#0F5BBD] text-white"
-                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#718096]"
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <item.icon
-                              className={`mr-3 h-5 w-5 ${
-                                hasActiveChild
-                                  ? "text-white"
-                                  : "text-gray-400 dark:text-gray-300"
-                              }`}
-                            />
-                            {item.name}
-                          </div>
-                          {isOpen ? (
-                            <FiChevronDown className="h-4 w-4" />
-                          ) : (
-                            <FiChevronRight className="h-4 w-4" />
-                          )}
-                        </button>
-
-                        {isOpen && item.children && (
-                          <div className="ml-4 mt-1 space-y-1">
-                            {item.children.map((child) => {
-                              const isChildActive = pathname === child.href;
-                              return (
-                                <Link
-                                  key={child.name}
-                                  href={child.href || "#"}
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                    isChildActive
-                                      ? "bg-[#0F5BBD] text-white"
-                                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#718096]"
-                                  }`}
-                                >
-                                  <child.icon
-                                    className={`mr-3 h-4 w-4 ${
-                                      isChildActive
-                                        ? "text-white"
-                                        : "text-gray-400 dark:text-gray-300"
-                                    }`}
-                                  />
-                                  {child.name}
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  } else {
-                    const isActive = pathname === item.href;
-                    return (
-                      <Link
-                        key={item.name}
-                        href={item.href || "#"}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                          isActive
-                            ? "bg-[#0F5BBD] text-white"
-                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#718096]"
-                        }`}
-                      >
-                        <item.icon
-                          className={`mr-3 h-5 w-5 ${
-                            isActive
-                              ? "text-white"
-                              : "text-gray-400 dark:text-gray-300"
-                          }`}
-                        />
-                        {item.name}
-                      </Link>
-                    );
-                  }
-                }
-              )
-            )}
-          </nav>
         </div>
-      </div>
+      </aside>
     </>
   );
 }
