@@ -10,6 +10,7 @@ export interface Template {
   screenshots: string[];
   previewLink?: string | null;
   sourceFiles: string[];
+  sourceFileCount?: number;
   shortDescription: string;
   description: string | string[];
   whatsIncluded: string[];
