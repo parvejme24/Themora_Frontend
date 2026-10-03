@@ -1,43 +1,39 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth, useCurrentUser } from "@/hooks/useAuth";
-import { FiUser, FiMail, FiPhone, FiMapPin, FiCheckCircle, FiAlertCircle, FiCreditCard } from "react-icons/fi";
+import { useCreateCheckout, useGetPricingPlan } from "@/hooks/usePricingApi";
+import { FiArrowLeft, FiCheck, FiLock } from "react-icons/fi";
+import { SiLemonsqueezy } from "react-icons/si";
 
 interface BillingForm {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
 }
 
 interface BillingContainerProps {
-  pricingPlanId: string; // Accepts string ID (UUID or string format)
+  pricingPlanId: string;
 }
 
 export default function BillingContainer({ pricingPlanId }: BillingContainerProps) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const { data: currentUserData } = useCurrentUser();
-  
+  const { data: pricingPlan, isLoading: planLoading, isError: planError } = useGetPricingPlan(pricingPlanId);
+  const createCheckout = useCreateCheckout();
+
   const [processing, setProcessing] = useState(false);
-  
-  // Get user profile data
-  const userProfile = currentUserData?.data?.user?.profile;
+  const [selectedGateway, setSelectedGateway] = useState<"lemonsqueezy" | "fastspring">("fastspring");
+
   const fullUser = currentUserData?.data?.user || user;
-  
-  // Split fullName into firstName and lastName
+
   const splitName = (fullName: string) => {
     const parts = fullName?.split(" ") || [];
     return {
@@ -52,206 +48,239 @@ export default function BillingContainer({ pricingPlanId }: BillingContainerProp
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "United States",
   });
 
-  // Generate a unique billing session ID (UUID-like format)
-  const billingSessionId = React.useMemo(() => {
-    // Generate UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-    return 'billing_' + pricingPlanId + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  }, [pricingPlanId]);
-
-  // Mock pricing plan data - Replace with actual API call
-  const pricingPlan = {
-    id: pricingPlanId,
-    billingSessionId: billingSessionId, // Unique billing session ID
-    title: "Premium Plan",
-    price: 99,
-    description: "Access to all premium features",
-  };
-
-  // Populate form with user data when logged in
   useEffect(() => {
     if (isAuthenticated && fullUser) {
-      setFormData(prev => ({
-        ...prev,
+      setFormData((prev) => ({
         firstName: userFirstName || prev.firstName,
         lastName: userLastName || prev.lastName,
         email: fullUser.email || prev.email,
-        phone: userProfile?.phone || prev.phone,
-        city: userProfile?.city || prev.city,
-        state: userProfile?.stateOrRegion || prev.state,
-        zipCode: userProfile?.postCode || prev.zipCode,
-        country: userProfile?.country || prev.country,
       }));
     }
-  }, [isAuthenticated, fullUser, userProfile, userFirstName, userLastName]);
+  }, [isAuthenticated, fullUser, userFirstName, userLastName]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Check if all mandatory fields are filled
-  const isFormValid = React.useMemo(() => {
-    const requiredFields: (keyof BillingForm)[] = ['firstName', 'lastName', 'email', 'address', 'city', 'state', 'zipCode'];
+  const isFormValid = useMemo(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    // Check all required fields are filled
-    const allFieldsFilled = requiredFields.every(field => {
-      const value = formData[field];
-      return value && value.trim() !== '';
-    });
-    
-    // Check email format
-    const emailValid = emailRegex.test(formData.email);
-    
-    return allFieldsFilled && emailValid;
+    return (
+      Boolean(formData.firstName.trim()) &&
+      Boolean(formData.lastName.trim()) &&
+      emailRegex.test(formData.email.trim())
+    );
   }, [formData]);
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+
+    if (!pricingPlan) {
+      toast.error("Pricing plan not found");
+      return;
+    }
+
     setProcessing(true);
 
-    // Validate form
-    const requiredFields = ['firstName', 'lastName', 'email', 'address', 'city', 'state', 'zipCode'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof BillingForm]);
-    
-    if (missingFields.length > 0) {
-      toast.error("Please fill in all required fields");
-      setProcessing(false);
-      return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error("Please enter a valid email address");
-      setProcessing(false);
-      return;
-    }
-
     try {
-      // Store billing data with unique billing session ID
-      const billingData = {
-        billingSessionId: billingSessionId, // Unique billing session identifier
-        pricingPlanId: pricingPlanId,
-        planTitle: pricingPlan.title,
-        planPrice: pricingPlan.price,
-        customerEmail: formData.email,
-        customerName: `${formData.firstName} ${formData.lastName}`,
-        billingAddress: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone || "",
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
-          country: formData.country,
-        },
-      };
+      const checkout = await createCheckout.mutateAsync({
+        productType: "plan",
+        productId: pricingPlan.id,
+        customerEmail: formData.email.trim().toLowerCase(),
+        customerName: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+        gateway: selectedGateway,
+      });
 
-      // Store billing data temporarily with unique session ID
-      sessionStorage.setItem(`pendingBilling_${billingSessionId}`, JSON.stringify({
-        ...billingData,
-        timestamp: new Date().toISOString(),
-      }));
-
-      // TODO: Integrate with payment gateway (LemonSqueezy, Stripe, etc.)
-      toast.success("Redirecting to payment gateway...");
-      
-      // For now, show success message
-      // In production, redirect to payment gateway
-      setTimeout(() => {
-        toast.success("Payment processing will be implemented soon");
-        setProcessing(false);
-      }, 1000);
-
+      if (checkout?.checkoutUrl) {
+        try {
+          const urlObj = new URL(checkout.checkoutUrl);
+          if (urlObj.pathname.includes("/purchase/success")) {
+            router.push(`${urlObj.pathname}${urlObj.search}`);
+            return;
+          }
+        } catch {
+          if (checkout.checkoutUrl.startsWith("/")) {
+            router.push(checkout.checkoutUrl);
+            return;
+          }
+        }
+        window.location.assign(checkout.checkoutUrl);
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (error: any) {
       console.error("Error during checkout:", error);
-      toast.error(error?.response?.data?.message || error?.message || "Failed to process checkout. Please try again.");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to process checkout. Please try again."
+      );
       setProcessing(false);
     }
   };
 
+  if (planLoading) {
+    return (
+      <div className="tf-noise relative isolate min-h-screen overflow-x-clip bg-[#F5F7FB] py-20 flex items-center justify-center dark:bg-[#05071A]">
+        <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#3B82F6]/30 border-t-[#3B82F6] rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (planError || !pricingPlan) {
+    return (
+      <div className="tf-noise relative isolate min-h-screen overflow-x-clip bg-[#F5F7FB] py-20 flex items-center justify-center dark:bg-[#05071A]">
+        <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
+        <div className="text-center space-y-4 max-w-md mx-auto px-4">
+          <p className="text-sm font-medium text-rose-500">Plan unavailable.</p>
+          <Button asChild variant="outline" size="sm" className="rounded-xl">
+            <Link href="/pricing">Return to Pricing</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const formattedPrice = Number(pricingPlan.price).toFixed(2);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FAFCFF] dark:from-[#000424] to-[#FAFCFF] dark:to-[#000424]">
-      <div className="container mx-auto max-w-7xl px-4 lg:px-0 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 
-            className="text-3xl lg:text-4xl font-bold mb-2"
-            style={{
-              background: "linear-gradient(90deg, #1f2937, #3b82f6, #8b5cf6, #1f2937)",
-              backgroundSize: "200% 100%",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text"
-            }}
+    <div className="tf-noise relative isolate min-h-screen overflow-x-clip bg-[#F5F7FB] py-12 lg:py-20 dark:bg-[#05071A]">
+      {/* Background Grids & Ambient Glow Orbs */}
+      <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
+      <div aria-hidden className="pointer-events-none absolute -left-32 -top-40 -z-10 h-[500px] w-[500px] rounded-full bg-[#3B82F6]/15 blur-[120px] dark:bg-[#2563EB]/25" />
+      <div aria-hidden className="pointer-events-none absolute -right-32 top-20 -z-10 h-[460px] w-[460px] rounded-full bg-[#8B5CF6]/15 blur-[120px] dark:bg-[#7C3AED]/20" />
+
+      <div className="container mx-auto max-w-4xl px-4 sm:px-6">
+        {/* Sleek Top Navigation */}
+        <div className="mb-8 flex items-center justify-between">
+          <Link
+            href="/pricing"
+            className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors dark:text-slate-400 dark:hover:text-white"
           >
-            Complete Your Purchase
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Fill in your billing information to complete your subscription
-          </p>
+            <FiArrowLeft className="w-3.5 h-3.5" />
+            <span>Back</span>
+          </Link>
+          <div className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <FiLock className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Encrypted Checkout</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Billing Form */}
-          <div>
-            <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
-                  Billing Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCheckout} className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        First Name *
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* Main Checkout Form (7 Cols) */}
+          <div className="lg:col-span-7">
+            <div className="rounded-[28px] border border-slate-200/80 bg-white/80 dark:border-white/10 dark:bg-[#0B0F2E] backdrop-blur-md p-6 sm:p-8 shadow-sm">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-6">
+                Subscribe
+              </h1>
+
+              <form onSubmit={handleCheckout} className="space-y-6">
+                {/* Payment Gateway Toggle */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Payment Method
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Lemon Squeezy */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGateway("lemonsqueezy")}
+                      className={`relative flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                        selectedGateway === "lemonsqueezy"
+                          ? "border-[#3B82F6] bg-[#3B82F6]/5 dark:border-[#3B82F6] dark:bg-[#3B82F6]/15 shadow-sm"
+                          : "border-slate-200/80 hover:border-slate-300 bg-white dark:border-white/10 dark:hover:border-white/20 dark:bg-[#070B2A]/60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <SiLemonsqueezy className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span className="text-xs font-semibold text-slate-900 dark:text-white">Lemon Squeezy</span>
+                      </div>
+                      {selectedGateway === "lemonsqueezy" && (
+                        <div className="w-4 h-4 rounded-full bg-[#3B82F6] flex items-center justify-center text-white">
+                          <FiCheck className="w-2.5 h-2.5" />
+                        </div>
+                      )}
+                    </button>
+
+                    {/* FastSpring */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGateway("fastspring")}
+                      className={`relative flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                        selectedGateway === "fastspring"
+                          ? "border-[#3B82F6] bg-[#3B82F6]/5 dark:border-[#3B82F6] dark:bg-[#3B82F6]/15 shadow-sm"
+                          : "border-slate-200/80 hover:border-slate-300 bg-white dark:border-white/10 dark:hover:border-white/20 dark:bg-[#070B2A]/60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-4 h-4 rounded-full bg-slate-900 dark:bg-white text-[9px] font-bold flex items-center justify-center text-white dark:text-slate-900">
+                          FS
+                        </div>
+                        <span className="text-xs font-semibold text-slate-900 dark:text-white">FastSpring</span>
+                      </div>
+                      {selectedGateway === "fastspring" && (
+                        <div className="w-4 h-4 rounded-full bg-[#3B82F6] flex items-center justify-center text-white">
+                          <FiCheck className="w-2.5 h-2.5" />
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Customer Contact Details */}
+                <div className="space-y-4 pt-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Your Information
+                  </Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="firstName" className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                        First Name
                       </Label>
                       <Input
                         id="firstName"
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleInputChange}
+                        placeholder="John"
                         required
-                        placeholder="Enter your first name"
-                        className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
+                        className="h-11 text-sm bg-white dark:bg-[#070B2A] border-slate-200/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#3B82F6] dark:focus:border-[#3B82F6] transition-colors"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Last Name *
+                    <div className="space-y-1.5">
+                      <Label htmlFor="lastName" className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                        Last Name
                       </Label>
                       <Input
                         id="lastName"
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleInputChange}
+                        placeholder="Doe"
                         required
-                        placeholder="Enter your last name"
-                        className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
+                        className="h-11 text-sm bg-white dark:bg-[#070B2A] border-slate-200/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#3B82F6] dark:focus:border-[#3B82F6] transition-colors"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Email Address *
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Email Address
                     </Label>
                     <Input
                       id="email"
@@ -259,185 +288,67 @@ export default function BillingContainer({ pricingPlanId }: BillingContainerProp
                       type="email"
                       value={formData.email}
                       onChange={handleInputChange}
+                      placeholder="john@example.com"
                       required
-                      placeholder="your.email@example.com"
-                      className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
+                      className="h-11 text-sm bg-white dark:bg-[#070B2A] border-slate-200/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#3B82F6] dark:focus:border-[#3B82F6] transition-colors"
                     />
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Phone Number
-                    </Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="+1 (555) 123-4567"
-                      className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Street Address *
-                    </Label>
-                    <Input
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="123 Main Street"
-                      className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="city" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        City *
-                      </Label>
-                      <Input
-                        id="city"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="New York"
-                        className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        State *
-                      </Label>
-                      <Input
-                        id="state"
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="NY"
-                        className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="zipCode" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        ZIP Code *
-                      </Label>
-                      <Input
-                        id="zipCode"
-                        name="zipCode"
-                        value={formData.zipCode}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="10001"
-                        className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="country" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Country *
-                      </Label>
-                      <Input
-                        id="country"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="United States"
-                        className="h-11 bg-white dark:bg-[#0F1419] border-2 border-gray-300 dark:border-gray-600 focus:border-[#0F35A7] dark:focus:border-[#0F59BC] text-gray-900 dark:text-white transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-
+                {/* Primary Action Button */}
+                <div className="pt-2">
                   <Button
                     type="submit"
                     disabled={processing || !isFormValid}
-                    className={`w-full h-12 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer mt-6 ${
-                      isFormValid && !processing
-                        ? "bg-gradient-to-r from-[#0F35A7] to-[#0F59BC] hover:from-[#0F35A7]/90 hover:to-[#0F59BC]/90 text-white"
-                        : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                    }`}
+                    className="w-full h-12 text-sm font-semibold rounded-2xl bg-gradient-to-r from-[#0F5BBD] to-[#3B82F6] hover:from-[#0d4ea3] hover:to-[#2563eb] text-white shadow-lg shadow-[#0F5BBD]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {processing ? "Processing..." : `Complete Purchase - $${pricingPlan.price}`}
+                    {processing ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Redirecting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FiLock className="w-4 h-4" />
+                        <span>Pay ${formattedPrice}</span>
+                      </>
+                    )}
                   </Button>
-                  {!isFormValid && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-2">
-                      Please fill in all required fields to continue
-                    </p>
-                  )}
-                </form>
-              </CardContent>
-            </Card>
+                </div>
+              </form>
+            </div>
           </div>
 
-          {/* Order Summary */}
-          <div>
-            <Card className="bg-white dark:bg-[#1A1D37] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 sticky top-8">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-[#0F35A7] to-[#0F59BC] rounded-full"></div>
-                  Order Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    {pricingPlan.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {pricingPlan.description}
-                  </p>
-                </div>
+          {/* Minimalist Order Summary Card (5 Cols) */}
+          <div className="lg:col-span-5">
+            <div className="rounded-[28px] border border-slate-200/80 bg-white/80 dark:border-white/10 dark:bg-[#0B0F2E] backdrop-blur-md p-6 shadow-sm space-y-5">
+              {/* Plan Info */}
+              <div>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                  {pricingPlan.title}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {pricingPlan.description || "Themora Membership"}
+                </p>
+              </div>
 
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                    <span className="text-gray-900 dark:text-white font-medium">${pricingPlan.price.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600 dark:text-gray-400">Tax</span>
-                    <span className="text-gray-900 dark:text-white font-medium">$0.00</span>
-                  </div>
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-gray-900 dark:text-white">Total</span>
-                      <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        ${pricingPlan.price.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
+              {/* Total Due */}
+              <div className="border-t border-slate-100 dark:border-white/10 pt-4 flex items-baseline justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Total Due
+                </span>
+                <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  ${formattedPrice}{" "}
+                  <span className="text-xs font-normal text-slate-400">USD</span>
                 </div>
+              </div>
 
-                <div className="bg-gray-50 dark:bg-[#0F1419] rounded-lg p-4 space-y-2">
-                  <div className="flex items-start gap-2">
-                    <FiCheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Secure payment processing
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <FiCheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Instant access after payment
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <FiCheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      30-day money-back guarantee
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              {/* Minimal Trust Badge */}
+              <div className="border-t border-slate-100 dark:border-white/10 pt-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+                <FiLock className="w-3 h-3 text-emerald-500" />
+                <span>Instant activation upon payment</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
