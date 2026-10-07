@@ -3,7 +3,7 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { FiCheck, FiChevronLeft, FiChevronRight, FiEye, FiMoreHorizontal, FiRefreshCw, FiSearch, FiShoppingBag, FiX } from "react-icons/fi";
+import { FiAlertCircle, FiCheck, FiCheckCircle, FiChevronLeft, FiChevronRight, FiDollarSign, FiEye, FiMoreHorizontal, FiRefreshCw, FiSearch, FiShoppingBag, FiX } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -140,19 +140,68 @@ export default function OrdersView({ admin = false, title = admin ? "Orders" : "
       />
 
       {admin && (
-        <dl className="grid grid-cols-2 overflow-hidden rounded-2xl border border-slate-200 bg-white lg:grid-cols-4 dark:border-white/10 dark:bg-[#0B0F2E]">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {[
-            { label: "Total revenue", value: stats ? formatMoney(stats.totalRevenue) : "…" },
-            { label: "Completed revenue", value: stats ? formatMoney(completedRevenue) : "…" },
-            { label: "Orders", value: stats ? stats.totalOrders.toLocaleString() : "…" },
-            { label: "Needs attention", value: stats ? (countFor("PENDING") + countFor("PROCESSING")).toLocaleString() : "…" },
-          ].map(({ label, value }, i) => (
-            <div key={label} className={`min-w-0 border-slate-100 px-4 py-4 sm:px-5 dark:border-white/[0.06] ${i % 2 ? "border-l" : ""} ${i > 1 ? "border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
-              <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</dt>
-              <dd className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900 dark:text-white">{value}</dd>
+            {
+              label: "Total revenue",
+              value: stats ? formatMoney(stats.totalRevenue) : "…",
+              subtext: "Gross order sales",
+              icon: FiDollarSign,
+              iconColor: "text-emerald-600 dark:text-emerald-400",
+              bgColor: "bg-emerald-50 dark:bg-emerald-500/10",
+              borderColor: "hover:border-emerald-500/30",
+            },
+            {
+              label: "Completed revenue",
+              value: stats ? formatMoney(completedRevenue) : "…",
+              subtext: "Settled payments",
+              icon: FiCheckCircle,
+              iconColor: "text-blue-600 dark:text-blue-400",
+              bgColor: "bg-blue-50 dark:bg-blue-500/10",
+              borderColor: "hover:border-blue-500/30",
+            },
+            {
+              label: "Orders",
+              value: stats ? stats.totalOrders.toLocaleString() : "…",
+              subtext: "All customer purchases",
+              icon: FiShoppingBag,
+              iconColor: "text-purple-600 dark:text-purple-400",
+              bgColor: "bg-purple-50 dark:bg-purple-500/10",
+              borderColor: "hover:border-purple-500/30",
+            },
+            {
+              label: "Needs attention",
+              value: stats ? (countFor("PENDING") + countFor("PROCESSING")).toLocaleString() : "…",
+              subtext: `${countFor("PENDING")} pending · ${countFor("PROCESSING")} processing`,
+              icon: FiAlertCircle,
+              iconColor: "text-amber-600 dark:text-amber-400",
+              bgColor: "bg-amber-50 dark:bg-amber-500/10",
+              borderColor: "hover:border-amber-500/30",
+            },
+          ].map(({ label, value, subtext, icon: Icon, iconColor, bgColor, borderColor }) => (
+            <div
+              key={label}
+              className={`group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${borderColor} dark:border-white/10 dark:bg-[#0B0F2E]`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  {label}
+                </span>
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${bgColor} ${iconColor} transition duration-300 group-hover:scale-105`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="mt-2.5">
+                <div className="truncate text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  {value}
+                </div>
+                <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                  {subtext}
+                </p>
+              </div>
             </div>
           ))}
-        </dl>
+        </div>
       )}
 
       {/* Toolbar */}
