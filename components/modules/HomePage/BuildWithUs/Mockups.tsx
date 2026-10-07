@@ -3,40 +3,53 @@
 import React from "react";
 import { motion, useTransform, type MotionValue } from "framer-motion";
 import {
+  FiActivity,
+  FiArrowUpRight,
   FiBell,
   FiCheck,
+  FiCheckCircle,
+  FiCloud,
+  FiCode,
+  FiCpu,
+  FiDatabase,
+  FiDollarSign,
+  FiEye,
+  FiGlobe,
   FiGrid,
+  FiHardDrive,
   FiHome,
   FiLayers,
+  FiLayout,
+  FiLock,
+  FiMaximize2,
+  FiMonitor,
   FiPieChart,
   FiSearch,
+  FiServer,
   FiSettings,
+  FiShield,
+  FiSmartphone,
+  FiStar,
+  FiTablet,
+  FiTerminal,
   FiTrendingUp,
   FiUser,
+  FiUsers,
   FiZap,
 } from "react-icons/fi";
 
-/*
- * Coded UI mockups for the "Build with us" story.
- * Each receives `progress` (0 → 1 while its step is on screen) and uses it to
- * scroll its inner content and animate details, so the visuals move with the page.
- */
-
 type MockupProps = { progress: MotionValue<number> };
 
-// Neutral skeleton bar
-const Bar = ({ className = "" }: { className?: string }) => (
-  <div className={`rounded-full bg-slate-200 dark:bg-white/10 ${className}`} />
-);
-
-const Glow = () => (
+// Background ambient glow behind mockups
+const AmbientGlow = ({ color = "from-[#1D6FE0] via-[#6D5DFC] to-[#22B8F0]" }: { color?: string }) => (
   <div
     aria-hidden
-    className="absolute inset-10 -z-10 rounded-[40px] bg-gradient-to-tr from-[#1D6FE0] via-[#6D5DFC] to-[#22B8F0] opacity-25 blur-3xl dark:opacity-35"
+    className={`absolute -inset-4 -z-10 rounded-[48px] bg-gradient-to-tr ${color} opacity-20 blur-3xl transition-opacity duration-700 dark:opacity-30`}
   />
 );
 
-const FloatingCard = ({
+// Floating glass badge
+const FloatingPill = ({
   children,
   className = "",
   delay = 0,
@@ -46,468 +59,731 @@ const FloatingCard = ({
   delay?: number;
 }) => (
   <motion.div
-    initial={{ opacity: 0, y: 16, scale: 0.9 }}
-    animate={{ opacity: 1, y: [0, -8, 0], scale: 1 }}
+    initial={{ opacity: 0, y: 16, scale: 0.92 }}
+    animate={{ opacity: 1, y: [0, -6, 0], scale: 1 }}
     transition={{
-      opacity: { delay: 0.3 + delay, duration: 0.5 },
-      scale: { delay: 0.3 + delay, duration: 0.5 },
-      y: { delay: 0.8 + delay, duration: 5, repeat: Infinity, ease: "easeInOut" },
+      opacity: { delay: 0.25 + delay, duration: 0.5 },
+      scale: { delay: 0.25 + delay, duration: 0.5 },
+      y: { delay: 0.6 + delay, duration: 5, repeat: Infinity, ease: "easeInOut" },
     }}
-    className={`absolute z-20 rounded-2xl border border-white/70 bg-white/90 p-3 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90 ${className}`}
+    className={`absolute z-30 rounded-2xl border border-white/80 bg-white/95 p-3 shadow-[0_16px_36px_-12px_rgba(15,23,42,0.25)] backdrop-blur-xl dark:border-white/15 dark:bg-[#0D1130]/95 ${className}`}
   >
     {children}
   </motion.div>
 );
 
-/* ---------------------------------------------------------------- 1. Website */
+/* =========================================================================
+   1. WEBSITE & UI/UX MOCKUP (Mac Desktop Browser Experience)
+   ========================================================================= */
 
 export function WebsiteMockup({ progress }: MockupProps) {
-  const y = useTransform(progress, [0, 1], ["0%", "-52%"]);
-  const cursorX = useTransform(progress, [0, 0.5, 1], ["20%", "70%", "40%"]);
-  const cursorY = useTransform(progress, [0, 0.5, 1], ["30%", "55%", "75%"]);
+  const scrollY = useTransform(progress, [0, 1], ["0%", "-45%"]);
+  const cursorX = useTransform(progress, [0, 0.45, 1], ["18%", "74%", "48%"]);
+  const cursorY = useTransform(progress, [0, 0.45, 1], ["24%", "48%", "72%"]);
 
   return (
-    <div className="relative mx-auto w-full max-w-[560px] py-6">
-      <Glow />
-      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl shadow-[#0F35A7]/15 dark:border-white/10 dark:bg-[#0B0F2E]">
-        {/* Browser chrome */}
-        <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-white/10">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
-          <div className="ml-3 flex h-7 flex-1 items-center gap-2 rounded-lg bg-slate-100 px-3 text-[11px] text-slate-400 dark:bg-white/5">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            yourbrand.studio
+    <div className="relative mx-auto w-full max-w-[580px] py-6">
+      <AmbientGlow color="from-[#1D6FE0] via-[#6D5DFC] to-[#38BDF8]" />
+
+      {/* Realistic Mac Browser Frame */}
+      <div className="overflow-hidden rounded-[26px] border border-slate-200/90 bg-white shadow-[0_25px_60px_-15px_rgba(15,53_167,0.25)] transition-all dark:border-white/15 dark:bg-[#070A24]">
+        {/* Browser Top Navigation Bar */}
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/90 px-4 py-3 backdrop-blur dark:border-white/[0.08] dark:bg-[#0B0F2E]">
+          {/* Window Traffic Lights */}
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-[#FF5F56] shadow-sm ring-1 ring-black/10" />
+            <span className="h-3 w-3 rounded-full bg-[#FFBD2E] shadow-sm ring-1 ring-black/10" />
+            <span className="h-3 w-3 rounded-full bg-[#27C93F] shadow-sm ring-1 ring-black/10" />
+          </div>
+
+          {/* URL Search Pill */}
+          <div className="mx-3 flex h-7 max-w-xs flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200/60 bg-white px-3 text-[11px] font-medium text-slate-600 shadow-xs dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            <FiLock className="h-3 w-3 text-emerald-500" />
+            <span className="truncate font-mono">themora.design/studio</span>
+            <span className="ml-auto rounded bg-emerald-500/10 px-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
+              SSL
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1 text-slate-400">
+            <span className="flex h-5 w-5 items-center justify-center rounded text-xs">⟳</span>
           </div>
         </div>
 
-        {/* Scrolling page */}
-        <div className="relative h-[340px] overflow-hidden sm:h-[380px]">
-          <motion.div style={{ y }} className="space-y-6 p-5">
-            {/* Nav */}
-            <div className="flex items-center justify-between">
+        {/* Browser Screen Content Canvas */}
+        <div className="relative h-[380px] overflow-hidden bg-white sm:h-[420px] dark:bg-[#070A24]">
+          <motion.div style={{ y: scrollY }} className="space-y-5 p-5">
+            {/* Website Navigation */}
+            <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white/90 px-4 py-2.5 shadow-xs backdrop-blur dark:border-white/10 dark:bg-white/[0.03]">
               <div className="flex items-center gap-2">
-                <span className="h-6 w-6 rounded-lg bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC]" />
-                <Bar className="h-2.5 w-16" />
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white shadow-xs">
+                  <FiLayers className="h-3.5 w-3.5" />
+                </span>
+                <span className="font-bold tracking-tight text-slate-900 dark:text-white text-xs sm:text-sm">
+                  Themora<span className="text-[#1D6FE0]">.</span>
+                </span>
               </div>
-              <div className="hidden gap-3 sm:flex">
-                <Bar className="h-2 w-10" />
-                <Bar className="h-2 w-10" />
-                <Bar className="h-2 w-10" />
+              <div className="hidden items-center gap-4 sm:flex text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                <span className="text-[#1D6FE0] dark:text-[#8DB8FF]">Showcase</span>
+                <span>Services</span>
+                <span>Templates</span>
+                <span>About</span>
               </div>
-              <span className="h-6 w-16 rounded-full bg-slate-900 dark:bg-white" />
-            </div>
-
-            {/* Hero */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#EEF4FF] via-[#F3EEFF] to-[#E8FBFF] p-6 dark:from-[#14205A] dark:via-[#1F1655] dark:to-[#0B2A44]">
-              <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-[#6D5DFC]/30 blur-2xl" />
-              <span className="inline-block rounded-full bg-white/80 px-2.5 py-1 text-[10px] font-semibold text-[#1D6FE0] dark:bg-white/10 dark:text-[#8DB8FF]">
-                ✦ New collection
+              <span className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white dark:bg-white dark:text-slate-900">
+                Let&apos;s Talk
               </span>
-              <div className="mt-3 space-y-2">
-                <div className="h-4 w-4/5 rounded-full bg-slate-800 dark:bg-white/80" />
-                <div className="h-4 w-3/5 rounded-full bg-gradient-to-r from-[#1D6FE0] to-[#7C5CFC]" />
-              </div>
-              <div className="mt-4 space-y-1.5">
-                <Bar className="h-2 w-full bg-slate-300/70" />
-                <Bar className="h-2 w-2/3 bg-slate-300/70" />
-              </div>
-              <div className="mt-5 flex gap-2">
-                <span className="h-8 w-24 rounded-full bg-gradient-to-r from-[#1D6FE0] to-[#6D5DFC] shadow-lg shadow-[#3F5BF0]/30" />
-                <span className="h-8 w-20 rounded-full border border-slate-300 bg-white/70 dark:border-white/20 dark:bg-white/5" />
-              </div>
             </div>
 
-            {/* Features */}
-            <div className="grid grid-cols-3 gap-3">
-              {["#1D6FE0", "#7C5CFC", "#14B8A6"].map((c) => (
-                <div key={c} className="rounded-xl border border-slate-100 p-3 dark:border-white/10">
-                  <span className="block h-7 w-7 rounded-lg" style={{ background: `${c}22` }}>
-                    <span className="m-2 block h-3 w-3 rounded-sm" style={{ background: c }} />
+            {/* Hero Section */}
+            <div className="relative overflow-hidden rounded-2xl border border-blue-100/70 bg-gradient-to-br from-[#EEF5FF] via-[#F4EEFF] to-[#E5F8FF] p-6 dark:border-white/10 dark:from-[#0D1540] dark:via-[#161245] dark:to-[#081F36]">
+              <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-gradient-to-br from-[#1D6FE0]/30 to-[#7C5CFC]/30 blur-2xl" />
+              <div className="relative z-10">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1D6FE0]/20 bg-white/80 px-2.5 py-0.5 text-[10px] font-semibold text-[#1D6FE0] backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-[#8DB8FF]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#1D6FE0]" />
+                  Creative Engineering Studio
+                </span>
+                <h3 className="mt-3 text-lg font-extrabold leading-tight tracking-tight text-slate-900 sm:text-xl dark:text-white">
+                  Crafting Digital Products <br />
+                  <span className="tf-gradient-text">That Inspire & Convert</span>
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300 max-w-sm">
+                  We blend high-end aesthetic design with modern performant full-stack engineering.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2.5">
+                  <span className="tf-btn-primary flex items-center gap-1 rounded-full px-4 py-1.5 text-[11px] font-semibold text-white shadow-md">
+                    Start a Project <FiArrowUpRight className="h-3 w-3" />
                   </span>
-                  <Bar className="mt-3 h-2 w-3/4" />
-                  <Bar className="mt-1.5 h-1.5 w-full" />
-                  <Bar className="mt-1 h-1.5 w-2/3" />
+                  <span className="flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-3.5 py-1.5 text-[11px] font-medium text-slate-700 backdrop-blur dark:border-white/15 dark:bg-white/5 dark:text-slate-200">
+                    Watch Demo
+                  </span>
                 </div>
-              ))}
-            </div>
-
-            {/* Gallery */}
-            <div className="grid grid-cols-5 grid-rows-2 gap-2">
-              <div className="col-span-3 row-span-2 h-36 rounded-xl bg-gradient-to-br from-[#1D6FE0] to-[#22B8F0]" />
-              <div className="col-span-2 rounded-xl bg-gradient-to-br from-[#FDE68A] to-[#FB923C]" />
-              <div className="col-span-2 rounded-xl bg-gradient-to-br from-[#A78BFA] to-[#EC4899]" />
-            </div>
-
-            {/* Testimonial strip */}
-            <div className="flex items-center gap-3 rounded-xl border border-slate-100 p-3 dark:border-white/10">
-              <span className="h-9 w-9 rounded-full bg-gradient-to-br from-[#F59E0B] to-[#EF4444]" />
-              <div className="flex-1 space-y-1.5">
-                <Bar className="h-2 w-full" />
-                <Bar className="h-2 w-1/2" />
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between rounded-xl bg-slate-900 p-4 dark:bg-white/5">
-              <Bar className="h-2 w-20 bg-white/30" />
-              <div className="flex gap-2">
-                <span className="h-5 w-5 rounded-full bg-white/20" />
-                <span className="h-5 w-5 rounded-full bg-white/20" />
-                <span className="h-5 w-5 rounded-full bg-white/20" />
+            {/* Service Pillars Grid */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { title: "UI/UX Design", badge: "Figma & Design Systems", icon: FiLayout, color: "#1D6FE0" },
+                { title: "Next.js Web", badge: "High-Speed Full-Stack", icon: FiCode, color: "#7C5CFC" },
+                { title: "Mobile Apps", badge: "React Native & Swift", icon: FiSmartphone, color: "#06B6D4" },
+              ].map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="group rounded-xl border border-slate-100 bg-white p-3 shadow-xs transition hover:border-slate-200 dark:border-white/10 dark:bg-white/[0.02]"
+                  >
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-lg"
+                      style={{ backgroundColor: `${item.color}18`, color: item.color }}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <p className="mt-2.5 text-xs font-bold text-slate-900 dark:text-white">{item.title}</p>
+                    <p className="mt-0.5 text-[10px] text-slate-400 leading-tight">{item.badge}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Visual Portfolio Cards */}
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="relative col-span-2 h-28 overflow-hidden rounded-xl bg-gradient-to-br from-[#1D6FE0] via-[#4F46E5] to-[#7C5CFC] p-3 text-white">
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-semibold">Case Study</span>
+                <p className="mt-2 text-xs font-bold">Fintech AI Dashboard</p>
+                <p className="text-[10px] opacity-80">+140% Conversion Growth</p>
+              </div>
+              <div className="h-28 rounded-xl bg-gradient-to-br from-[#0EA5E9] to-[#10B981] p-3 text-white">
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-semibold">Webflow</span>
+                <p className="mt-2 text-xs font-bold">SaaS Studio</p>
+              </div>
+            </div>
+
+            {/* Client Proof & Ratings Bar */}
+            <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.02]">
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-1.5">
+                  {["#1D6FE0", "#7C5CFC", "#10B981"].map((bg, i) => (
+                    <span
+                      key={i}
+                      className="inline-block h-6 w-6 rounded-full border-2 border-white ring-1 ring-slate-200 dark:border-[#070A24]"
+                      style={{ backgroundColor: bg }}
+                    />
+                  ))}
+                </div>
+                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                  Trusted by 200+ companies
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                <FiStar className="fill-amber-400" />
+                <span>5.0</span>
               </div>
             </div>
           </motion.div>
 
-          {/* Design cursor */}
-          <motion.div style={{ left: cursorX, top: cursorY }} className="pointer-events-none absolute z-10">
-            <svg width="18" height="18" viewBox="0 0 24 24" className="drop-shadow">
-              <path d="M4 3l16 7-7 2-2 7z" fill="#7C5CFC" stroke="#fff" strokeWidth="1.5" />
+          {/* Interactive Collaborator Cursor */}
+          <motion.div style={{ left: cursorX, top: cursorY }} className="pointer-events-none absolute z-20">
+            <svg width="20" height="20" viewBox="0 0 24 24" className="drop-shadow-lg">
+              <path d="M4 3l16 7-7 2-2 7z" fill="#1D6FE0" stroke="#fff" strokeWidth="2" />
             </svg>
-            <span className="ml-3 rounded-md bg-[#7C5CFC] px-1.5 py-0.5 text-[10px] font-medium text-white">Designer</span>
+            <span className="ml-3.5 inline-flex items-center gap-1 rounded-full bg-[#1D6FE0] px-2 py-0.5 text-[10px] font-semibold text-white shadow-md">
+              Lead Designer
+            </span>
           </motion.div>
         </div>
       </div>
 
-      <FloatingCard className="-left-4 top-24 hidden sm:block">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Palette</p>
-        <div className="mt-2 flex gap-1.5">
-          {["#1D6FE0", "#6D5DFC", "#22B8F0", "#0F172A", "#F8FAFC"].map((c) => (
-            <span key={c} className="h-6 w-6 rounded-lg ring-1 ring-black/5" style={{ background: c }} />
-          ))}
+      {/* Floating Badges */}
+      <FloatingPill className="-left-4 top-20 hidden sm:flex items-center gap-2.5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+          <FiCheckCircle className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-xs font-bold text-slate-900 dark:text-white">Lighthouse 100</p>
+          <p className="text-[10px] text-slate-400">Performance & SEO Verified</p>
         </div>
-      </FloatingCard>
-      <FloatingCard className="-right-3 bottom-14" delay={0.2}>
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1D6FE0]/10 text-[#1D6FE0]">
-            <FiLayers />
-          </span>
+      </FloatingPill>
+
+      <FloatingPill className="-right-3 bottom-12" delay={0.2}>
+        <div className="flex items-center gap-2.5">
+          <div className="flex gap-1">
+            {["#1D6FE0", "#6D5DFC", "#22B8F0", "#10B981"].map((c) => (
+              <span key={c} className="h-5 w-5 rounded-md shadow-xs" style={{ background: c }} />
+            ))}
+          </div>
           <div>
-            <p className="text-xs font-semibold text-slate-900 dark:text-white">Aa Inter</p>
-            <p className="text-[10px] text-slate-400">Display · 64 / Bold</p>
+            <p className="text-xs font-bold text-slate-900 dark:text-white">Design Tokens</p>
+            <p className="text-[10px] text-slate-400">Tailwind + HSL Palette</p>
           </div>
         </div>
-      </FloatingCard>
+      </FloatingPill>
     </div>
   );
 }
 
-/* ---------------------------------------------------------------- 2. Mobile app */
+/* =========================================================================
+   2. MOBILE APP MOCKUP (Ultra-realistic iPhone 16 Pro Frame)
+   ========================================================================= */
 
 export function MobileAppMockup({ progress }: MockupProps) {
-  const y = useTransform(progress, [0, 1], ["0%", "-26%"]);
-  const ring = useTransform(progress, [0, 1], [0.25, 0.85]);
+  const scrollY = useTransform(progress, [0, 1], ["0%", "-28%"]);
+  const circleProgress = useTransform(progress, [0, 1], [0.35, 0.92]);
 
   return (
-    <div className="relative mx-auto flex w-full max-w-[560px] justify-center py-6">
-      <Glow />
-      <div className="relative w-[230px] rounded-[44px] border-[10px] border-slate-900 bg-slate-900 shadow-2xl shadow-[#0F35A7]/25 sm:w-[250px] dark:border-[#1A1F45] dark:bg-[#1A1F45]">
-        <div className="absolute left-1/2 top-2 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-slate-900 dark:bg-[#1A1F45]" />
-        <div className="relative h-[440px] overflow-hidden rounded-[34px] bg-[#F6F8FF] sm:h-[480px] dark:bg-[#080B24]">
-          <motion.div style={{ y }} className="space-y-4 px-4 pb-6 pt-10">
-            <div className="flex items-center justify-between">
+    <div className="relative mx-auto flex w-full max-w-[580px] justify-center py-6">
+      <AmbientGlow color="from-[#6D5DFC] via-[#1D6FE0] to-[#EC4899]" />
+
+      {/* iPhone 16 Pro Frame */}
+      <div className="relative w-[270px] sm:w-[290px] rounded-[50px] border-[10px] border-slate-900 bg-slate-950 p-1 shadow-[0_30px_70px_-15px_rgba(15,23,42,0.4)] ring-1 ring-white/20 dark:border-[#121638] dark:bg-[#07091E]">
+        {/* Dynamic Island Pill */}
+        <div className="absolute left-1/2 top-3 z-30 flex h-6 w-24 -translate-x-1/2 items-center justify-between rounded-full bg-black px-2 text-[9px] text-white">
+          <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-mono text-[9px] text-emerald-300">Live 94%</span>
+          <span className="h-2 w-2 rounded-full bg-white/20" />
+        </div>
+
+        {/* Screen Canvas */}
+        <div className="relative h-[500px] sm:h-[530px] overflow-hidden rounded-[40px] bg-[#F8FAFF] dark:bg-[#07091E]">
+          {/* iOS Status Bar */}
+          <div className="flex items-center justify-between px-6 pt-3 text-[11px] font-semibold text-slate-900 dark:text-white">
+            <span>9:41</span>
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="text-[10px]">5G</span>
+              <span className="h-2 w-4 rounded-xs border border-current">
+                <span className="block h-full w-3 bg-current" />
+              </span>
+            </div>
+          </div>
+
+          {/* Scrolling App Feed */}
+          <motion.div style={{ y: scrollY }} className="space-y-4 px-4 pb-20 pt-4">
+            {/* Header profile row */}
+            <div className="flex items-center justify-between pt-1">
               <div>
-                <p className="text-[10px] text-slate-400">Good morning</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Alex 👋</p>
+                <p className="text-[11px] font-medium text-slate-400">Welcome back</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">Alex Morgan</p>
               </div>
-              <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm dark:bg-white/10 dark:text-white">
+              <span className="relative flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-xs dark:border-white/10 dark:bg-white/10 dark:text-white">
                 <FiBell className="h-3.5 w-3.5" />
                 <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
               </span>
             </div>
 
-            {/* Hero card */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1D6FE0] via-[#4F46E5] to-[#7C5CFC] p-4 text-white shadow-lg shadow-[#3F5BF0]/30">
-              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/15" />
-              <p className="text-[10px] text-white/70">Weekly goal</p>
-              <div className="mt-1 flex items-end justify-between">
-                <p className="text-2xl font-bold">72%</p>
-                <svg width="46" height="46" viewBox="0 0 46 46" className="-rotate-90">
-                  <circle cx="23" cy="23" r="18" stroke="rgb(255 255 255 / 0.25)" strokeWidth="5" fill="none" />
-                  <motion.circle
-                    cx="23"
-                    cy="23"
-                    r="18"
-                    stroke="#fff"
-                    strokeWidth="5"
-                    fill="none"
-                    strokeLinecap="round"
-                    style={{ pathLength: ring }}
-                  />
-                </svg>
+            {/* Glowing App Hero Card */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1D6FE0] via-[#5B4DF5] to-[#8B5CF6] p-4 text-white shadow-lg shadow-[#3F5BF0]/30">
+              <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/15 blur-xl" />
+              <div className="flex items-center justify-between text-[11px] font-medium text-white/80">
+                <span>Active Sprint Goal</span>
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-bold">Q4 Growth</span>
               </div>
-              <div className="mt-3 h-1.5 rounded-full bg-white/25">
-                <div className="h-full w-3/4 rounded-full bg-white" />
+              <div className="mt-2 flex items-baseline justify-between">
+                <div>
+                  <p className="text-2xl font-black tracking-tight">$48,250.00</p>
+                  <p className="text-[10px] text-white/70">+18.4% from last week</p>
+                </div>
+                <div className="relative h-12 w-12 flex items-center justify-center">
+                  <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
+                    <circle cx="24" cy="24" r="18" stroke="rgba(255,255,255,0.2)" strokeWidth="4.5" fill="none" />
+                    <motion.circle
+                      cx="24"
+                      cy="24"
+                      r="18"
+                      stroke="#ffffff"
+                      strokeWidth="4.5"
+                      fill="none"
+                      strokeLinecap="round"
+                      style={{ pathLength: circleProgress }}
+                    />
+                  </svg>
+                  <span className="absolute text-[10px] font-bold">88%</span>
+                </div>
               </div>
             </div>
 
-            {/* Quick actions */}
+            {/* App Action Buttons Grid */}
             <div className="grid grid-cols-4 gap-2">
               {[
-                { icon: FiZap, c: "#F59E0B" },
-                { icon: FiPieChart, c: "#10B981" },
-                { icon: FiLayers, c: "#6D5DFC" },
-                { icon: FiSettings, c: "#0EA5E9" },
-              ].map(({ icon: Icon, c }, i) => (
-                <div key={i} className="flex flex-col items-center gap-1">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: `${c}1F`, color: c }}>
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <Bar className="h-1.5 w-8" />
-                </div>
-              ))}
+                { icon: FiZap, label: "Deploy", color: "#F59E0B" },
+                { icon: FiPieChart, label: "Metrics", color: "#10B981" },
+                { icon: FiLayers, label: "Modules", color: "#6D5DFC" },
+                { icon: FiSettings, label: "Config", color: "#0EA5E9" },
+              ].map((act, i) => {
+                const Icon = act.icon;
+                return (
+                  <div key={i} className="flex flex-col items-center gap-1.5">
+                    <span
+                      className="flex h-11 w-11 items-center justify-center rounded-2xl shadow-xs transition hover:scale-105"
+                      style={{ backgroundColor: `${act.color}1A`, color: act.color }}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">{act.label}</span>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* List */}
-            <div className="rounded-3xl bg-white p-3 shadow-sm dark:bg-white/5">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-900 dark:text-white">Activity</p>
-                <Bar className="h-1.5 w-8" />
+            {/* Live Feed List */}
+            <div className="rounded-3xl border border-slate-100 bg-white p-3.5 shadow-xs dark:border-white/10 dark:bg-white/[0.03]">
+              <div className="mb-2.5 flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
+                <span>Recent Deployments</span>
+                <span className="text-[10px] font-medium text-[#1D6FE0]">View All</span>
               </div>
-              {["#1D6FE0", "#EC4899", "#10B981", "#F59E0B", "#6D5DFC", "#0EA5E9"].map((c, i) => (
-                <div key={i} className="flex items-center gap-3 border-b border-slate-100 py-2.5 last:border-0 dark:border-white/5">
-                  <span className="h-8 w-8 rounded-xl" style={{ background: `${c}26` }}>
-                    <span className="m-2.5 block h-3 w-3 rounded-full" style={{ background: c }} />
-                  </span>
-                  <div className="flex-1 space-y-1">
-                    <Bar className="h-2 w-3/4" />
-                    <Bar className="h-1.5 w-1/2" />
+              {[
+                { name: "iOS Release v3.4", status: "Success", time: "2m ago", color: "#10B981" },
+                { name: "Checkout API Microservice", status: "Active", time: "14m ago", color: "#1D6FE0" },
+                { name: "User Auth Webhooks", status: "Synced", time: "1h ago", color: "#6D5DFC" },
+                { name: "Cloud CDN Edge Sync", status: "Done", time: "3h ago", color: "#F59E0B" },
+              ].map((row, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between border-b border-slate-100 py-2.5 last:border-0 dark:border-white/5"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="flex h-7 w-7 items-center justify-center rounded-xl"
+                      style={{ backgroundColor: `${row.color}1F`, color: row.color }}
+                    >
+                      <FiCheck className="h-3.5 w-3.5" />
+                    </span>
+                    <div>
+                      <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{row.name}</p>
+                      <p className="text-[9px] text-slate-400">{row.time}</p>
+                    </div>
                   </div>
-                  <Bar className="h-2 w-8" />
+                  <span
+                    className="rounded-full px-2 py-0.5 text-[9px] font-bold"
+                    style={{ backgroundColor: `${row.color}15`, color: row.color }}
+                  >
+                    {row.status}
+                  </span>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          {/* Tab bar */}
-          <div className="absolute inset-x-3 bottom-3 flex items-center justify-around rounded-2xl bg-white/90 py-2.5 shadow-lg backdrop-blur dark:bg-[#141838]/90">
-            {[FiHome, FiGrid, FiPieChart, FiUser].map((Icon, i) => (
-              <Icon key={i} className={`h-4 w-4 ${i === 0 ? "text-[#1D6FE0]" : "text-slate-400"}`} />
-            ))}
+          {/* Floating Glass Tab Bar */}
+          <div className="absolute inset-x-3 bottom-3 flex items-center justify-around rounded-2xl border border-white/70 bg-white/90 py-2.5 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90">
+            {[
+              { icon: FiHome, active: true },
+              { icon: FiGrid, active: false },
+              { icon: FiPieChart, active: false },
+              { icon: FiUser, active: false },
+            ].map((tab, i) => {
+              const Icon = tab.icon;
+              return (
+                <span
+                  key={i}
+                  className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                    tab.active ? "bg-[#1D6FE0] text-white shadow-sm" : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <FloatingCard className="left-0 top-20 sm:left-4">
+      {/* Floating Pill Badges */}
+      <FloatingPill className="-left-4 top-24 sm:left-2">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white">
-            <FiBell className="h-4 w-4" />
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white shadow-xs">
+            <FiZap className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-xs font-semibold text-slate-900 dark:text-white">New order</p>
-            <p className="text-[10px] text-slate-400">just now</p>
+            <p className="text-xs font-bold text-slate-900 dark:text-white">Native iOS & Android</p>
+            <p className="text-[10px] text-slate-400">100% Cross-Platform Ready</p>
           </div>
         </div>
-      </FloatingCard>
-      <FloatingCard className="bottom-16 right-0 sm:right-4" delay={0.25}>
+      </FloatingPill>
+
+      <FloatingPill className="-right-3 bottom-16 sm:right-2" delay={0.2}>
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white">
             <FiCheck className="h-3.5 w-3.5" />
           </span>
-          <p className="text-xs font-semibold text-slate-900 dark:text-white">iOS & Android</p>
+          <div>
+            <p className="text-xs font-bold text-slate-900 dark:text-white">Push Notifications</p>
+            <p className="text-[10px] text-slate-400">Real-time FCM & APNs</p>
+          </div>
         </div>
-      </FloatingCard>
+      </FloatingPill>
     </div>
   );
 }
 
-/* ---------------------------------------------------------------- 3. Responsive */
+/* =========================================================================
+   3. RESPONSIVE MULTI-DEVICE ECOSYSTEM (MacBook + iPad + iPhone)
+   ========================================================================= */
 
-const MiniLayout = ({ cols }: { cols: number }) => (
-  <div className="space-y-2.5 p-2.5">
-    <div className="flex items-center justify-between">
-      <span className="h-3 w-3 rounded bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC]" />
-      <Bar className="h-1.5 w-8" />
-    </div>
-    <div className="rounded-lg bg-gradient-to-br from-[#EEF4FF] to-[#F3EEFF] p-2.5 dark:from-[#14205A] dark:to-[#1F1655]">
-      <div className="h-2 w-3/4 rounded-full bg-slate-800 dark:bg-white/80" />
-      <div className="mt-1 h-2 w-1/2 rounded-full bg-gradient-to-r from-[#1D6FE0] to-[#7C5CFC]" />
-      <span className="mt-2 block h-3 w-10 rounded-full bg-[#1D6FE0]" />
-    </div>
-    <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-      {[...Array(cols * 3)].map((_, i) => (
-        <div key={i} className="rounded-md border border-slate-100 p-1.5 dark:border-white/10">
-          <div
-            className="h-6 rounded"
-            style={{ background: ["#1D6FE033", "#7C5CFC33", "#14B8A633", "#F59E0B33"][i % 4] }}
-          />
-          <Bar className="mt-1.5 h-1 w-3/4" />
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-export function ResponsiveMockup({ progress }: MockupProps) {
-  const y = useTransform(progress, [0, 1], ["0%", "-30%"]);
-  const yFast = useTransform(progress, [0, 1], ["0%", "-48%"]);
-
-  return (
-    <div className="relative mx-auto w-full max-w-[560px] py-8">
-      <Glow />
-      {/* Laptop */}
-      <div className="relative mx-auto w-[88%]">
-        <div className="rounded-t-2xl border-[6px] border-b-0 border-slate-800 bg-white dark:border-[#1A1F45] dark:bg-[#0B0F2E]">
-          <div className="h-[230px] overflow-hidden sm:h-[260px]">
-            <motion.div style={{ y }}>
-              <MiniLayout cols={4} />
-            </motion.div>
+const ResponsiveScreen = ({ type }: { type: "desktop" | "tablet" | "mobile" }) => {
+  if (type === "desktop") {
+    return (
+      <div className="space-y-3 p-3 text-slate-900 dark:text-white">
+        {/* Desktop Mini Nav */}
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-white/10">
+          <div className="flex items-center gap-2">
+            <span className="h-4 w-4 rounded-sm bg-[#1D6FE0]" />
+            <span className="text-[10px] font-bold">Themora Cloud</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="h-2 w-8 rounded-full bg-slate-200 dark:bg-white/20" />
+            <span className="h-2 w-8 rounded-full bg-slate-200 dark:bg-white/20" />
           </div>
         </div>
-        <div className="mx-[-6%] h-3 rounded-b-xl bg-gradient-to-b from-slate-300 to-slate-400 dark:from-[#262B57] dark:to-[#1A1F45]" />
-      </div>
-
-      {/* Tablet */}
-      <div className="absolute -left-1 bottom-0 w-[30%] rounded-2xl border-[5px] border-slate-800 bg-white shadow-2xl dark:border-[#1A1F45] dark:bg-[#0B0F2E]">
-        <div className="h-[170px] overflow-hidden rounded-lg">
-          <motion.div style={{ y: yFast }}>
-            <MiniLayout cols={2} />
-          </motion.div>
+        {/* Hero banner */}
+        <div className="rounded-xl bg-gradient-to-r from-[#1D6FE0] to-[#7C5CFC] p-3 text-white">
+          <p className="text-xs font-bold">Adaptive Responsive Layout</p>
+          <p className="text-[9px] opacity-80">Syncs effortlessly from 4K displays to smartwatches</p>
+        </div>
+        {/* 4-column cards */}
+        <div className="grid grid-cols-4 gap-2">
+          {["#1D6FE0", "#6D5DFC", "#0EA5E9", "#10B981"].map((c, i) => (
+            <div key={i} className="rounded-lg border border-slate-100 p-2 dark:border-white/10">
+              <span className="block h-4 w-4 rounded" style={{ background: c }} />
+              <div className="mt-1.5 h-1.5 w-12 rounded-full bg-slate-200 dark:bg-white/20" />
+              <div className="mt-1 h-1 w-8 rounded-full bg-slate-100 dark:bg-white/10" />
+            </div>
+          ))}
         </div>
       </div>
+    );
+  }
 
-      {/* Phone */}
-      <div className="absolute -right-1 bottom-0 w-[20%] rounded-[18px] border-[4px] border-slate-800 bg-white shadow-2xl dark:border-[#1A1F45] dark:bg-[#0B0F2E]">
-        <div className="h-[150px] overflow-hidden rounded-[13px]">
-          <motion.div style={{ y: yFast }}>
-            <MiniLayout cols={1} />
-          </motion.div>
+  if (type === "tablet") {
+    return (
+      <div className="space-y-2 p-2.5">
+        <div className="flex items-center justify-between">
+          <span className="h-3 w-3 rounded-sm bg-[#6D5DFC]" />
+          <span className="text-[9px] font-bold text-slate-900 dark:text-white">Tablet 768px</span>
+        </div>
+        <div className="rounded-lg bg-gradient-to-br from-[#EEF4FF] to-[#F3EEFF] p-2 dark:from-[#14205A] dark:to-[#1F1655]">
+          <p className="text-[10px] font-bold text-slate-900 dark:text-white">Fluid Grid 2x2</p>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {["#1D6FE0", "#6D5DFC", "#0EA5E9", "#10B981"].map((c, i) => (
+            <div key={i} className="rounded-md border border-slate-100 p-1.5 dark:border-white/10">
+              <span className="block h-3.5 w-3.5 rounded" style={{ background: c }} />
+              <div className="mt-1 h-1.5 w-8 rounded bg-slate-200 dark:bg-white/20" />
+            </div>
+          ))}
         </div>
       </div>
+    );
+  }
 
-      {/* Breakpoint chips */}
-      <div className="absolute left-1/2 top-0 z-20 flex -translate-x-1/2 gap-1.5 rounded-full border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur dark:border-white/10 dark:bg-[#0D1130]/90">
-        {["Mobile", "Tablet", "Desktop"].map((label, i) => (
-          <motion.span
-            key={label}
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 + i * 0.1 }}
-            className={`rounded-full px-3 py-1 text-[11px] font-medium ${
-              i === 2 ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-500 dark:text-slate-400"
-            }`}
-          >
-            {label}
-          </motion.span>
+  return (
+    <div className="space-y-2 p-2">
+      <div className="flex items-center justify-between">
+        <span className="h-2.5 w-2.5 rounded-sm bg-[#10B981]" />
+        <span className="text-[8px] font-bold text-slate-900 dark:text-white">390px</span>
+      </div>
+      <div className="rounded-md bg-[#1D6FE0] p-1.5 text-white">
+        <p className="text-[8px] font-bold">1-Col Mobile</p>
+      </div>
+      <div className="space-y-1">
+        {["#1D6FE0", "#6D5DFC", "#10B981"].map((c, i) => (
+          <div key={i} className="flex items-center gap-1.5 rounded border border-slate-100 p-1 dark:border-white/10">
+            <span className="h-2.5 w-2.5 shrink-0 rounded" style={{ background: c }} />
+            <div className="h-1 w-8 rounded bg-slate-200 dark:bg-white/20" />
+          </div>
         ))}
       </div>
     </div>
   );
-}
-
-/* ---------------------------------------------------------------- 4. Dashboard */
-
-const bars = [38, 62, 45, 80, 56, 92, 70];
-
-const ChartBar = ({ progress, h, i }: { progress: MotionValue<number>; h: number; i: number }) => {
-  const height = useTransform(progress, [0, 0.6], [`${h * 0.25}%`, `${h}%`]);
-  return (
-    <motion.div
-      style={{ height }}
-      className={`flex-1 rounded-t-md ${
-        i === 5 ? "bg-gradient-to-t from-[#1D6FE0] to-[#7C5CFC]" : "bg-[#1D6FE0]/15 dark:bg-white/10"
-      }`}
-    />
-  );
 };
 
+export function ResponsiveMockup({ progress }: MockupProps) {
+  const desktopY = useTransform(progress, [0, 1], ["0%", "-24%"]);
+  const tabletY = useTransform(progress, [0, 1], ["0%", "-38%"]);
+  const phoneY = useTransform(progress, [0, 1], ["0%", "-46%"]);
+
+  return (
+    <div className="relative mx-auto w-full max-w-[580px] py-8">
+      <AmbientGlow color="from-[#1D6FE0] via-[#10B981] to-[#7C5CFC]" />
+
+      {/* Top Device Switcher Chips */}
+      <div className="mb-4 flex items-center justify-center gap-2">
+        {[
+          { label: "Desktop (1440px)", icon: FiMonitor, active: true },
+          { label: "Tablet (768px)", icon: FiTablet, active: false },
+          { label: "Mobile (390px)", icon: FiSmartphone, active: false },
+        ].map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <div
+              key={i}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold shadow-xs ${
+                i === 0
+                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                  : "border border-slate-200 bg-white/80 text-slate-600 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{item.label}</span>
+              <span className="sm:hidden">{item.label.split(" ")[0]}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Layered Multi-Device Showcase */}
+      <div className="relative mx-auto w-full">
+        {/* 1. MacBook Pro Base (Background) */}
+        <div className="relative mx-auto w-[90%]">
+          <div className="rounded-t-2xl border-[8px] border-b-0 border-slate-900 bg-white shadow-2xl dark:border-[#101438] dark:bg-[#070A24]">
+            {/* Camera notch */}
+            <div className="mx-auto h-2.5 w-16 rounded-b-md bg-slate-900 dark:bg-[#101438]" />
+            <div className="h-[250px] sm:h-[280px] overflow-hidden">
+              <motion.div style={{ y: desktopY }}>
+                <ResponsiveScreen type="desktop" />
+              </motion.div>
+            </div>
+          </div>
+          {/* Laptop Base Bottom Lip */}
+          <div className="mx-[-5%] h-3.5 rounded-b-2xl bg-gradient-to-b from-slate-300 to-slate-400 shadow-md dark:from-[#212754] dark:to-[#13173D]" />
+        </div>
+
+        {/* 2. iPad Pro (Layered Bottom Left) */}
+        <div className="absolute -left-2 bottom-0 w-[38%] sm:w-[35%] rounded-[22px] border-[7px] border-slate-900 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.35)] dark:border-[#12163C] dark:bg-[#070A24]">
+          <div className="h-[180px] sm:h-[200px] overflow-hidden rounded-[14px]">
+            <motion.div style={{ y: tabletY }}>
+              <ResponsiveScreen type="tablet" />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* 3. iPhone (Layered Bottom Right) */}
+        <div className="absolute -right-2 bottom-0 w-[24%] sm:w-[22%] rounded-[24px] border-[6px] border-slate-900 bg-white shadow-[0_25px_60px_rgba(0,0,0,0.4)] dark:border-[#12163C] dark:bg-[#070A24]">
+          <div className="h-[160px] sm:h-[180px] overflow-hidden rounded-[16px]">
+            <motion.div style={{ y: phoneY }}>
+              <ResponsiveScreen type="mobile" />
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Badge */}
+      <FloatingPill className="left-1/2 -bottom-4 -translate-x-1/2 flex items-center gap-2">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1D6FE0] text-white">
+          <FiActivity className="h-3.5 w-3.5" />
+        </span>
+        <span className="text-xs font-bold text-slate-900 dark:text-white">100% Fluid &amp; Device Adaptive</span>
+      </FloatingPill>
+    </div>
+  );
+}
+
+/* =========================================================================
+   4. CLOUD ANALYTICS & SAAS DASHBOARD (Next-Gen Engineering Platform)
+   ========================================================================= */
+
+const dataPoints = [35, 52, 44, 78, 62, 95, 84];
+
 export function DashboardMockup({ progress }: MockupProps) {
-  const line = useTransform(progress, [0, 0.7], [0.1, 1]);
-  const y = useTransform(progress, [0.4, 1], ["0%", "-22%"]);
+  const lineProgress = useTransform(progress, [0, 0.75], [0.05, 1]);
+  const scrollY = useTransform(progress, [0.35, 1], ["0%", "-25%"]);
 
   return (
     <div className="relative mx-auto w-full max-w-[580px] py-6">
-      <Glow />
-      <div className="flex overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl shadow-[#0F35A7]/15 dark:border-white/10 dark:bg-[#0B0F2E]">
-        {/* Sidebar */}
-        <div className="hidden w-14 flex-col items-center gap-4 border-r border-slate-100 py-4 sm:flex dark:border-white/10">
-          <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC]" />
-          {[FiHome, FiPieChart, FiLayers, FiUser, FiSettings].map((Icon, i) => (
-            <span
-              key={i}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                i === 1 ? "bg-[#1D6FE0]/10 text-[#1D6FE0] dark:text-[#8DB8FF]" : "text-slate-400"
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-            </span>
-          ))}
+      <AmbientGlow color="from-[#7C5CFC] via-[#1D6FE0] to-[#10B981]" />
+
+      {/* SaaS Dashboard Frame */}
+      <div className="flex overflow-hidden rounded-[26px] border border-slate-200/90 bg-white shadow-[0_25px_60px_-15px_rgba(15,53_167,0.25)] dark:border-white/15 dark:bg-[#070A24]">
+        {/* Left Icon Navigation Rail */}
+        <div className="hidden w-14 shrink-0 flex-col items-center gap-4 border-r border-slate-100 bg-slate-50/80 py-4.5 sm:flex dark:border-white/10 dark:bg-[#0B0F2E]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white shadow-xs">
+            <FiDatabase className="h-4 w-4" />
+          </span>
+          <div className="mt-2 space-y-2">
+            {[
+              { icon: FiHome, active: false },
+              { icon: FiPieChart, active: true },
+              { icon: FiServer, active: false },
+              { icon: FiUsers, active: false },
+              { icon: FiCpu, active: false },
+              { icon: FiSettings, active: false },
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <span
+                  key={idx}
+                  className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl transition ${
+                    item.active
+                      ? "bg-[#1D6FE0] text-white shadow-sm"
+                      : "text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="relative h-[380px] flex-1 overflow-hidden sm:h-[420px]">
-          <motion.div style={{ y }} className="space-y-4 p-4 sm:p-5">
+        {/* Dashboard Main Workspace */}
+        <div className="relative h-[400px] sm:h-[440px] flex-1 overflow-hidden bg-white dark:bg-[#070A24]">
+          <motion.div style={{ y: scrollY }} className="space-y-4 p-4 sm:p-5">
+            {/* Top Workspace Header */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Overview</p>
-                <p className="text-[10px] text-slate-400">Last 7 days</p>
+                <h4 className="text-sm font-bold text-slate-900 sm:text-base dark:text-white">
+                  Production Cloud Analytics
+                </h4>
+                <p className="text-[10px] text-slate-400">Live Telemetry · Real-Time Events</p>
               </div>
-              <div className="flex h-8 w-40 items-center gap-2 rounded-lg bg-slate-100 px-2.5 text-slate-400 dark:bg-white/5">
-                <FiSearch className="h-3.5 w-3.5" />
-                <Bar className="h-1.5 w-16" />
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-3 text-xs text-slate-400 dark:border-white/10 dark:bg-white/5">
+                  <FiSearch className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline text-[11px]">Filter metrics...</span>
+                </div>
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white text-xs font-bold dark:bg-white dark:text-slate-900">
+                  TM
+                </span>
               </div>
             </div>
 
-            {/* KPIs */}
+            {/* 3 Metric Cards */}
             <div className="grid grid-cols-3 gap-2.5">
               {[
-                { label: "Revenue", c: "#1D6FE0" },
-                { label: "Users", c: "#7C5CFC" },
-                { label: "Orders", c: "#10B981" },
-              ].map(({ label, c }) => (
-                <div key={label} className="rounded-xl border border-slate-100 p-3 dark:border-white/10">
-                  <p className="text-[10px] text-slate-400">{label}</p>
-                  <div className="mt-1.5 h-3 w-14 rounded-full bg-slate-800 dark:bg-white/80" />
-                  <span className="mt-2 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold" style={{ background: `${c}1A`, color: c }}>
-                    <FiTrendingUp className="h-2.5 w-2.5" /> up
-                  </span>
-                </div>
-              ))}
+                { label: "Active Revenue", value: "$84,290.00", growth: "+28.4%", icon: FiDollarSign, c: "#1D6FE0" },
+                { label: "Server Load", value: "24.2 ms", growth: "99.99%", icon: FiCpu, c: "#7C5CFC" },
+                { label: "Deployments", value: "1,420 Done", growth: "+12 Today", icon: FiCloud, c: "#10B981" },
+              ].map((kpi, idx) => {
+                const Icon = kpi.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 dark:border-white/10 dark:bg-white/[0.02]"
+                  >
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span className="text-[10px] font-medium">{kpi.label}</span>
+                      <Icon className="h-3 w-3" style={{ color: kpi.c }} />
+                    </div>
+                    <p className="mt-1 text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                      {kpi.value}
+                    </p>
+                    <span
+                      className="mt-1 inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.2 text-[9px] font-semibold"
+                      style={{ backgroundColor: `${kpi.c}18`, color: kpi.c }}
+                    >
+                      <FiTrendingUp className="h-2 w-2" /> {kpi.growth}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-5 gap-2.5">
-              <div className="col-span-3 rounded-xl border border-slate-100 p-3 dark:border-white/10">
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Traffic</p>
-                  <Bar className="h-1.5 w-10" />
+            {/* Main Interactive Chart Card */}
+            <div className="rounded-2xl border border-slate-100 bg-white p-3.5 shadow-xs dark:border-white/10 dark:bg-white/[0.02]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">System Throughput &amp; Traffic</p>
+                  <p className="text-[10px] text-slate-400">Past 30 Days Activity</p>
                 </div>
-                <svg viewBox="0 0 200 80" className="mt-2 h-24 w-full" preserveAspectRatio="none">
+                <div className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Operational
+                </div>
+              </div>
+
+              {/* Glowing SVG Area Chart */}
+              <div className="relative mt-3 h-28 w-full">
+                <svg viewBox="0 0 300 100" className="h-full w-full" preserveAspectRatio="none">
                   <defs>
-                    <linearGradient id="bw-area" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0" stopColor="#6D5DFC" stopOpacity="0.35" />
-                      <stop offset="1" stopColor="#6D5DFC" stopOpacity="0" />
+                    <linearGradient id="cloudGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#1D6FE0" stopOpacity="0.4" />
+                      <stop offset="60%" stopColor="#7C5CFC" stopOpacity="0.15" />
+                      <stop offset="100%" stopColor="#7C5CFC" stopOpacity="0" />
                     </linearGradient>
                   </defs>
-                  <path d="M0 62 C25 55 35 30 60 36 S100 58 125 34 S170 12 200 18 L200 80 L0 80Z" fill="url(#bw-area)" />
+                  <path
+                    d="M 0,80 Q 40,65 75,40 T 150,55 T 225,25 T 300,10 L 300,100 L 0,100 Z"
+                    fill="url(#cloudGrad)"
+                  />
                   <motion.path
-                    d="M0 62 C25 55 35 30 60 36 S100 58 125 34 S170 12 200 18"
+                    d="M 0,80 Q 40,65 75,40 T 150,55 T 225,25 T 300,10"
                     fill="none"
-                    stroke="#6D5DFC"
-                    strokeWidth="2.5"
+                    stroke="#1D6FE0"
+                    strokeWidth="3"
                     strokeLinecap="round"
-                    style={{ pathLength: line }}
+                    style={{ pathLength: lineProgress }}
                   />
                 </svg>
-              </div>
-              <div className="col-span-2 flex flex-col rounded-xl border border-slate-100 p-3 dark:border-white/10">
-                <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Sales</p>
-                <div className="mt-2 flex h-24 flex-1 items-end gap-1">
-                  {bars.map((h, i) => (
-                    <ChartBar key={i} progress={progress} h={h} i={i} />
-                  ))}
+
+                {/* Floating Tooltip marker */}
+                <div className="absolute right-12 top-2 rounded-lg border border-slate-200 bg-white/95 px-2 py-1 shadow-md backdrop-blur text-[10px] dark:border-white/15 dark:bg-slate-900">
+                  <span className="font-bold text-slate-900 dark:text-white">$84.2k</span>
+                  <span className="text-emerald-500 ml-1">● Peak</span>
                 </div>
               </div>
             </div>
 
-            {/* Table */}
-            <div className="rounded-xl border border-slate-100 dark:border-white/10">
-              {["#1D6FE0", "#7C5CFC", "#10B981", "#F59E0B", "#EC4899"].map((c, i) => (
-                <div key={i} className="flex items-center gap-3 border-b border-slate-100 px-3 py-2.5 last:border-0 dark:border-white/5">
-                  <span className="h-6 w-6 rounded-full" style={{ background: `${c}33` }} />
-                  <Bar className="h-2 w-24" />
-                  <Bar className="ml-auto h-2 w-10" />
-                  <span className="rounded-full px-2 py-0.5 text-[9px] font-semibold" style={{ background: `${c}1A`, color: c }}>
-                    ●
+            {/* Server Edge Nodes Table */}
+            <div className="rounded-xl border border-slate-100 overflow-hidden dark:border-white/10">
+              <div className="flex items-center justify-between bg-slate-50 px-3 py-2 text-[10px] font-bold text-slate-500 dark:bg-white/5 dark:text-slate-400">
+                <span>Cluster Node</span>
+                <span>Region</span>
+                <span>Latency</span>
+                <span>Status</span>
+              </div>
+              {[
+                { name: "iad1-primary", region: "US-East", lat: "14ms", status: "Healthy", c: "#10B981" },
+                { name: "fra1-edge", region: "EU-Central", lat: "22ms", status: "Healthy", c: "#10B981" },
+                { name: "hnd1-apac", region: "AP-Tokyo", lat: "38ms", status: "Healthy", c: "#10B981" },
+              ].map((node, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between border-t border-slate-100 px-3 py-2 text-[11px] font-medium dark:border-white/5"
+                >
+                  <span className="font-mono text-slate-900 dark:text-white text-[10px]">{node.name}</span>
+                  <span className="text-slate-500 text-[10px]">{node.region}</span>
+                  <span className="font-mono text-emerald-600 dark:text-emerald-400 text-[10px]">{node.lat}</span>
+                  <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                    {node.status}
                   </span>
                 </div>
               ))}
@@ -516,17 +792,28 @@ export function DashboardMockup({ progress }: MockupProps) {
         </div>
       </div>
 
-      <FloatingCard className="-right-3 top-16" delay={0.15}>
+      {/* Floating Badges */}
+      <FloatingPill className="-right-4 top-16 hidden sm:flex items-center gap-2">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-white">
+          <FiCheck className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-xs font-bold text-slate-900 dark:text-white">CI/CD Pipeline Live</p>
+          <p className="text-[10px] text-slate-400">Deployed to 42 Edge Regions</p>
+        </div>
+      </FloatingPill>
+
+      <FloatingPill className="-left-3 bottom-14" delay={0.25}>
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-white">
-            <FiCheck className="h-4 w-4" />
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#7C5CFC]/10 text-[#7C5CFC]">
+            <FiShield className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-xs font-semibold text-slate-900 dark:text-white">Deployed</p>
-            <p className="text-[10px] text-slate-400">production · 42s</p>
+            <p className="text-xs font-bold text-slate-900 dark:text-white">Enterprise Security</p>
+            <p className="text-[10px] text-slate-400">SOC2 Type II · Zero Trust</p>
           </div>
         </div>
-      </FloatingCard>
+      </FloatingPill>
     </div>
   );
 }
