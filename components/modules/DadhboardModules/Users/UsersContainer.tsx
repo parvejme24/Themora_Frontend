@@ -1,11 +1,12 @@
 "use client";
 
+import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
 import {
-  FiChevronLeft, FiChevronRight, FiDownload, FiMoreHorizontal, FiRefreshCw, FiRotateCcw, FiSearch, FiShield, FiTrash2, FiUser, FiUserCheck, FiUsers, FiUserX, FiX,
+  FiActivity, FiChevronLeft, FiChevronRight, FiDownload, FiMoreHorizontal, FiRefreshCw, FiRotateCcw, FiSearch, FiShield, FiTrash2, FiUser, FiUserCheck, FiUserPlus, FiUsers, FiUserX, FiX,
 } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,10 +107,10 @@ export default function UsersContainer() {
   const stats = statsData?.data;
   const adminCount = stats?.usersByRole.filter((r) => r.role !== "USER").reduce((sum, r) => sum + r.count, 0);
 
-  const tabs: { value: StatusTab; label: string; count?: number }[] = [
-    { value: "active", label: "Active", count: stats?.activeUsers },
-    { value: "banned", label: "Banned", count: stats?.bannedUsers },
-    { value: "trashed", label: "Trash", count: stats?.trashedUsers },
+  const tabs: { value: StatusTab; label: string; count?: number; icon: React.ElementType }[] = [
+    { value: "active", label: "Active", count: stats?.activeUsers, icon: FiUserCheck },
+    { value: "banned", label: "Banned", count: stats?.bannedUsers, icon: FiUserX },
+    { value: "trashed", label: "Trash", count: stats?.trashedUsers, icon: FiTrash2 },
   ];
 
   const confirm = async (title: string, text: string, confirmButtonText: string, danger = true) =>
@@ -168,7 +169,7 @@ export default function UsersContainer() {
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <button type="button" disabled={busyId === u.id} aria-label={`Actions for ${u.fullName}`} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">
-            {busyId === u.id ? <FiRefreshCw className="h-4 w-4 animate-spin" /> : <FiMoreHorizontal className="h-4 w-4" />}
+            {busyId === u.id ? <Spinner size="xs" label="Working" /> : <FiMoreHorizontal className="h-4 w-4" />}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52 rounded-xl">
@@ -210,34 +211,115 @@ export default function UsersContainer() {
         }
       />
 
-      <dl className="grid grid-cols-2 overflow-hidden rounded-2xl border border-slate-200 bg-white lg:grid-cols-4 dark:border-white/10 dark:bg-[#0B0F2E]">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[
-          { label: "Total users", value: stats?.totalUsers },
-          { label: "Admins", value: adminCount },
-          { label: "New this week", value: stats?.recentRegistrations },
-          { label: "Signed in now", value: stats?.loggedInUsers },
-        ].map(({ label, value }, i) => (
-          <div key={label} className={`min-w-0 border-slate-100 px-4 py-4 sm:px-5 dark:border-white/[0.06] ${i % 2 ? "border-l" : ""} ${i > 1 ? "border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
-            <dt className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">{label}</dt>
-            <dd className="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">{value === undefined ? "…" : value.toLocaleString()}</dd>
+          {
+            label: "Total users",
+            value: stats?.totalUsers !== undefined ? stats.totalUsers.toLocaleString() : "…",
+            subtext: `${stats?.activeUsers ?? 0} active users`,
+            icon: FiUsers,
+            iconColor: "text-blue-600 dark:text-blue-400",
+            bgColor: "bg-blue-50 dark:bg-blue-500/10",
+            borderColor: "hover:border-blue-500/30",
+          },
+          {
+            label: "Admins",
+            value: adminCount !== undefined ? adminCount.toLocaleString() : "…",
+            subtext: "System administrators",
+            icon: FiShield,
+            iconColor: "text-purple-600 dark:text-purple-400",
+            bgColor: "bg-purple-50 dark:bg-purple-500/10",
+            borderColor: "hover:border-purple-500/30",
+          },
+          {
+            label: "New this week",
+            value: stats?.recentRegistrations !== undefined ? stats.recentRegistrations.toLocaleString() : "…",
+            subtext: "Recent sign-ups",
+            icon: FiUserPlus,
+            iconColor: "text-emerald-600 dark:text-emerald-400",
+            bgColor: "bg-emerald-50 dark:bg-emerald-500/10",
+            borderColor: "hover:border-emerald-500/30",
+          },
+          {
+            label: "Signed in now",
+            value: stats?.loggedInUsers !== undefined ? stats.loggedInUsers.toLocaleString() : "…",
+            subtext: "Active sessions",
+            icon: FiActivity,
+            iconColor: "text-cyan-600 dark:text-cyan-400",
+            bgColor: "bg-cyan-50 dark:bg-cyan-500/10",
+            borderColor: "hover:border-cyan-500/30",
+          },
+        ].map(({ label, value, subtext, icon: Icon, iconColor, bgColor, borderColor }) => (
+          <div
+            key={label}
+            className={`group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${borderColor} dark:border-white/10 dark:bg-[#0B0F2E]`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                {label}
+              </span>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${bgColor} ${iconColor} transition duration-300 group-hover:scale-105`}>
+                <Icon className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-2.5">
+              <div className="truncate text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {value}
+              </div>
+              <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                {subtext}
+              </p>
+            </div>
           </div>
         ))}
-      </dl>
+      </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-        <div className="flex w-fit rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Status">
-          {tabs.map((tab) => (
-            <button key={tab.value} type="button" role="tab" aria-selected={status === tab.value} onClick={() => { setStatus(tab.value); setPage(1); }} className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm transition ${status === tab.value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}>
-              {tab.label}{tab.count !== undefined && <span className="text-xs opacity-60">{tab.count}</span>}
-            </button>
-          ))}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="flex w-fit rounded-full border border-slate-200/80 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Status">
+          {tabs.map((tab) => {
+            const TabIcon = tab.icon;
+            const isSelected = status === tab.value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => { setStatus(tab.value); setPage(1); }}
+                className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm font-medium transition ${
+                  isSelected
+                    ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                }`}
+              >
+                <TabIcon className="h-3.5 w-3.5" />
+                <span>{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span className={`rounded-full px-1.5 py-0.2 text-[11px] font-semibold ${isSelected ? "bg-white/20 text-white dark:bg-slate-900/10 dark:text-slate-900" : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"}`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
         <div className="flex flex-1 flex-col gap-2 sm:flex-row lg:justify-end">
           <div className="relative min-w-0 flex-1 sm:max-w-sm">
             <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-            <input type="search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search name or email…" aria-label="Search users" className="h-10 w-full rounded-full border border-slate-200 bg-white pl-10 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1D6FE0] focus:ring-[3px] focus:ring-[#1D6FE0]/15 dark:border-white/10 dark:bg-white/[0.03] dark:text-white" />
-            {searchInput && <button type="button" onClick={() => setSearchInput("")} aria-label="Clear search" className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10"><FiX className="h-3.5 w-3.5" /></button>}
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search name or email…"
+              aria-label="Search users"
+              className="h-10 w-full rounded-full border border-slate-200 bg-white pl-10 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1D6FE0] focus:ring-[3px] focus:ring-[#1D6FE0]/15 dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+            />
+            {searchInput && (
+              <button type="button" onClick={() => setSearchInput("")} aria-label="Clear search" className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10">
+                <FiX className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
           <FilterSelect ariaLabel="Filter by role" value={role} onChange={(v) => { setRole(v as RoleFilter); setPage(1); }} className="sm:w-40" options={[{ value: "all", label: "All roles" }, { value: "USER", label: "Users" }, { value: "ADMIN", label: "Admins" }]} />
         </div>
