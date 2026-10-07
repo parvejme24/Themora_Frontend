@@ -1,4 +1,5 @@
 "use client";
+import Spinner from "@/components/shared/Feedback/Spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -223,7 +224,7 @@ export default function BlogReviewForm({ blogId }: BlogReviewFormProps) {
                 size="sm"
                 className="h-10 rounded-full bg-gradient-to-r from-[#1D6FE0] to-[#6D5DFC] px-6 text-sm font-semibold text-white shadow-lg shadow-[#3F5BF0]/25 hover:opacity-95 disabled:opacity-50"
               >
-                {createReviewMutation.isPending ? <span role="status" aria-label="Posting" className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : "Post comment"}
+                {createReviewMutation.isPending ? <Spinner size="xs" tone="light" label="Posting" /> : "Post comment"}
               </Button>
             </div>
           </div>

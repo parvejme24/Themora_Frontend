@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { forwardRef, useState } from "react";
 import { FiAlertCircle, FiEye, FiEyeOff } from "react-icons/fi";
 import GoogleIcon from "@/assets/common/svg/GoogleIcon";
@@ -72,7 +73,7 @@ export const SubmitButton = ({ loading, children }: { loading?: boolean; childre
     disabled={loading}
     className="tf-shine group inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1D6FE0] to-[#6D5DFC] text-[15px] font-semibold text-white shadow-lg shadow-[#3F5BF0]/30 transition hover:shadow-[#3F5BF0]/50 disabled:opacity-70"
   >
-    {loading ? <span role="status" aria-label="Loading" className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : children}
+    {loading ? <Spinner size="sm" tone="light" /> : children}
   </button>
 );
 

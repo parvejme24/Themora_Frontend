@@ -1,4 +1,5 @@
 "use client";
+import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AnimatePresence, motion } from "framer-motion";
@@ -262,7 +263,7 @@ export default function ContactForm() {
                   className="tf-shine group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#1D6FE0] to-[#6D5DFC] px-7 text-sm font-semibold text-white shadow-lg shadow-[#3F5BF0]/30 transition hover:shadow-[#3F5BF0]/50 disabled:opacity-70 sm:w-auto"
                 >
                   {isCreating ? (
-                    <span role="status" aria-label="Sending" className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    <Spinner size="sm" tone="light" label="Sending" />
                   ) : (
                     <>
                       Send request <FiArrowRight className="transition-transform group-hover:translate-x-1" />
