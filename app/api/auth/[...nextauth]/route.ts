@@ -4,73 +4,83 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { NextAuthOptions } from "next-auth";
 import { randomUUID } from "crypto";
 
-const authOptions: NextAuthOptions = {
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        try {
-          const clientToken = randomUUID();
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api/v1';
-          
-          
-          const response = await fetch(`${apiUrl}/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-              clientToken: clientToken,
-            }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => null);
-            if (response.status >= 500 || errorData?.message === "Failed to login" || errorData?.message === "Internal server error") {
-              throw new Error("AuthServiceUnavailable");
-            }
-            return null;
-          }
-
-          const data = await response.json();
-
-          if (data.success && data.data?.user) {
-            const userData = {
-              id: data.data.user.id,
-              email: data.data.user.email,
-              name: data.data.user.fullName,
-              fullName: data.data.user.fullName,
-              image: data.data.user.profile?.avatarUrl,
-              nextAuthSecret: data.data.nextAuthSecret,
-              expiresAt: data.data.expiresAt,
-              role: data.data.user.role,
-              profile: data.data.user.profile,
-            };
-            return userData;
-          }
-
-          return null;
-        } catch (error) {
-          if (error instanceof Error && error.message === "AuthServiceUnavailable") throw error;
-          throw new Error("AuthServiceUnavailable");
-        }
+const providers: NextAuthOptions["providers"] = [
+  CredentialsProvider({
+    name: "credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) {
+        return null;
       }
+
+      try {
+        const clientToken = randomUUID();
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5050/api/v1";
+
+        const response = await fetch(`${apiUrl}/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+            clientToken: clientToken,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          if (
+            response.status >= 500 ||
+            errorData?.message === "Failed to login" ||
+            errorData?.message === "Internal server error"
+          ) {
+            throw new Error("AuthServiceUnavailable");
+          }
+          return null;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.data?.user) {
+          const userData = {
+            id: data.data.user.id,
+            email: data.data.user.email,
+            name: data.data.user.fullName,
+            fullName: data.data.user.fullName,
+            image: data.data.user.profile?.avatarUrl,
+            nextAuthSecret: data.data.nextAuthSecret,
+            expiresAt: data.data.expiresAt,
+            role: data.data.user.role,
+            profile: data.data.user.profile,
+          };
+          return userData;
+        }
+
+        return null;
+      } catch (error) {
+        if (error instanceof Error && error.message === "AuthServiceUnavailable") throw error;
+        throw new Error("AuthServiceUnavailable");
+      }
+    },
+  }),
+];
+
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  providers.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     })
-  ],
+  );
+}
+
+const authOptions: NextAuthOptions = {
+  providers,
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
@@ -143,7 +153,10 @@ const authOptions: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours
   },
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  secret:
+    process.env.AUTH_SECRET ||
+    process.env.NEXTAUTH_SECRET ||
+    "e4b4ee0a11bc3eb8080a2dc4e071f5bef8f5a35444ae9f914a1a8c43370ba097",
 };
 
 const handler = NextAuth(authOptions);
