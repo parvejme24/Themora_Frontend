@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -109,7 +110,7 @@ export default function CreatePricingPage() {
 
   const submitButton = (extra = "") => (
     <Button type="submit" disabled={!canSubmit} className={`tf-btn-primary tf-shine h-10 cursor-pointer px-5 ${extra}`}>
-      {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FiSave className="h-4 w-4" />}
+      {saving ? <Spinner size="xs" tone="light" label="Saving" /> : <FiSave className="h-4 w-4" />}
       {saving ? "Creating…" : "Create plan"}
     </Button>
   );
