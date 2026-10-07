@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
-import { FiEdit, FiLayers, FiMoreHorizontal, FiPlus, FiRefreshCw, FiSearch, FiTag, FiTrash2, FiX } from "react-icons/fi";
+import { FiEdit, FiFolder, FiInbox, FiLayers, FiMoreHorizontal, FiPlus, FiRefreshCw, FiSearch, FiTag, FiTrash2, FiTrendingUp, FiX } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -90,10 +90,42 @@ export default function TemplateCategoriesContainer() {
   };
 
   const stats = [
-    { label: "Categories", value: categories.length },
-    { label: "Themes", value: totalThemes },
-    { label: "Largest", value: top && top.templateCount ? top.title : "—" },
-    { label: "Empty", value: emptyCount },
+    {
+      label: "Categories",
+      value: categories.length,
+      subtext: "Total active categories",
+      icon: FiFolder,
+      iconColor: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-500/10 dark:bg-blue-500/15",
+      borderColor: "hover:border-blue-500/40",
+    },
+    {
+      label: "Themes",
+      value: totalThemes,
+      subtext: "Assigned templates",
+      icon: FiLayers,
+      iconColor: "text-indigo-600 dark:text-indigo-400",
+      bgColor: "bg-indigo-500/10 dark:bg-indigo-500/15",
+      borderColor: "hover:border-indigo-500/40",
+    },
+    {
+      label: "Largest",
+      value: top && top.templateCount ? top.title : "—",
+      subtext: top && top.templateCount ? `${top.templateCount} theme${top.templateCount === 1 ? "" : "s"}` : "No themes yet",
+      icon: FiTrendingUp,
+      iconColor: "text-emerald-600 dark:text-emerald-400",
+      bgColor: "bg-emerald-500/10 dark:bg-emerald-500/15",
+      borderColor: "hover:border-emerald-500/40",
+    },
+    {
+      label: "Empty",
+      value: emptyCount,
+      subtext: emptyCount > 0 ? "Categories with 0 themes" : "All categories populated",
+      icon: FiInbox,
+      iconColor: emptyCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-slate-500 dark:text-slate-400",
+      bgColor: emptyCount > 0 ? "bg-amber-500/10 dark:bg-amber-500/15" : "bg-slate-500/10 dark:bg-slate-500/15",
+      borderColor: "hover:border-amber-500/40",
+    },
   ];
 
   return (
@@ -114,14 +146,31 @@ export default function TemplateCategoriesContainer() {
       />
 
       {/* Stat strip */}
-      <dl className="grid grid-cols-2 overflow-hidden rounded-2xl border border-slate-200 bg-white lg:grid-cols-4 dark:border-white/10 dark:bg-[#0B0F2E]">
-        {stats.map(({ label, value }, i) => (
-          <div key={label} className={`min-w-0 px-4 py-4 sm:px-5 ${i % 2 ? "border-l" : ""} ${i > 1 ? "border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""} border-slate-100 dark:border-white/[0.06]`}>
-            <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</dt>
-            <dd className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900 dark:text-white">{isLoading ? "…" : value}</dd>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {stats.map(({ label, value, subtext, icon: Icon, iconColor, bgColor, borderColor }) => (
+          <div
+            key={label}
+            className={`group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${borderColor} dark:border-white/10 dark:bg-[#0B0F2E]`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                {label}
+              </span>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${bgColor} ${iconColor} transition duration-300 group-hover:scale-105`}>
+                <Icon className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-2.5">
+              <div className="truncate text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {isLoading ? "…" : value}
+              </div>
+              <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                {subtext}
+              </p>
+            </div>
           </div>
         ))}
-      </dl>
+      </div>
 
       {/* Toolbar */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
