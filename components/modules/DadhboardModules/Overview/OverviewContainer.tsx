@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import StatsGrid from "./StatsGrid";
 import RevenueChart from "./RevenueChart";
 import RecentActivity from "./RecentActivity";
+import TopSellingTemplates from "./TopSellingTemplates";
 
 export default function OverviewPage() {
   const { user, isAdmin } = useAuth();
@@ -67,7 +68,10 @@ export default function OverviewPage() {
         </section>
       </div>
 
-      <RecentActivity />
+      <div className={`grid grid-cols-1 gap-4 ${isAdmin ? "lg:grid-cols-2" : ""} xl:gap-5`}>
+        <RecentActivity />
+        {isAdmin && <TopSellingTemplates />}
+      </div>
     </div>
   );
 }

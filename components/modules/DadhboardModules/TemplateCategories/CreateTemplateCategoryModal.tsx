@@ -173,8 +173,12 @@ export default function CreateTemplateCategoryModal({
     }
   };
 
+  if (!isOpen) {
+    return null;
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-2xl backdrop-blur-xl sm:max-w-xl dark:border-white/10 dark:bg-[#0D1130]/95">
         {/* Accent top gradient line */}
         <div className="absolute inset-x-0 top-0 h-1 rounded-t-3xl bg-gradient-to-r from-[#0F35A7] via-[#1D6FE0] to-[#6D5DFC]" />

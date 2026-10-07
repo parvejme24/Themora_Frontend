@@ -21,7 +21,7 @@ const getBaseURL = () => {
     return '/api/v1';
   }
   // In production, use the full backend URL
-  return process.env.NEXT_PUBLIC_API_URL || 'https://themora-backend.vercel.app/api/v1';
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api/v1';
 };
 
 export const authApi = createApi({

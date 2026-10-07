@@ -7,7 +7,7 @@ const getBaseURL = () => {
     return '/api/v1';
   }
   // In production, use the full backend URL
-  return process.env.NEXT_PUBLIC_API_URL || 'https://themora-backend.vercel.app/api/v1';
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api/v1';
 };
 
 // Create axios instance
@@ -19,9 +19,15 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and handle FormData properly
 apiClient.interceptors.request.use(
   (config) => {
+    // If request data is FormData, remove Content-Type so the browser sets the correct multipart boundary
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type'];
+      delete config.headers['content-type'];
+    }
+
     // Get token from localStorage or session
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('nextAuthSecret');
@@ -92,10 +98,13 @@ apiClient.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      // Clear auth data and redirect to login
       if (typeof window !== 'undefined') {
         localStorage.removeItem('nextAuthSecret');
-        window.location.href = '/login';
+        const currentPath = window.location.pathname;
+        // Only redirect to login if currently on a protected dashboard route to prevent reload loops
+        if (currentPath.startsWith('/dashboard') && currentPath !== '/login') {
+          window.location.href = `/login?callbackUrl=${encodeURIComponent(currentPath)}`;
+        }
       }
     }
     

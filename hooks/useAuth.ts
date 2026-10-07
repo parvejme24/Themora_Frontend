@@ -327,7 +327,7 @@ export const useUpdateAvatar = () => {
       
       // Use direct fetch instead of RTK Query (due to FormData handling)
       const token = localStorage.getItem('nextAuthSecret');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://themora-backend.vercel.app/api/v1';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api/v1';
       const response = await fetch(`${baseUrl}/auth/profile/avatar`, {
         method: 'PUT',
         headers: {

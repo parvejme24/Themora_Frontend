@@ -30,8 +30,16 @@ const SORTS = [
 
 type SortKey = (typeof SORTS)[number]["key"];
 
-// Small brand tile for category pills (falls back to a neutral grid icon)
-const PillIcon = ({ title }: { title: string }) => {
+// Small brand tile for category pills (falls back to custom uploaded image or a neutral grid icon)
+const PillIcon = ({ title, image }: { title: string; image?: string | null }) => {
+  if (image) {
+    return (
+      <span className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-md bg-white p-0.5 shadow-xs ring-1 ring-black/10 dark:bg-white/10 dark:ring-white/20">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img key={image} src={image} alt={title} className="h-full w-full object-contain" />
+      </span>
+    );
+  }
   const tech = getTechIcon(title);
   if (!tech) {
     return (
@@ -300,7 +308,15 @@ export default function TemplatesContainer() {
                 ref={tabsRef}
                 className="-my-1 flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-1 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
-                {[{ id: null as string | null, title: "All", count: totalTemplatesAll }, ...categories.map((c) => ({ id: c.id as string | null, title: c.title, count: c.templateCount ?? 0 }))].map((c) => {
+                {[
+                  { id: null as string | null, title: "All", count: totalTemplatesAll, image: null },
+                  ...categories.map((c) => ({
+                    id: c.id as string | null,
+                    title: c.title,
+                    count: c.templateCount ?? 0,
+                    image: c.image,
+                  })),
+                ].map((c) => {
                   const active = (categoryId ?? null) === c.id;
                   return (
                     <button
@@ -321,7 +337,7 @@ export default function TemplatesContainer() {
                       )}
                       {c.id !== null && (
                         <span className="relative">
-                          <PillIcon title={c.title} />
+                          <PillIcon title={c.title} image={c.image} />
                         </span>
                       )}
                       <span className="relative">{c.title}</span>

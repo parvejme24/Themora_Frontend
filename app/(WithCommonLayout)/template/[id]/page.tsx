@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import React from "react";
 
 // Server-side: call the backend directly (the client's dev proxy path is relative)
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://themora-backend.vercel.app/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5050/api/v1";
 
 // Generate metadata for SEO
 export async function generateMetadata({

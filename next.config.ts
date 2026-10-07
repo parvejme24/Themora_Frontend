@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
   },
   // Proxy API requests in development to bypass CORS
   async rewrites() {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://themora-backend.vercel.app/api/v1';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api/v1';
     
     // Only proxy in development
     if (process.env.NODE_ENV === 'development') {

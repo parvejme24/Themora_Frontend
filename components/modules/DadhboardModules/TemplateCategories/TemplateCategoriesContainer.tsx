@@ -24,9 +24,22 @@ type SortKey = "themes" | "name" | "newest";
 
 function CategoryImage({ category }: { category: TemplateCategory }) {
   const [failed, setFailed] = useState(false);
+
+  React.useEffect(() => {
+    setFailed(false);
+  }, [category.image]);
+
   if (category.image && !failed) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={category.image} alt="" onError={() => setFailed(true)} className="h-full w-full object-contain p-1" />;
+    return (
+      <img
+        key={category.image}
+        src={category.image}
+        alt={category.title}
+        onError={() => setFailed(true)}
+        className="h-full w-full object-contain p-1 transition-opacity duration-300"
+      />
+    );
   }
   return (
     <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#1D6FE0] to-[#6D5DFC] text-base font-semibold text-white">
@@ -266,7 +279,13 @@ export default function TemplateCategoriesContainer() {
       )}
 
       <CreateTemplateCategoryModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
-      <EditTemplateCategoryModal isOpen={!!selectedCategory} onClose={() => setSelectedCategory(null)} category={selectedCategory} />
+      {selectedCategory && (
+        <EditTemplateCategoryModal
+          isOpen={!!selectedCategory}
+          onClose={() => setSelectedCategory(null)}
+          category={selectedCategory}
+        />
+      )}
     </div>
   );
 }

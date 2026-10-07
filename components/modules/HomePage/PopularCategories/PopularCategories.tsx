@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { FiArrowRight, FiArrowUpRight, FiGrid } from "react-icons/fi";
 import { useGetAllTemplateCategoriesForStats } from "@/hooks/useTemplateCategoryApi";
@@ -41,10 +40,19 @@ interface CategoryTile {
 // One consistent tile for every category: solid brand colour + white glyph,
 // so logos read the same on light and dark backgrounds
 const TechTile = ({ title, image }: { title: string; image?: string | null }) => {
-  const tech = getTechIcon(title);
   const base =
     "relative flex h-13 w-13 sm:h-16 sm:w-16 items-center justify-center rounded-2xl shadow-lg ring-1 ring-black/5 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110 dark:ring-white/15";
 
+  if (image) {
+    return (
+      <span className={`${base} bg-white dark:bg-white/10 p-2 overflow-hidden`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img key={image} src={image} alt={title} className="h-full w-full object-contain" />
+      </span>
+    );
+  }
+
+  const tech = getTechIcon(title);
   if (tech) {
     const Icon = tech.icon;
     return (
@@ -55,14 +63,9 @@ const TechTile = ({ title, image }: { title: string; image?: string | null }) =>
     );
   }
 
-  // Unknown stack: uploaded image on a white tile (stays visible in dark mode)
   return (
-    <span className={`${base} bg-white`}>
-      {image ? (
-        <Image src={image} alt="" width={36} height={36} className="h-6 w-6 sm:h-8 sm:w-8 object-contain" />
-      ) : (
-        <FiGrid className="h-6 w-6 sm:h-7 sm:w-7 text-[#0F5BBD]" />
-      )}
+    <span className={`${base} bg-white dark:bg-white/10`}>
+      <FiGrid className="h-6 w-6 sm:h-7 sm:w-7 text-[#0F5BBD] dark:text-[#8DB8FF]" />
     </span>
   );
 };

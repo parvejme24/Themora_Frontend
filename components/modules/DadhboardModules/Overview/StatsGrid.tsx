@@ -4,29 +4,55 @@ import { Banknote, Boxes, PackageCheck, ReceiptText, ShoppingBag, UsersRound } f
 import { useAuth, useGetUserStats } from "@/hooks/useAuth";
 import { useGetTemplateStats } from "@/hooks/useTemplateApi";
 import { useGetOrderStats, useGetUserOrders } from "@/hooks/useOrderApi";
+import { useGetDashboardOverview } from "@/hooks/useDashboardApi";
 
 const userOrdersQuery = { page: 1, limit: 100, sortBy: "createdAt" as const, sortOrder: "desc" as const };
 
 export default function StatsGrid() {
-  const { isAdmin } = useAuth();
+  const { user, isAdmin: authIsAdmin } = useAuth();
+  const isAdmin = authIsAdmin || (user as any)?.role === "ADMIN" || (user as any)?.role === "SUPER_ADMIN" || user?.role?.toUpperCase() === "ADMIN";
+  const { data: overviewResponse, isLoading: overviewLoading } = useGetDashboardOverview(isAdmin);
   const { data: userStatsResponse, isLoading: usersLoading } = useGetUserStats();
   const { data: templateStats, isLoading: templatesLoading } = useGetTemplateStats();
   const { data: orderStats, isLoading: adminOrdersLoading } = useGetOrderStats(isAdmin);
   const { data: userOrdersData, isLoading: userOrdersLoading } = useGetUserOrders(userOrdersQuery, !isAdmin);
 
+  const overviewData = overviewResponse?.data;
+  const overviewStats = overviewData?.stats;
   const userStats = userStatsResponse?.data;
   const userOrders = userOrdersData?.orders ?? [];
   const completedOrders = userOrders.filter((order) => order.status === "COMPLETED");
   const completedPlans = completedOrders.filter((order) => order.pricingPlan && order.planEntitlement?.isActive).length;
   const userSpend = completedOrders.reduce((total, order) => total + order.totalAmount, 0);
-  const loading = templatesLoading || (isAdmin ? usersLoading || adminOrdersLoading : userOrdersLoading);
+  const loading = templatesLoading || (isAdmin ? overviewLoading && (usersLoading || adminOrdersLoading) : userOrdersLoading);
 
   const metrics = isAdmin
     ? [
-        { label: "Total users", value: userStats?.totalUsers, icon: UsersRound, note: `${userStats?.activeUsers ?? 0} active accounts` },
-        { label: "Active users", value: userStats?.activeUsers, icon: PackageCheck, note: `${userStats?.recentRegistrations ?? 0} joined this month` },
-        { label: "Themes in catalog", value: templateStats?.totalTemplates, icon: Boxes, note: `${templateStats?.totalDownloads ?? 0} total downloads` },
-        { label: "Gross revenue", value: orderStats?.totalRevenue, icon: Banknote, currency: true, note: `${orderStats?.totalOrders ?? 0} recorded orders` },
+        {
+          label: "Total users",
+          value: overviewStats?.totalUsers ?? userStats?.totalUsers,
+          icon: UsersRound,
+          note: `${overviewStats?.activeUsers ?? userStats?.activeUsers ?? 0} active accounts`,
+        },
+        {
+          label: "Active users",
+          value: overviewStats?.activeUsers ?? userStats?.activeUsers,
+          icon: PackageCheck,
+          note: `${userStats?.recentRegistrations ?? 0} joined recently`,
+        },
+        {
+          label: "Themes in catalog",
+          value: overviewStats?.totalTemplates ?? templateStats?.totalTemplates,
+          icon: Boxes,
+          note: `${overviewStats?.totalDownloads ?? templateStats?.totalDownloads ?? 0} total downloads`,
+        },
+        {
+          label: "Gross revenue",
+          value: overviewStats?.grossRevenue ?? orderStats?.totalRevenue,
+          icon: Banknote,
+          currency: true,
+          note: `${overviewStats?.totalOrders ?? orderStats?.totalOrders ?? 0} recorded orders`,
+        },
       ]
     : [
         { label: "Your orders", value: userOrdersData?.pagination.total, icon: ReceiptText, note: `${completedOrders.length} completed in this list` },

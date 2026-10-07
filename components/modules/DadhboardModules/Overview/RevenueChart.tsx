@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { BarElement, CategoryScale, Chart as ChartJS, LinearScale, Tooltip } from "chart.js";
 import { useAuth } from "@/hooks/useAuth";
-import { useGetAllOrders, useGetUserOrders } from "@/hooks/useOrderApi";
+import { useGetUserOrders } from "@/hooks/useOrderApi";
+import { useGetDashboardOverview } from "@/hooks/useDashboardApi";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -12,14 +13,26 @@ const orderQuery = { page: 1, limit: 100, sortBy: "createdAt" as const, sortOrde
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 export default function RevenueChart() {
-  const { isAdmin } = useAuth();
-  const adminQuery = useGetAllOrders({ ...orderQuery, sortBy: "createdAt", sortOrder: "desc" }, isAdmin);
+  const { user, isAdmin: authIsAdmin } = useAuth();
+  const isAdmin = authIsAdmin || (user as any)?.role === "ADMIN" || (user as any)?.role === "SUPER_ADMIN" || user?.role?.toUpperCase() === "ADMIN";
+  const overviewQuery = useGetDashboardOverview(isAdmin);
   const userQuery = useGetUserOrders(orderQuery, !isAdmin);
-  const orders = (isAdmin ? adminQuery.data?.orders : userQuery.data?.orders) ?? [];
-  const isLoading = isAdmin ? adminQuery.isLoading : userQuery.isLoading;
-  const hasError = isAdmin ? adminQuery.isError : userQuery.isError;
+
+  const isLoading = isAdmin ? overviewQuery.isLoading : userQuery.isLoading;
+  const hasError = isAdmin ? overviewQuery.isError : userQuery.isError;
 
   const { labels, totals } = useMemo(() => {
+    // 1. Try to extract timeline from overviewQuery (Admin)
+    const timeline = overviewQuery.data?.data?.revenueTimeline || (overviewQuery.data as any)?.revenueTimeline;
+    if (timeline && Array.isArray(timeline) && timeline.length > 0) {
+      return {
+        labels: timeline.map((item: any) => item.month),
+        totals: timeline.map((item: any) => Number(item.revenue) || 0),
+      };
+    }
+
+    // 2. Fallback for regular users (aggregating their own completed orders by month)
+    const orders = userQuery.data?.orders ?? [];
     const now = new Date();
     const months = Array.from({ length: 6 }, (_, index) => new Date(now.getFullYear(), now.getMonth() - 5 + index, 1));
     const sums = months.map((month) => orders
@@ -29,10 +42,10 @@ export default function RevenueChart() {
       })
       .reduce((total, order) => total + order.totalAmount, 0));
     return {
-      labels: months.map((month) => month.toLocaleDateString("en-US", { month: "short" })),
+      labels: months.map((month) => `${month.toLocaleDateString("en-US", { month: "short" })} ${month.getFullYear()}`),
       totals: sums,
     };
-  }, [orders]);
+  }, [isAdmin, overviewQuery.data, userQuery.data]);
 
   const totalRevenue = totals.reduce((sum, amount) => sum + amount, 0);
   const data = {

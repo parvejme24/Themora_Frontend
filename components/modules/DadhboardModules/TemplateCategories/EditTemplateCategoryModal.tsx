@@ -163,21 +163,36 @@ export default function EditTemplateCategoryModal({
     }
 
     try {
-      const updateData = {
+      const updateData: {
+        id: string;
+        title: string;
+        slug?: string;
+        image?: string;
+        imageFile?: File;
+      } = {
         id: category.id,
         title: formData.title.trim(),
         slug: formData.slug.trim() || undefined,
-        imageFile: selectedImage || undefined,
       };
+
+      if (imageMode === "file" && selectedImage) {
+        updateData.imageFile = selectedImage;
+      } else if (imageMode === "url" && directUrlInput.trim()) {
+        updateData.image = directUrlInput.trim();
+      } else if (!previewUrl) {
+        // Image was cleared/removed
+        updateData.image = "";
+      }
 
       await updateCategoryMutation.mutateAsync(updateData);
 
       toast.success("Theme category updated successfully!");
       onSuccess?.();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update category error:", error);
-      toast.error("Failed to update category. Please try again.");
+      const msg = error?.response?.data?.message || error?.message || "Failed to update category. Please try again.";
+      toast.error(msg);
     }
   };
 
@@ -187,8 +202,12 @@ export default function EditTemplateCategoryModal({
     }
   };
 
+  if (!isOpen || !category) {
+    return null;
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-2xl backdrop-blur-xl sm:max-w-xl dark:border-white/10 dark:bg-[#0D1130]/95">
         {/* Accent top gradient line */}
         <div className="absolute inset-x-0 top-0 h-1 rounded-t-3xl bg-gradient-to-r from-[#0F35A7] via-[#1D6FE0] to-[#6D5DFC]" />

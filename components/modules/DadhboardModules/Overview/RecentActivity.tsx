@@ -4,17 +4,22 @@ import Link from "next/link";
 import { ArrowUpRight, ReceiptText } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetAllOrders, useGetUserOrders } from "@/hooks/useOrderApi";
+import { useGetDashboardOverview } from "@/hooks/useDashboardApi";
 
 const orderQuery = { page: 1, limit: 6, sortBy: "createdAt" as const, sortOrder: "desc" as const };
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 export default function RecentActivity() {
-  const { isAdmin } = useAuth();
+  const { user, isAdmin: authIsAdmin } = useAuth();
+  const isAdmin = authIsAdmin || (user as any)?.role === "ADMIN" || (user as any)?.role === "SUPER_ADMIN" || user?.role?.toUpperCase() === "ADMIN";
+  const overviewQuery = useGetDashboardOverview(isAdmin);
   const adminQuery = useGetAllOrders(orderQuery, isAdmin);
   const userQuery = useGetUserOrders(orderQuery, !isAdmin);
-  const orders = (isAdmin ? adminQuery.data?.orders : userQuery.data?.orders) ?? [];
-  const isLoading = isAdmin ? adminQuery.isLoading : userQuery.isLoading;
-  const hasError = isAdmin ? adminQuery.isError : userQuery.isError;
+
+  const overviewOrders = overviewQuery.data?.data?.recentOrders;
+  const orders = (isAdmin ? (overviewOrders && overviewOrders.length > 0 ? overviewOrders : adminQuery.data?.orders) : userQuery.data?.orders) ?? [];
+  const isLoading = isAdmin ? (overviewQuery.isLoading && adminQuery.isLoading) : userQuery.isLoading;
+  const hasError = isAdmin ? (overviewQuery.isError && adminQuery.isError) : userQuery.isError;
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#0B0F2E] sm:p-6">
