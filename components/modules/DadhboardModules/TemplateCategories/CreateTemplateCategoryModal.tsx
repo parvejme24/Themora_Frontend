@@ -39,19 +39,6 @@ interface TemplateCategoryFormData {
   slug: string;
 }
 
-const THEME_CATEGORY_PRESETS = [
-  "Portfolio",
-  "SaaS",
-  "E-Commerce",
-  "Agency",
-  "Dashboard",
-  "Landing Page",
-  "Mobile App",
-  "AI & ML",
-  "Directory",
-  "Blog & Magazine",
-];
-
 export default function CreateTemplateCategoryModal({
   isOpen,
   onClose,
@@ -92,13 +79,6 @@ export default function CreateTemplateCategoryModal({
       ...prev,
       slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ""),
     }));
-  };
-
-  const handleApplyPreset = (preset: string) => {
-    setFormData({
-      title: preset,
-      slug: generateSlug(preset),
-    });
   };
 
   const processFile = (file: File) => {
@@ -216,37 +196,6 @@ export default function CreateTemplateCategoryModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-5">
-          {/* Quick presets */}
-          <div>
-            <div className="mb-2 flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                <FiZap className="h-3.5 w-3.5 text-[#1D6FE0] dark:text-[#8DB8FF]" />
-                Popular Suggestions
-              </span>
-              <span className="text-[11px] text-slate-400">Click to fill</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {THEME_CATEGORY_PRESETS.map((preset) => {
-                const isSelected = formData.title.toLowerCase() === preset.toLowerCase();
-                return (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => handleApplyPreset(preset)}
-                    className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium transition cursor-pointer ${
-                      isSelected
-                        ? "bg-gradient-to-r from-[#0F5BBD] to-[#6D5DFC] text-white shadow-xs"
-                        : "border border-slate-200 bg-slate-50/80 text-slate-700 hover:border-[#1D6FE0]/40 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-                    }`}
-                  >
-                    {isSelected && <FiCheck className="h-3 w-3" />}
-                    {preset}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Title & Slug inputs */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
