@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -136,7 +137,7 @@ export default function BillingContainer({ pricingPlanId }: BillingContainerProp
       <div className="tf-noise relative isolate min-h-screen overflow-x-clip bg-[#F5F7FB] py-20 flex items-center justify-center dark:bg-[#05071A]">
         <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#3B82F6]/30 border-t-[#3B82F6] rounded-full animate-spin" />
+          <Spinner size="lg" />
         </div>
       </div>
     );
@@ -304,7 +305,7 @@ export default function BillingContainer({ pricingPlanId }: BillingContainerProp
                   >
                     {processing ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <Spinner size="xs" tone="light" label="Redirecting" />
                         <span>Redirecting...</span>
                       </>
                     ) : (

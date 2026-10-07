@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -158,7 +159,7 @@ export default function CheckoutContainer({ templateId }: { templateId: string }
       <div className="tf-noise relative isolate min-h-screen overflow-x-clip bg-[#F5F7FB] py-24 flex items-center justify-center dark:bg-[#05071A]">
         <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
         <div className="flex flex-col items-center gap-3">
-          <div className="w-9 h-9 border-2 border-[#3B82F6]/30 border-t-[#3B82F6] rounded-full animate-spin" />
+          <Spinner size="lg" />
         </div>
       </div>
     );
@@ -385,7 +386,7 @@ export default function CheckoutContainer({ templateId }: { templateId: string }
                   >
                     {processing ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <Spinner size="sm" tone="light" label="Redirecting" />
                         <span>Redirecting to payment...</span>
                       </>
                     ) : (
