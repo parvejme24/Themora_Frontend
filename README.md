@@ -21,7 +21,7 @@
   <b>A high-performance digital marketplace for modern web developers, SaaS founders, and UI/UX designers. Built with Next.js 15 App Router, React 19, Redux Toolkit, TanStack Query, TipTap WYSIWYG, and multi-provider payment pipelines.</b>
 </p>
 
-[Explore Live Demo](https://themora.vercel.app) • [View API Docs](https://themora-backend.vercel.app/api/v1) • [Report Issue](https://github.com/yourusername/themora/issues)
+[Explore Live Demo](https://themora.vercel.app) • [View API Docs](https://themora-backend.vercel.app/api/v1) • [Report Issue](https://github.com/parvejme24/Themora_Frontend/issues)
 
 </div>
 
@@ -189,8 +189,8 @@ Themora_Frontend/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/themora-frontend.git
-   cd themora-frontend
+   git clone https://github.com/parvejme24/Themora_Frontend.git
+   cd Themora_Frontend
    ```
 
 2. **Install dependencies:**
@@ -248,10 +248,9 @@ Themora_Frontend/
 
 **Md Parvej** — *Full-Stack Software Engineer & Frontend Architect*
 
-- 🌐 **Portfolio**: [https://themora.vercel.app](https://themora.vercel.app)
-- 💼 **LinkedIn**: [linkedin.com/in/md-parvej](https://linkedin.com/in/md-parvej)
-- 🐙 **GitHub**: [@mdparvej](https://github.com/mdparvej)
-- 📧 **Email**: [parvej.dev@gmail.com](mailto:parvej.dev@gmail.com)
+- 🌐 **Portfolio**: [mdparvej.dev](https://mdparvej.dev)
+- 💼 **LinkedIn**: [linkedin.com/in/parvejme](https://www.linkedin.com/in/parvejme/)
+- 🐙 **GitHub**: [@parvejme24](https://github.com/parvejme24)
 
 ---
 
