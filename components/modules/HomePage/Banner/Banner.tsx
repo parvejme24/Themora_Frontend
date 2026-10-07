@@ -300,39 +300,36 @@ export default function Banner() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9, duration: 0.9, ease: EASE_OUT }}
-        className="relative h-[165px] sm:h-[195px] overflow-hidden my-4 sm:my-6"
-        aria-label="Supported technologies and key features"
+        className="relative h-[150px] sm:h-[170px]"
+        aria-label="Supported technologies"
       >
-        {/* Back ribbon: Key features & benefits (High contrast in Light & Dark mode) */}
-        <div className="absolute left-[-5%] top-[38%] w-[110%] -translate-y-1/2 rotate-[2deg] sm:rotate-[2.5deg] border-y-2 border-slate-200/90 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] py-2.5 sm:py-3 dark:border-white/15 dark:bg-[#0B0F2E] dark:shadow-[0_12px_35px_rgba(0,0,0,0.5)] z-10">
-          <Marquee speed={32} direction="right" autoFill>
+        {/* Back ribbon: features (adjusted for mobile visibility, original aesthetic on desktop) */}
+        <div className="absolute left-[-5%] top-[38%] md:top-1/2 w-[110%] -translate-y-1/2 rotate-[2.5deg] border-y border-slate-200 bg-white/95 md:bg-white/80 py-3 backdrop-blur dark:border-white/10 dark:bg-[#0B0F2E] md:dark:bg-white/[0.04]">
+          <Marquee speed={28} direction="right" autoFill>
             {ribbonTags.map((tag) => (
               <span
                 key={tag}
-                className="mx-3 sm:mx-6 inline-flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold uppercase tracking-[0.14em] text-slate-800 dark:text-white"
+                className="mx-3 sm:mx-4 md:mx-5 inline-flex items-center gap-3 md:gap-5 text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] text-slate-700 md:text-slate-400 dark:text-slate-200 md:dark:text-slate-500"
               >
-                <span className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white shadow-xs text-[10px] sm:text-xs font-black">
-                  ✦
-                </span>
-                <span>{tag}</span>
-                <span className="ml-2 sm:ml-4 text-slate-300 dark:text-white/20">•</span>
+                {tag}
+                <FiStar className="h-3.5 w-3.5 text-[#6D5DFC]" />
               </span>
             ))}
           </Marquee>
         </div>
 
-        {/* Front ribbon: Supported tech stack */}
-        <div className="absolute left-[-5%] top-[64%] w-[110%] -translate-y-1/2 -rotate-[2deg] sm:-rotate-[2.5deg] bg-gradient-to-r from-[#0F35A7] via-[#1D6FE0] to-[#6D5DFC] py-2.5 sm:py-3.5 shadow-2xl shadow-[#1D6FE0]/30 z-20">
+        {/* Front ribbon: tech stack */}
+        <div className="absolute left-[-5%] top-[64%] md:top-1/2 w-[110%] -translate-y-1/2 -rotate-[2.5deg] bg-gradient-to-r from-[#0F35A7] via-[#0F5BBD] to-[#6D5DFC] py-3.5 shadow-2xl shadow-[#0F5BBD]/30">
           <Marquee speed={45} pauseOnHover autoFill>
             {icons.map(({ name, icon }) => (
-              <span key={name} className="group mx-3 sm:mx-6 inline-flex items-center gap-2 sm:gap-3">
-                <span className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-lg sm:rounded-xl bg-white shadow-md transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110">
+              <span key={name} className="group mx-3 sm:mx-4 md:mx-4 lg:mx-6 inline-flex items-center gap-2.5 sm:gap-3">
+                <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-white shadow-md transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110">
                   <Image src={icon} alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
                 </span>
-                <span className="text-sm sm:text-base font-bold uppercase tracking-wide text-white">
+                <span className="text-sm font-bold uppercase tracking-wide text-white sm:text-base md:text-lg">
                   {name}
                 </span>
-                <span aria-hidden className="ml-3 sm:ml-5 text-base sm:text-xl text-white/50">✦</span>
+                <span aria-hidden className="ml-3 text-lg text-white/40 sm:ml-4 md:ml-6 md:text-xl">✦</span>
               </span>
             ))}
           </Marquee>
