@@ -43,14 +43,14 @@ interface CategoryTile {
 const TechTile = ({ title, image }: { title: string; image?: string | null }) => {
   const tech = getTechIcon(title);
   const base =
-    "relative flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg ring-1 ring-black/5 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110 dark:ring-white/15";
+    "relative flex h-13 w-13 sm:h-16 sm:w-16 items-center justify-center rounded-2xl shadow-lg ring-1 ring-black/5 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110 dark:ring-white/15";
 
   if (tech) {
     const Icon = tech.icon;
     return (
       <span className={base} style={{ backgroundColor: tech.bg, boxShadow: `0 10px 24px -10px ${tech.bg}` }}>
         <span aria-hidden className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/25 to-transparent" />
-        <Icon className="relative h-8 w-8" style={{ color: tech.fg ?? "#fff" }} />
+        <Icon className="relative h-6 w-6 sm:h-8 sm:w-8" style={{ color: tech.fg ?? "#fff" }} />
       </span>
     );
   }
@@ -59,9 +59,9 @@ const TechTile = ({ title, image }: { title: string; image?: string | null }) =>
   return (
     <span className={`${base} bg-white`}>
       {image ? (
-        <Image src={image} alt="" width={36} height={36} className="h-8 w-8 object-contain" />
+        <Image src={image} alt="" width={36} height={36} className="h-6 w-6 sm:h-8 sm:w-8 object-contain" />
       ) : (
-        <FiGrid className="h-7 w-7 text-[#0F5BBD]" />
+        <FiGrid className="h-6 w-6 sm:h-7 sm:w-7 text-[#0F5BBD]" />
       )}
     </span>
   );
@@ -138,7 +138,7 @@ export default function Categories() {
                     <Link
                       href={category.href}
                       onPointerMove={handleSpotlight}
-                      className="group relative flex h-full flex-col items-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-[#0F5BBD]/40 hover:shadow-xl hover:shadow-[#0F5BBD]/10 sm:p-6 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-[#8DB8FF]/30"
+                      className="group relative flex h-full flex-col items-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-5 lg:p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-[#0F5BBD]/40 hover:shadow-xl hover:shadow-[#0F5BBD]/10 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-[#8DB8FF]/30"
                     >
                       {/* Cursor spotlight */}
                       <span

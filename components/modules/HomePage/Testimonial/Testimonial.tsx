@@ -140,21 +140,21 @@ export default function Testimonials() {
               className="absolute inset-6 -z-10 rounded-[32px] opacity-30 blur-3xl transition-colors duration-700"
               style={{ background: current.accent }}
             />
-            <div className="relative flex h-full min-h-[380px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white p-7 shadow-xl shadow-slate-900/5 sm:p-10 dark:border-white/10 dark:bg-[#0B0F2E]">
+            <div className="relative flex h-full min-h-[340px] sm:min-h-[380px] flex-col overflow-hidden rounded-[24px] sm:rounded-[28px] border border-slate-200 bg-white p-5 sm:p-8 lg:p-10 shadow-xl shadow-slate-900/5 dark:border-white/10 dark:bg-[#0B0F2E]">
               <BiSolidQuoteAltLeft
                 aria-hidden
-                className="absolute -right-4 -top-6 h-40 w-40 transition-colors duration-700"
+                className="absolute -right-4 -top-6 h-32 w-32 sm:h-40 sm:w-40 transition-colors duration-700 opacity-60"
                 style={{ color: `${current.accent}14` }}
               />
 
               <div className="flex items-center justify-between">
                 <Stars />
-                <span className="font-mono text-sm text-slate-400">
+                <span className="font-mono text-xs sm:text-sm text-slate-400">
                   {String(active + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
                 </span>
               </div>
 
-              <div className="relative mt-6 flex-1">
+              <div className="relative mt-5 sm:mt-6 flex-1">
                 <AnimatePresence mode="wait" custom={direction} initial={false}>
                   <motion.figure
                     key={current.id}
@@ -165,14 +165,14 @@ export default function Testimonials() {
                     transition={{ duration: 0.5, ease: EASE_OUT }}
                     className="flex h-full flex-col justify-center"
                   >
-                    <blockquote className="text-xl font-medium leading-relaxed tracking-tight text-slate-800 sm:text-2xl sm:leading-relaxed dark:text-slate-100">
+                    <blockquote className="text-base sm:text-xl lg:text-2xl font-medium leading-relaxed tracking-tight text-slate-800 dark:text-slate-100">
                       “{current.content}”
                     </blockquote>
-                    <figcaption className="mt-8 flex items-center gap-4">
-                      <Avatar item={current} size={52} />
+                    <figcaption className="mt-6 sm:mt-8 flex items-center gap-3.5 sm:gap-4">
+                      <Avatar item={current} size={48} />
                       <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{current.author}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{current.position}</p>
+                        <p className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">{current.author}</p>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{current.position}</p>
                       </div>
                     </figcaption>
                   </motion.figure>

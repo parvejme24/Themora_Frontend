@@ -14,7 +14,7 @@ export default function HomePageContainer() {
   return (
     // Honour the OS "reduce motion" setting across every home section
     <MotionConfig reducedMotion="user">
-      <div className="overflow-x-clip bg-[#F5F7FB] dark:bg-[#05071A]">
+      <div className="w-full overflow-x-clip bg-[#F5F7FB] dark:bg-[#05071A]">
         <Banner />
         <PopularCategories />
         <NewProducts />

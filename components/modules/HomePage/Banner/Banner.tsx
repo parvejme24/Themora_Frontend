@@ -144,7 +144,7 @@ export default function Banner() {
             <motion.h1
               custom={1}
               variants={fadeUp}
-              className="mt-6 text-[40px] font-bold leading-[1.05] tracking-tight text-slate-900 sm:text-6xl xl:text-[72px] dark:text-white"
+              className="mt-5 text-3xl font-bold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl xl:text-[72px] dark:text-white"
             >
               2M+ Curated
               <br className="hidden sm:block" />{" "}
@@ -154,7 +154,7 @@ export default function Banner() {
             <motion.p
               custom={2}
               variants={fadeUp}
-              className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg lg:mx-0 dark:text-slate-300"
+              className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-600 sm:mt-6 sm:text-lg lg:mx-0 dark:text-slate-300"
             >
               Explore the best premium themes and plugins available for sale.
               Our unique collection is hand-curated by experts. Find and buy the
@@ -169,25 +169,25 @@ export default function Banner() {
                 e.preventDefault();
                 search(query);
               }}
-              className="group relative mx-auto mt-8 max-w-xl lg:mx-0"
+              className="group relative mx-auto mt-6 max-w-xl sm:mt-8 lg:mx-0"
               role="search"
             >
               <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#0F5BBD] via-[#6D5DFC] to-[#22B8F0] opacity-30 blur transition duration-500 group-focus-within:opacity-70" />
               <div className="relative flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-[#0F5BBD]/5 dark:border-white/10 dark:bg-[#0D1130]">
-                <FiSearch className="ml-3 h-5 w-5 shrink-0 text-slate-400" />
+                <FiSearch className="ml-2.5 h-4 w-4 shrink-0 text-slate-400 sm:ml-3 sm:h-5 sm:w-5" />
                 <input
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search themes, templates & more..."
                   aria-label="Search templates"
-                  className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:text-base dark:text-white"
+                  className="min-w-0 flex-1 bg-transparent py-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 sm:py-2.5 sm:text-base dark:text-white"
                 />
                 <motion.button
                   type="submit"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="tf-shine inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30 sm:px-6"
+                  className="tf-shine inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-3.5 py-2 text-xs font-semibold text-white shadow-lg shadow-[#0F5BBD]/30 sm:px-6 sm:py-2.5 sm:text-sm"
                 >
                   <span className="hidden sm:inline">Search</span>
                   <FiArrowRight className="sm:hidden" />
@@ -199,12 +199,12 @@ export default function Banner() {
             <motion.dl
               custom={4}
               variants={fadeUp}
-              className="mx-auto mt-10 flex max-w-md items-center justify-center divide-x divide-slate-200 lg:mx-0 lg:justify-start dark:divide-white/10"
+              className="mx-auto mt-8 flex max-w-md items-center justify-center divide-x divide-slate-200 sm:mt-10 lg:mx-0 lg:justify-start dark:divide-white/10"
             >
               {stats.map(({ end, decimals, suffix, label }, i) => (
-                <div key={label} className="flex flex-col px-5 first:pl-0 last:pr-0 sm:px-8">
-                  <dt className="order-2 mt-1 text-xs text-slate-500 sm:text-sm dark:text-slate-400">{label}</dt>
-                  <dd className="order-1 text-2xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-3xl dark:text-white">
+                <div key={label} className="flex flex-col px-3.5 first:pl-0 last:pr-0 sm:px-6 md:px-8">
+                  <dt className="order-2 mt-1 text-[11px] text-slate-500 sm:text-sm dark:text-slate-400">{label}</dt>
+                  <dd className="order-1 text-xl font-bold tracking-tight text-slate-900 tabular-nums sm:text-3xl dark:text-white">
                     <CountUp end={end} decimals={decimals ?? 0} suffix={suffix} duration={2} delay={0.6 + i * 0.1} />
                   </dd>
                 </div>
@@ -219,28 +219,28 @@ export default function Banner() {
             transition={{ duration: 1, delay: 0.3, ease: EASE_OUT }}
             onPointerMove={handlePointerMove}
             onPointerLeave={resetTilt}
-            className="relative mx-auto w-full max-w-[560px] [perspective:1200px]"
+            className="relative mx-auto w-full max-w-[560px] px-1 sm:px-0 [perspective:1200px]"
           >
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               className="relative"
             >
               {/* Glow behind */}
-              <div className="absolute inset-6 -z-10 rounded-[32px] bg-gradient-to-tr from-[#0F5BBD] via-[#6D5DFC] to-[#22B8F0] opacity-40 blur-3xl dark:opacity-50" />
+              <div className="absolute inset-4 sm:inset-6 -z-10 rounded-[32px] bg-gradient-to-tr from-[#0F5BBD] via-[#6D5DFC] to-[#22B8F0] opacity-40 blur-3xl dark:opacity-50" />
 
               {/* Browser frame */}
-              <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-2 shadow-2xl shadow-[#0F35A7]/20 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
-                <div className="flex items-center gap-1.5 px-3 py-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
-                  <span className="ml-3 h-5 flex-1 rounded-md bg-slate-100 dark:bg-white/10" />
+              <div className="overflow-hidden rounded-2xl sm:rounded-3xl border border-white/60 bg-white/70 p-1.5 sm:p-2 shadow-2xl shadow-[#0F35A7]/20 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2">
+                  <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-[#FF5F57]" />
+                  <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-[#FEBC2E]" />
+                  <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-[#28C840]" />
+                  <span className="ml-2 sm:ml-3 h-4 sm:h-5 flex-1 rounded-md bg-slate-100 dark:bg-white/10" />
                 </div>
                 <Image
                   src={TemplatesImage}
                   alt="Preview of premium templates"
                   priority
-                  className="h-auto w-full rounded-2xl"
+                  className="h-auto w-full rounded-xl sm:rounded-2xl"
                 />
               </div>
             </motion.div>
@@ -248,33 +248,33 @@ export default function Banner() {
             {/* Floating cards (parallax against pointer) */}
             <motion.div
               style={{ x: floatX, y: floatY }}
-              className="absolute -left-3 top-[18%] sm:-left-8"
+              className="absolute -left-1 sm:-left-8 top-[18%]"
             >
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="flex items-center gap-2.5 rounded-2xl border border-white/70 bg-white/85 p-2.5 pr-4 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/85"
+                className="flex items-center gap-2 sm:gap-2.5 rounded-xl sm:rounded-2xl border border-white/70 bg-white/90 p-2 pr-3 sm:p-2.5 sm:pr-4 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 dark:bg-white/10">
-                  <Image src={FigmaLogo} alt="" width={20} height={20} className="h-5 w-auto" />
+                <span className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-lg sm:rounded-xl bg-slate-50 dark:bg-white/10">
+                  <Image src={FigmaLogo} alt="" width={20} height={20} className="h-4 w-auto sm:h-5" />
                 </span>
                 <span className="text-left">
-                  <span className="block text-xs font-semibold text-slate-900 dark:text-white">Figma ready</span>
-                  <span className="block text-[11px] text-slate-500 dark:text-slate-400">Source files included</span>
+                  <span className="block text-[11px] sm:text-xs font-semibold text-slate-900 dark:text-white">Figma ready</span>
+                  <span className="block text-[9px] sm:text-[11px] text-slate-500 dark:text-slate-400">Source files included</span>
                 </span>
               </motion.div>
             </motion.div>
 
             <motion.div
               style={{ x: counterX, y: counterY }}
-              className="absolute -bottom-6 -right-2 sm:-right-6"
+              className="absolute -bottom-4 sm:-bottom-6 right-0 sm:-right-6"
             >
               <motion.div
                 animate={{ y: [0, 12, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="rounded-2xl border border-white/70 bg-white/85 p-3 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/85"
+                className="rounded-xl sm:rounded-2xl border border-white/70 bg-white/90 p-2 sm:p-3 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90"
               >
-                <Image src={StatImage} alt="Community stats" width={96} height={96} className="h-16 w-auto sm:h-20" />
+                <Image src={StatImage} alt="Community stats" width={96} height={96} className="h-12 w-auto sm:h-20" />
               </motion.div>
             </motion.div>
 
@@ -282,7 +282,7 @@ export default function Banner() {
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.1, type: "spring", stiffness: 200, damping: 14 }}
-              className="absolute -top-4 right-6 inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-lg dark:bg-white dark:text-slate-900"
+              className="absolute -top-3 sm:-top-4 right-3 sm:right-6 inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-slate-900 px-2.5 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-medium text-white shadow-lg dark:bg-white dark:text-slate-900"
             >
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />

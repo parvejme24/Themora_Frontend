@@ -59,7 +59,7 @@ export default function Analytcis() {
             </p>
           </div>
 
-          <dl className="mt-12 grid grid-cols-2 gap-3 sm:gap-4 lg:mt-16 lg:grid-cols-4">
+          <dl className="mt-10 grid grid-cols-2 gap-2.5 sm:gap-4 lg:mt-16 lg:grid-cols-4">
             {analitics.map(({ title, count, icon: Icon }, i) => (
               <motion.div
                 key={title}
@@ -67,13 +67,13 @@ export default function Analytcis() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.2 + i * 0.1, ease: EASE_OUT }}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.08] sm:p-7"
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.08] sm:p-6 lg:p-7"
               >
-                <span className="order-1 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#7C3AED] text-white shadow-lg shadow-[#3B82F6]/30 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
-                  <Icon className="h-5 w-5" />
+                <span className="order-1 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#7C3AED] text-white shadow-lg shadow-[#3B82F6]/30 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </span>
-                <dt className="order-3 mt-1 text-sm text-slate-300 sm:text-base">{title}</dt>
-                <dd className="order-2 mt-5 text-2xl font-bold tracking-tight text-white sm:text-4xl">
+                <dt className="order-3 mt-1 text-xs text-slate-300 sm:text-base">{title}</dt>
+                <dd className="order-2 mt-3 sm:mt-5 text-xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
                   <CountUp end={count} duration={2.5} separator="," enableScrollSpy scrollSpyOnce suffix="+" />
                 </dd>
               </motion.div>

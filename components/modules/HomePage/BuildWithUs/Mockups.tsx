@@ -161,57 +161,57 @@ export function WebsiteMockup({ progress }: MockupProps) {
             </div>
 
             {/* Service Pillars Grid */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
-                { title: "UI/UX Design", badge: "Figma & Design Systems", icon: FiLayout, color: "#1D6FE0" },
-                { title: "Next.js Web", badge: "High-Speed Full-Stack", icon: FiCode, color: "#7C5CFC" },
-                { title: "Mobile Apps", badge: "React Native & Swift", icon: FiSmartphone, color: "#06B6D4" },
+                { title: "UI/UX Design", badge: "Figma & Tokens", icon: FiLayout, color: "#1D6FE0" },
+                { title: "Next.js Web", badge: "High-Speed App", icon: FiCode, color: "#7C5CFC" },
+                { title: "Mobile Apps", badge: "React Native", icon: FiSmartphone, color: "#06B6D4" },
               ].map((item, idx) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={idx}
-                    className="group rounded-xl border border-slate-100 bg-white p-3 shadow-xs transition hover:border-slate-200 dark:border-white/10 dark:bg-white/[0.02]"
+                    className="group rounded-xl border border-slate-100 bg-white p-2 sm:p-3 shadow-xs transition hover:border-slate-200 dark:border-white/10 dark:bg-white/[0.02]"
                   >
                     <div
-                      className="flex h-8 w-8 items-center justify-center rounded-lg"
+                      className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg"
                       style={{ backgroundColor: `${item.color}18`, color: item.color }}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </div>
-                    <p className="mt-2.5 text-xs font-bold text-slate-900 dark:text-white">{item.title}</p>
-                    <p className="mt-0.5 text-[10px] text-slate-400 leading-tight">{item.badge}</p>
+                    <p className="mt-2 text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white truncate">{item.title}</p>
+                    <p className="mt-0.5 text-[9px] sm:text-[10px] text-slate-400 leading-tight truncate">{item.badge}</p>
                   </div>
                 );
               })}
             </div>
 
             {/* Visual Portfolio Cards */}
-            <div className="grid grid-cols-3 gap-2.5">
-              <div className="relative col-span-2 h-28 overflow-hidden rounded-xl bg-gradient-to-br from-[#1D6FE0] via-[#4F46E5] to-[#7C5CFC] p-3 text-white">
-                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-semibold">Case Study</span>
-                <p className="mt-2 text-xs font-bold">Fintech AI Dashboard</p>
-                <p className="text-[10px] opacity-80">+140% Conversion Growth</p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+              <div className="relative col-span-2 h-24 sm:h-28 overflow-hidden rounded-xl bg-gradient-to-br from-[#1D6FE0] via-[#4F46E5] to-[#7C5CFC] p-2.5 sm:p-3 text-white">
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[8.5px] sm:text-[9px] font-semibold">Case Study</span>
+                <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs font-bold">Fintech AI Dashboard</p>
+                <p className="text-[9px] sm:text-[10px] opacity-80">+140% Conversion Growth</p>
               </div>
-              <div className="h-28 rounded-xl bg-gradient-to-br from-[#0EA5E9] to-[#10B981] p-3 text-white">
-                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-semibold">Webflow</span>
-                <p className="mt-2 text-xs font-bold">SaaS Studio</p>
+              <div className="h-24 sm:h-28 rounded-xl bg-gradient-to-br from-[#0EA5E9] to-[#10B981] p-2.5 sm:p-3 text-white">
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[8.5px] sm:text-[9px] font-semibold">Webflow</span>
+                <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs font-bold">SaaS Studio</p>
               </div>
             </div>
 
             {/* Client Proof & Ratings Bar */}
-            <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.02]">
+            <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 p-2.5 sm:p-3 dark:border-white/10 dark:bg-white/[0.02]">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-1.5">
                   {["#1D6FE0", "#7C5CFC", "#10B981"].map((bg, i) => (
                     <span
                       key={i}
-                      className="inline-block h-6 w-6 rounded-full border-2 border-white ring-1 ring-slate-200 dark:border-[#070A24]"
+                      className="inline-block h-5 w-5 sm:h-6 sm:w-6 rounded-full border-2 border-white ring-1 ring-slate-200 dark:border-[#070A24]"
                       style={{ backgroundColor: bg }}
                     />
                   ))}
                 </div>
-                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                   Trusted by 200+ companies
                 </span>
               </div>
@@ -245,7 +245,7 @@ export function WebsiteMockup({ progress }: MockupProps) {
         </div>
       </FloatingPill>
 
-      <FloatingPill className="-right-3 bottom-12" delay={0.2}>
+      <FloatingPill className="right-4 sm:-right-3 bottom-6 sm:bottom-12 hidden sm:flex" delay={0.2}>
         <div className="flex items-center gap-2.5">
           <div className="flex gap-1">
             {["#1D6FE0", "#6D5DFC", "#22B8F0", "#10B981"].map((c) => (
@@ -275,21 +275,21 @@ export function MobileAppMockup({ progress }: MockupProps) {
       <AmbientGlow color="from-[#6D5DFC] via-[#1D6FE0] to-[#EC4899]" />
 
       {/* iPhone 16 Pro Frame */}
-      <div className="relative w-[270px] sm:w-[290px] rounded-[50px] border-[10px] border-slate-900 bg-slate-950 p-1 shadow-[0_30px_70px_-15px_rgba(15,23,42,0.4)] ring-1 ring-white/20 dark:border-[#121638] dark:bg-[#07091E]">
+      <div className="relative w-[260px] xs:w-[275px] sm:w-[290px] rounded-[44px] sm:rounded-[50px] border-[8px] sm:border-[10px] border-slate-900 bg-slate-950 p-1 shadow-[0_30px_70px_-15px_rgba(15,23,42,0.4)] ring-1 ring-white/20 dark:border-[#121638] dark:bg-[#07091E]">
         {/* Dynamic Island Pill */}
-        <div className="absolute left-1/2 top-3 z-30 flex h-6 w-24 -translate-x-1/2 items-center justify-between rounded-full bg-black px-2 text-[9px] text-white">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="font-mono text-[9px] text-emerald-300">Live 94%</span>
-          <span className="h-2 w-2 rounded-full bg-white/20" />
+        <div className="absolute left-1/2 top-2.5 sm:top-3 z-30 flex h-5 sm:h-6 w-20 sm:w-24 -translate-x-1/2 items-center justify-between rounded-full bg-black px-2 text-[8px] sm:text-[9px] text-white">
+          <span className="flex h-1.5 sm:h-2 w-1.5 sm:w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-mono text-[8.5px] sm:text-[9px] text-emerald-300">Live 94%</span>
+          <span className="h-1.5 sm:h-2 w-1.5 sm:w-2 rounded-full bg-white/20" />
         </div>
 
         {/* Screen Canvas */}
-        <div className="relative h-[500px] sm:h-[530px] overflow-hidden rounded-[40px] bg-[#F8FAFF] dark:bg-[#07091E]">
+        <div className="relative h-[470px] xs:h-[500px] sm:h-[530px] overflow-hidden rounded-[36px] sm:rounded-[40px] bg-[#F8FAFF] dark:bg-[#07091E]">
           {/* iOS Status Bar */}
-          <div className="flex items-center justify-between px-6 pt-3 text-[11px] font-semibold text-slate-900 dark:text-white">
+          <div className="flex items-center justify-between px-5 sm:px-6 pt-2.5 sm:pt-3 text-[10px] sm:text-[11px] font-semibold text-slate-900 dark:text-white">
             <span>9:41</span>
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="text-[10px]">5G</span>
+              <span className="text-[9px] sm:text-[10px]">5G</span>
               <span className="h-2 w-4 rounded-xs border border-current">
                 <span className="block h-full w-3 bg-current" />
               </span>
@@ -297,33 +297,33 @@ export function MobileAppMockup({ progress }: MockupProps) {
           </div>
 
           {/* Scrolling App Feed */}
-          <motion.div style={{ y: scrollY }} className="space-y-4 px-4 pb-20 pt-4">
+          <motion.div style={{ y: scrollY }} className="space-y-3.5 sm:space-y-4 px-3.5 sm:px-4 pb-20 pt-3 sm:pt-4">
             {/* Header profile row */}
             <div className="flex items-center justify-between pt-1">
               <div>
-                <p className="text-[11px] font-medium text-slate-400">Welcome back</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Alex Morgan</p>
+                <p className="text-[10px] sm:text-[11px] font-medium text-slate-400">Welcome back</p>
+                <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Alex Morgan</p>
               </div>
-              <span className="relative flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-xs dark:border-white/10 dark:bg-white/10 dark:text-white">
-                <FiBell className="h-3.5 w-3.5" />
+              <span className="relative flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-xs dark:border-white/10 dark:bg-white/10 dark:text-white">
+                <FiBell className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
                 <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
               </span>
             </div>
 
             {/* Glowing App Hero Card */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1D6FE0] via-[#5B4DF5] to-[#8B5CF6] p-4 text-white shadow-lg shadow-[#3F5BF0]/30">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#1D6FE0] via-[#5B4DF5] to-[#8B5CF6] p-3.5 sm:p-4 text-white shadow-lg shadow-[#3F5BF0]/30">
               <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/15 blur-xl" />
-              <div className="flex items-center justify-between text-[11px] font-medium text-white/80">
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-medium text-white/80">
                 <span>Active Sprint Goal</span>
-                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-bold">Q4 Growth</span>
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[8.5px] sm:text-[9px] font-bold">Q4 Growth</span>
               </div>
               <div className="mt-2 flex items-baseline justify-between">
                 <div>
-                  <p className="text-2xl font-black tracking-tight">$48,250.00</p>
-                  <p className="text-[10px] text-white/70">+18.4% from last week</p>
+                  <p className="text-xl sm:text-2xl font-black tracking-tight">$48,250.00</p>
+                  <p className="text-[9.5px] sm:text-[10px] text-white/70">+18.4% from last week</p>
                 </div>
-                <div className="relative h-12 w-12 flex items-center justify-center">
-                  <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
+                <div className="relative h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center">
+                  <svg width="44" height="44" viewBox="0 0 48 48" className="-rotate-90">
                     <circle cx="24" cy="24" r="18" stroke="rgba(255,255,255,0.2)" strokeWidth="4.5" fill="none" />
                     <motion.circle
                       cx="24"
@@ -336,13 +336,13 @@ export function MobileAppMockup({ progress }: MockupProps) {
                       style={{ pathLength: circleProgress }}
                     />
                   </svg>
-                  <span className="absolute text-[10px] font-bold">88%</span>
+                  <span className="absolute text-[9px] sm:text-[10px] font-bold">88%</span>
                 </div>
               </div>
             </div>
 
             {/* App Action Buttons Grid */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
               {[
                 { icon: FiZap, label: "Deploy", color: "#F59E0B" },
                 { icon: FiPieChart, label: "Metrics", color: "#10B981" },
@@ -351,49 +351,49 @@ export function MobileAppMockup({ progress }: MockupProps) {
               ].map((act, i) => {
                 const Icon = act.icon;
                 return (
-                  <div key={i} className="flex flex-col items-center gap-1.5">
+                  <div key={i} className="flex flex-col items-center gap-1">
                     <span
-                      className="flex h-11 w-11 items-center justify-center rounded-2xl shadow-xs transition hover:scale-105"
+                      className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl shadow-xs transition hover:scale-105"
                       style={{ backgroundColor: `${act.color}1A`, color: act.color }}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </span>
-                    <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">{act.label}</span>
+                    <span className="text-[9px] sm:text-[10px] font-semibold text-slate-700 dark:text-slate-300">{act.label}</span>
                   </div>
                 );
               })}
             </div>
 
             {/* Live Feed List */}
-            <div className="rounded-3xl border border-slate-100 bg-white p-3.5 shadow-xs dark:border-white/10 dark:bg-white/[0.03]">
-              <div className="mb-2.5 flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
+            <div className="rounded-2xl sm:rounded-3xl border border-slate-100 bg-white p-3 sm:p-3.5 shadow-xs dark:border-white/10 dark:bg-white/[0.03]">
+              <div className="mb-2 flex items-center justify-between text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white">
                 <span>Recent Deployments</span>
-                <span className="text-[10px] font-medium text-[#1D6FE0]">View All</span>
+                <span className="text-[9.5px] sm:text-[10px] font-medium text-[#1D6FE0]">View All</span>
               </div>
               {[
                 { name: "iOS Release v3.4", status: "Success", time: "2m ago", color: "#10B981" },
-                { name: "Checkout API Microservice", status: "Active", time: "14m ago", color: "#1D6FE0" },
-                { name: "User Auth Webhooks", status: "Synced", time: "1h ago", color: "#6D5DFC" },
-                { name: "Cloud CDN Edge Sync", status: "Done", time: "3h ago", color: "#F59E0B" },
+                { name: "Checkout API", status: "Active", time: "14m ago", color: "#1D6FE0" },
+                { name: "Auth Webhooks", status: "Synced", time: "1h ago", color: "#6D5DFC" },
+                { name: "CDN Edge Sync", status: "Done", time: "3h ago", color: "#F59E0B" },
               ].map((row, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between border-b border-slate-100 py-2.5 last:border-0 dark:border-white/5"
+                  className="flex items-center justify-between border-b border-slate-100 py-2 sm:py-2.5 last:border-0 dark:border-white/5"
                 >
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2 sm:gap-2.5">
                     <span
-                      className="flex h-7 w-7 items-center justify-center rounded-xl"
+                      className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg sm:rounded-xl"
                       style={{ backgroundColor: `${row.color}1F`, color: row.color }}
                     >
-                      <FiCheck className="h-3.5 w-3.5" />
+                      <FiCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </span>
                     <div>
-                      <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{row.name}</p>
-                      <p className="text-[9px] text-slate-400">{row.time}</p>
+                      <p className="text-[10px] sm:text-[11px] font-semibold text-slate-900 dark:text-white truncate">{row.name}</p>
+                      <p className="text-[8.5px] sm:text-[9px] text-slate-400">{row.time}</p>
                     </div>
                   </div>
                   <span
-                    className="rounded-full px-2 py-0.5 text-[9px] font-bold"
+                    className="rounded-full px-1.5 sm:px-2 py-0.2 sm:py-0.5 text-[8px] sm:text-[9px] font-bold"
                     style={{ backgroundColor: `${row.color}15`, color: row.color }}
                   >
                     {row.status}
@@ -404,7 +404,7 @@ export function MobileAppMockup({ progress }: MockupProps) {
           </motion.div>
 
           {/* Floating Glass Tab Bar */}
-          <div className="absolute inset-x-3 bottom-3 flex items-center justify-around rounded-2xl border border-white/70 bg-white/90 py-2.5 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90">
+          <div className="absolute inset-x-2.5 sm:inset-x-3 bottom-2.5 sm:bottom-3 flex items-center justify-around rounded-xl sm:rounded-2xl border border-white/70 bg-white/90 py-2 sm:py-2.5 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90">
             {[
               { icon: FiHome, active: true },
               { icon: FiGrid, active: false },
@@ -415,11 +415,11 @@ export function MobileAppMockup({ progress }: MockupProps) {
               return (
                 <span
                   key={i}
-                  className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                  className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg sm:rounded-xl ${
                     tab.active ? "bg-[#1D6FE0] text-white shadow-sm" : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </span>
               );
             })}
@@ -428,7 +428,7 @@ export function MobileAppMockup({ progress }: MockupProps) {
       </div>
 
       {/* Floating Pill Badges */}
-      <FloatingPill className="-left-4 top-24 sm:left-2">
+      <FloatingPill className="-left-3 top-24 hidden sm:flex">
         <div className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white shadow-xs">
             <FiZap className="h-4 w-4" />
@@ -440,7 +440,7 @@ export function MobileAppMockup({ progress }: MockupProps) {
         </div>
       </FloatingPill>
 
-      <FloatingPill className="-right-3 bottom-16 sm:right-2" delay={0.2}>
+      <FloatingPill className="-right-3 bottom-16 hidden sm:flex" delay={0.2}>
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white">
             <FiCheck className="h-3.5 w-3.5" />
@@ -796,7 +796,7 @@ export function ResponsiveMockup({ progress }: MockupProps) {
         </div>
       </FloatingPill>
 
-      <FloatingPill className="right-4 -bottom-3 flex items-center gap-2" delay={0.4}>
+      <FloatingPill className="right-4 -bottom-3 hidden sm:flex items-center gap-2" delay={0.4}>
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white">
           <FiCheck className="h-3.5 w-3.5" />
         </span>
@@ -804,6 +804,13 @@ export function ResponsiveMockup({ progress }: MockupProps) {
           <p className="text-[11px] font-bold text-slate-900 dark:text-white">100% Adaptive Sync</p>
           <p className="text-[9px] text-slate-400">Desktop · Tablet · Mobile</p>
         </div>
+      </FloatingPill>
+
+      <FloatingPill className="left-1/2 -translate-x-1/2 -bottom-2 flex sm:hidden items-center gap-1.5 py-1.5 px-3">
+        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white">
+          <FiCheck className="h-2.5 w-2.5" />
+        </span>
+        <span className="text-[10px] font-bold text-slate-900 dark:text-white">100% Adaptive Sync</span>
       </FloatingPill>
     </div>
   );
@@ -857,49 +864,49 @@ export function DashboardMockup({ progress }: MockupProps) {
         </div>
 
         {/* Dashboard Main Workspace */}
-        <div className="relative h-[400px] sm:h-[440px] flex-1 overflow-hidden bg-white dark:bg-[#070A24]">
-          <motion.div style={{ y: scrollY }} className="space-y-4 p-4 sm:p-5">
+        <div className="relative h-[380px] sm:h-[440px] flex-1 overflow-hidden bg-white dark:bg-[#070A24]">
+          <motion.div style={{ y: scrollY }} className="space-y-3.5 sm:space-y-4 p-3.5 sm:p-5">
             {/* Top Workspace Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-bold text-slate-900 sm:text-base dark:text-white">
+                <h4 className="text-xs sm:text-base font-bold text-slate-900 dark:text-white">
                   Production Cloud Analytics
                 </h4>
-                <p className="text-[10px] text-slate-400">Live Telemetry · Real-Time Events</p>
+                <p className="text-[9px] sm:text-[10px] text-slate-400">Live Telemetry · Real-Time Events</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-8 items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-3 text-xs text-slate-400 dark:border-white/10 dark:bg-white/5">
-                  <FiSearch className="h-3.5 w-3.5" />
+                <div className="flex h-7 sm:h-8 items-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-2 sm:px-3 text-xs text-slate-400 dark:border-white/10 dark:bg-white/5">
+                  <FiSearch className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
                   <span className="hidden sm:inline text-[11px]">Filter metrics...</span>
                 </div>
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white text-xs font-bold dark:bg-white dark:text-slate-900">
+                <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-slate-900 text-white text-[10px] sm:text-xs font-bold dark:bg-white dark:text-slate-900">
                   TM
                 </span>
               </div>
             </div>
 
             {/* 3 Metric Cards */}
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
               {[
-                { label: "Active Revenue", value: "$84,290.00", growth: "+28.4%", icon: FiDollarSign, c: "#1D6FE0" },
-                { label: "Server Load", value: "24.2 ms", growth: "99.99%", icon: FiCpu, c: "#7C5CFC" },
-                { label: "Deployments", value: "1,420 Done", growth: "+12 Today", icon: FiCloud, c: "#10B981" },
+                { label: "Active Revenue", value: "$84,290", growth: "+28.4%", icon: FiDollarSign, c: "#1D6FE0" },
+                { label: "Server Load", value: "24.2 ms", growth: "99.9%", icon: FiCpu, c: "#7C5CFC" },
+                { label: "Deployments", value: "1,420", growth: "+12", icon: FiCloud, c: "#10B981" },
               ].map((kpi, idx) => {
                 const Icon = kpi.icon;
                 return (
                   <div
                     key={idx}
-                    className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 dark:border-white/10 dark:bg-white/[0.02]"
+                    className="rounded-xl border border-slate-100 bg-slate-50/50 p-2 sm:p-2.5 dark:border-white/10 dark:bg-white/[0.02]"
                   >
                     <div className="flex items-center justify-between text-slate-400">
-                      <span className="text-[10px] font-medium">{kpi.label}</span>
-                      <Icon className="h-3 w-3" style={{ color: kpi.c }} />
+                      <span className="text-[8.5px] sm:text-[10px] font-medium truncate">{kpi.label}</span>
+                      <Icon className="h-2.5 w-2.5 sm:h-3 sm:w-3" style={{ color: kpi.c }} />
                     </div>
-                    <p className="mt-1 text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                    <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                       {kpi.value}
                     </p>
                     <span
-                      className="mt-1 inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.2 text-[9px] font-semibold"
+                      className="mt-0.5 sm:mt-1 inline-flex items-center gap-0.5 rounded-full px-1 sm:px-1.5 py-0.2 text-[8px] sm:text-[9px] font-semibold"
                       style={{ backgroundColor: `${kpi.c}18`, color: kpi.c }}
                     >
                       <FiTrendingUp className="h-2 w-2" /> {kpi.growth}
@@ -910,20 +917,20 @@ export function DashboardMockup({ progress }: MockupProps) {
             </div>
 
             {/* Main Interactive Chart Card */}
-            <div className="rounded-2xl border border-slate-100 bg-white p-3.5 shadow-xs dark:border-white/10 dark:bg-white/[0.02]">
+            <div className="rounded-2xl border border-slate-100 bg-white p-3 sm:p-3.5 shadow-xs dark:border-white/10 dark:bg-white/[0.02]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-white">System Throughput &amp; Traffic</p>
-                  <p className="text-[10px] text-slate-400">Past 30 Days Activity</p>
+                  <p className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white">System Throughput &amp; Traffic</p>
+                  <p className="text-[9px] sm:text-[10px] text-slate-400">Past 30 Days Activity</p>
                 </div>
-                <div className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Operational
                 </div>
               </div>
 
               {/* Glowing SVG Area Chart */}
-              <div className="relative mt-3 h-28 w-full">
+              <div className="relative mt-2.5 sm:mt-3 h-24 sm:h-28 w-full">
                 <svg viewBox="0 0 300 100" className="h-full w-full" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="cloudGrad" x1="0" y1="0" x2="0" y2="1">
@@ -947,7 +954,7 @@ export function DashboardMockup({ progress }: MockupProps) {
                 </svg>
 
                 {/* Floating Tooltip marker */}
-                <div className="absolute right-12 top-2 rounded-lg border border-slate-200 bg-white/95 px-2 py-1 shadow-md backdrop-blur text-[10px] dark:border-white/15 dark:bg-slate-900">
+                <div className="absolute right-10 sm:right-12 top-2 rounded-lg border border-slate-200 bg-white/95 px-1.5 sm:px-2 py-0.5 sm:py-1 shadow-md backdrop-blur text-[9px] sm:text-[10px] dark:border-white/15 dark:bg-slate-900">
                   <span className="font-bold text-slate-900 dark:text-white">$84.2k</span>
                   <span className="text-emerald-500 ml-1">● Peak</span>
                 </div>
@@ -956,9 +963,9 @@ export function DashboardMockup({ progress }: MockupProps) {
 
             {/* Server Edge Nodes Table */}
             <div className="rounded-xl border border-slate-100 overflow-hidden dark:border-white/10">
-              <div className="flex items-center justify-between bg-slate-50 px-3 py-2 text-[10px] font-bold text-slate-500 dark:bg-white/5 dark:text-slate-400">
+              <div className="flex items-center justify-between bg-slate-50 px-3 py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-bold text-slate-500 dark:bg-white/5 dark:text-slate-400">
                 <span>Cluster Node</span>
-                <span>Region</span>
+                <span className="hidden sm:inline">Region</span>
                 <span>Latency</span>
                 <span>Status</span>
               </div>
@@ -969,12 +976,12 @@ export function DashboardMockup({ progress }: MockupProps) {
               ].map((node, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between border-t border-slate-100 px-3 py-2 text-[11px] font-medium dark:border-white/5"
+                  className="flex items-center justify-between border-t border-slate-100 px-3 py-1.5 sm:py-2 text-[10px] sm:text-[11px] font-medium dark:border-white/5"
                 >
-                  <span className="font-mono text-slate-900 dark:text-white text-[10px]">{node.name}</span>
-                  <span className="text-slate-500 text-[10px]">{node.region}</span>
-                  <span className="font-mono text-emerald-600 dark:text-emerald-400 text-[10px]">{node.lat}</span>
-                  <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                  <span className="font-mono text-slate-900 dark:text-white text-[9px] sm:text-[10px]">{node.name}</span>
+                  <span className="hidden sm:inline text-slate-500 text-[10px]">{node.region}</span>
+                  <span className="font-mono text-emerald-600 dark:text-emerald-400 text-[9px] sm:text-[10px]">{node.lat}</span>
+                  <span className="rounded-full bg-emerald-500/10 px-1.5 sm:px-2 py-0.2 sm:py-0.5 text-[8.5px] sm:text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
                     {node.status}
                   </span>
                 </div>
@@ -995,7 +1002,7 @@ export function DashboardMockup({ progress }: MockupProps) {
         </div>
       </FloatingPill>
 
-      <FloatingPill className="-left-3 bottom-14" delay={0.25}>
+      <FloatingPill className="-left-3 bottom-14 hidden sm:flex" delay={0.25}>
         <div className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#7C5CFC]/10 text-[#7C5CFC]">
             <FiShield className="h-4 w-4" />
