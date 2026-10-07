@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
-import { FiChevronLeft, FiChevronRight, FiGrid, FiLayers, FiList, FiPlus, FiRefreshCw, FiSearch, FiX } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiEdit, FiGrid, FiLayers, FiList, FiPlus, FiRefreshCw, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import { useGetAllTemplates, useTemplateApi } from "@/hooks/useTemplateApi";
 import { useGetAllTemplateCategoriesForStats } from "@/hooks/useTemplateCategoryApi";
@@ -187,12 +187,12 @@ export default function TemplatesContainer() {
             </div>
           ) : (
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0B0F2E]">
-              <div className="hidden grid-cols-[minmax(0,1fr)_96px_80px_80px_110px_40px] gap-4 border-b border-slate-100 px-4 py-2.5 text-xs font-medium text-slate-500 md:grid dark:border-white/[0.06] dark:text-slate-400">
-                <span>Theme</span><span>Price</span><span>Sales</span><span>Downloads</span><span>Added</span><span />
+              <div className="hidden grid-cols-[minmax(0,1fr)_96px_80px_80px_110px_130px] gap-4 border-b border-slate-100 px-4 py-2.5 text-xs font-medium text-slate-500 md:grid dark:border-white/[0.06] dark:text-slate-400">
+                <span>Theme</span><span>Price</span><span>Sales</span><span>Downloads</span><span>Added</span><span className="text-right">Actions</span>
               </div>
               <ul className="divide-y divide-slate-100 dark:divide-white/[0.06]">
                 {templates.map((template) => (
-                  <li key={template.id} className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 transition hover:bg-slate-50/70 md:grid-cols-[minmax(0,1fr)_96px_80px_80px_110px_40px] dark:hover:bg-white/[0.02] ${actionLoading === template.id ? "opacity-50" : ""}`}>
+                  <li key={template.id} className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 transition hover:bg-slate-50/70 md:grid-cols-[minmax(0,1fr)_96px_80px_80px_110px_130px] dark:hover:bg-white/[0.02] ${actionLoading === template.id ? "opacity-50" : ""}`}>
                     <button type="button" onClick={() => editTemplate(template)} className="flex min-w-0 cursor-pointer items-center gap-3 text-left">
                       <span className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-white/5"><ThemeThumb src={template.imageUrl} alt="" /></span>
                       <span className="min-w-0">
@@ -207,7 +207,28 @@ export default function TemplatesContainer() {
                     <span className="hidden text-sm text-slate-600 md:block dark:text-slate-300">{template.totalPurchase ?? 0}</span>
                     <span className="hidden text-sm text-slate-600 md:block dark:text-slate-300">{template.downloads ?? 0}</span>
                     <span className="hidden text-sm text-slate-500 md:block dark:text-slate-400">{new Date(template.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
-                    <ThemeActions template={template} busy={actionLoading === template.id} onEdit={() => editTemplate(template)} onDelete={() => handleDelete(template)} />
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => editTemplate(template)}
+                        title="Edit theme"
+                        aria-label={`Edit ${template.title}`}
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-200/80 bg-white text-slate-600 transition hover:border-[#1D6FE0]/40 hover:bg-[#1D6FE0]/10 hover:text-[#1D6FE0] dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:border-[#1D6FE0]/40 dark:hover:bg-[#1D6FE0]/20 dark:hover:text-[#8DB8FF]"
+                      >
+                        <FiEdit className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(template)}
+                        disabled={actionLoading === template.id}
+                        title="Delete theme"
+                        aria-label={`Delete ${template.title}`}
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-rose-200/80 bg-rose-50/50 text-rose-600 transition hover:border-rose-400 hover:bg-rose-100 hover:text-rose-700 disabled:opacity-50 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:border-rose-500/40 dark:hover:bg-rose-500/20"
+                      >
+                        <FiTrash2 className="h-3.5 w-3.5" />
+                      </button>
+                      <ThemeActions template={template} busy={actionLoading === template.id} onEdit={() => editTemplate(template)} onDelete={() => handleDelete(template)} />
+                    </div>
                   </li>
                 ))}
               </ul>
