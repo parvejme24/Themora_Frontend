@@ -89,59 +89,36 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* ----------------- Quick Demo Logins ----------------- */}
-      <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3.5 sm:p-4 dark:border-white/10 dark:bg-white/[0.02]">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            <FiZap className="h-3.5 w-3.5 text-[#1D6FE0] dark:text-[#8DB8FF]" /> Fast Demo Login
-          </span>
-          <span className="text-[11px] text-slate-400">1-click access</span>
-        </div>
+    <div className="space-y-5">
+      {/* ----------------- Minimalist Quick Demo Logins ----------------- */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={isLoading || quickLoginRole !== null}
+          onClick={() => handleQuickLogin("admin")}
+          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:border-[#6D5DFC] hover:bg-slate-50/50 hover:text-[#6D5DFC] disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300 dark:hover:border-[#8DB8FF] dark:hover:bg-white/[0.06] dark:hover:text-white"
+        >
+          {quickLoginRole === "admin" ? (
+            <Spinner size="sm" />
+          ) : (
+            <FiShield className="h-3.5 w-3.5 text-[#6D5DFC] dark:text-[#A78BFA]" />
+          )}
+          <span>Admin Demo</span>
+        </button>
 
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-          {/* Admin Login Button */}
-          <button
-            type="button"
-            disabled={isLoading || quickLoginRole !== null}
-            onClick={() => handleQuickLogin("admin")}
-            className="group relative flex items-center gap-3 rounded-xl border border-[#6D5DFC]/30 bg-white p-3 text-left shadow-sm transition hover:border-[#6D5DFC] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#6D5DFC]/40 dark:bg-[#0B0F2E] dark:hover:border-[#8DB8FF]"
-          >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#1D6FE0] to-[#6D5DFC] text-white shadow-sm">
-              {quickLoginRole === "admin" ? <Spinner size="sm" className="text-white" /> : <FiShield className="h-4 w-4" />}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-900 dark:text-white">Admin</span>
-                <span className="rounded-full bg-[#6D5DFC]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#6D5DFC] dark:bg-[#6D5DFC]/20 dark:text-[#A78BFA]">
-                  Admin
-                </span>
-              </div>
-              <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">admin@themora.test</p>
-            </div>
-          </button>
-
-          {/* User Login Button */}
-          <button
-            type="button"
-            disabled={isLoading || quickLoginRole !== null}
-            onClick={() => handleQuickLogin("user")}
-            className="group relative flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-white p-3 text-left shadow-sm transition hover:border-emerald-500 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/40 dark:bg-[#0B0F2E] dark:hover:border-emerald-400"
-          >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm">
-              {quickLoginRole === "user" ? <Spinner size="sm" className="text-white" /> : <FiUser className="h-4 w-4" />}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-900 dark:text-white">User</span>
-                <span className="rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                  Customer
-                </span>
-              </div>
-              <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">sarah.user@themora.test</p>
-            </div>
-          </button>
-        </div>
+        <button
+          type="button"
+          disabled={isLoading || quickLoginRole !== null}
+          onClick={() => handleQuickLogin("user")}
+          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:border-emerald-500 hover:bg-slate-50/50 hover:text-emerald-600 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300 dark:hover:border-emerald-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+        >
+          {quickLoginRole === "user" ? (
+            <Spinner size="sm" />
+          ) : (
+            <FiUser className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
+          )}
+          <span>User Demo</span>
+        </button>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">

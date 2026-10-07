@@ -23,7 +23,7 @@ const authOptions: NextAuthOptions = {
 
         try {
           const clientToken = randomUUID();
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://tech-fynite-backend.vercel.app/api/v1';
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://themora-backend.vercel.app/api/v1';
           
           
           const response = await fetch(`${apiUrl}/auth/login`, {
@@ -75,7 +75,7 @@ const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://tech-fynite-backend.vercel.app/api/v1';
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://themora-backend.vercel.app/api/v1';
           
           const response = await fetch(`${apiUrl}/auth/google`, {
             method: "POST",

@@ -86,7 +86,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       const token = localStorage.getItem("nextAuthSecret");
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL ||
-        "https://tech-fynite-backend.vercel.app/api/v1";
+        "https://themora-backend.vercel.app/api/v1";
 
       const response = await fetch(`${baseUrl}/upload/image`, {
         method: "POST",

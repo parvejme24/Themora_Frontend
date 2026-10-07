@@ -1,11 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion, MotionConfig } from "framer-motion";
 import { FiArrowLeft, FiCheck } from "react-icons/fi";
 import ThemoraLogo, { ThemoraMark } from "@/components/shared/Logo/ThemoraLogo";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { LoadingState } from "@/components/shared/Feedback/Spinner";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -22,8 +25,25 @@ interface AuthShellProps {
   footer?: React.ReactNode;
 }
 
-/** Split-screen auth layout: brand panel (desktop) + form column */
+/** Split-screen auth layout: brand panel (desktop) + form column with guest route protection */
 export default function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      const callbackUrl = searchParams.get("callbackUrl");
+      const destination = callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/dashboard";
+      router.replace(destination);
+    }
+  }, [status, router, searchParams]);
+
+  // If session is loading or user is already authenticated, show loading screen while redirecting
+  if (status === "loading" || status === "authenticated") {
+    return <LoadingState className="min-h-screen" />;
+  }
+
   return (
     <MotionConfig reducedMotion="user">
       <div className="grid min-h-screen bg-[#F5F7FB] lg:grid-cols-[1.05fr_1fr] dark:bg-[#05071A]">
