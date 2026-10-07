@@ -120,9 +120,9 @@ export default function TemplatesContainer() {
   const categories = useMemo(
     () =>
       (categoriesData?.data || [])
-        .slice()
+        .filter((c) => (c.templateCount ?? 0) > 0 || c.id === categoryId)
         .sort((a, b) => (b.templateCount ?? 0) - (a.templateCount ?? 0) || a.title.localeCompare(b.title)),
-    [categoriesData]
+    [categoriesData, categoryId]
   );
 
   const totalTemplatesAll = useMemo(() => {
@@ -133,7 +133,7 @@ export default function TemplatesContainer() {
 
   const templates = templatesData?.templates || [];
   const pagination = templatesData?.pagination;
-  const activeCategory = categories.find((c) => c.id === categoryId);
+  const activeCategory = categories.find((c) => c.id === categoryId) || (categoriesData?.data || []).find((c) => c.id === categoryId);
   const hasFilters = !!(categoryId || search || sortKey !== "newest");
 
   // Track and update scrollability of category tabs
@@ -259,7 +259,7 @@ export default function TemplatesContainer() {
             >
               {[
                 { label: "Templates", value: totalTemplatesAll || "0" },
-                { label: "Categories", value: (categoriesData?.data || []).length || "0" },
+                { label: "Categories", value: categories.filter((c) => (c.templateCount ?? 0) > 0).length || "0" },
                 { label: "Updates", value: "Weekly" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex flex-col px-5 sm:px-7">
