@@ -253,14 +253,14 @@ export default function Banner() {
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="flex items-center gap-2 sm:gap-2.5 rounded-xl sm:rounded-2xl border border-white/70 bg-white/90 p-2 pr-3 sm:p-2.5 sm:pr-4 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90"
+                className="flex items-center gap-2.5 sm:gap-3 rounded-xl sm:rounded-2xl border border-white/70 bg-white/90 p-2 pr-3.5 sm:p-2.5 sm:pr-4 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90"
               >
-                <span className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-lg sm:rounded-xl bg-slate-50 dark:bg-white/10">
-                  <Image src={FigmaLogo} alt="" width={20} height={20} className="h-4 w-auto sm:h-5" />
+                <span className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-white/10 shadow-xs">
+                  <Image src={FigmaLogo} alt="Figma" width={32} height={32} className="h-6 w-auto sm:h-7 object-contain" />
                 </span>
                 <span className="text-left">
-                  <span className="block text-[11px] sm:text-xs font-semibold text-slate-900 dark:text-white">Figma ready</span>
-                  <span className="block text-[9px] sm:text-[11px] text-slate-500 dark:text-slate-400">Source files included</span>
+                  <span className="block text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">Figma ready</span>
+                  <span className="block text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Source files included</span>
                 </span>
               </motion.div>
             </motion.div>
