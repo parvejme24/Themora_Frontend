@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AuthContext } from "@/Providers/AuthProvider";
 import Sidebar from "@/components/modules/DadhboardModules/dashboard/Sidebar";
 import Topbar from "@/components/modules/DadhboardModules/dashboard/Topbar";
+import { LoadingState } from "@/components/shared/Feedback/Spinner";
 
 export default function DashboardLayout({
   children,
@@ -22,11 +23,7 @@ export default function DashboardLayout({
   }, [authContext, router]);
 
   if (authContext?.loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F5F7FB] dark:bg-[#05071A]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#1D6FE0] border-t-transparent"></div>
-      </div>
-    );
+    return <LoadingState className="min-h-screen bg-[#F5F7FB] dark:bg-[#05071A]" />;
   }
 
   if (!authContext?.user) {

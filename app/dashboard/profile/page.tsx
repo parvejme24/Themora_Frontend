@@ -4,16 +4,13 @@ import { AuthContext } from "@/Providers/AuthProvider";
 
 import ProfileCard, { ProfileAccountDetails } from "@/components/modules/DadhboardModules/profile/ProfileCard";
 import ProfileEditForm from "@/components/modules/DadhboardModules/profile/ProfileEditForm";
+import { LoadingState } from "@/components/shared/Feedback/Spinner";
 
 export default function ProfilePage() {
   const { user, loading } = useContext(AuthContext) || {};
 
   if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-[#1D6FE0] dark:border-white/20 dark:border-t-[#8DB8FF]"></div>
-      </div>
-    );
+    return <LoadingState className="min-h-[60vh]" />;
   }
 
   if (!user) {
