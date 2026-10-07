@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -146,7 +147,7 @@ export default function OrderDetailsContainer({
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#0F5BBD] border-t-transparent"></div>
+        <Spinner size="lg" />
       </div>
     );
   }

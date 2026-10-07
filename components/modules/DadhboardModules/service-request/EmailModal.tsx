@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -243,7 +244,7 @@ export default function EmailModal({ isOpen, onClose, clientEmail, clientName, r
                 >
                   {sendEmailMutation.isPending ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <Spinner size="xs" tone="light" label="Sending" className="mr-2" />
                       Sending...
                     </>
                   ) : (
