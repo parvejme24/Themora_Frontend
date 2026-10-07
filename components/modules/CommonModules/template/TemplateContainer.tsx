@@ -82,6 +82,10 @@ export default function TemplatesContainer() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const gridTopRef = useRef<HTMLDivElement | null>(null);
+  const tabsRef = useRef<HTMLDivElement | null>(null);
+
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // URL is the single source of truth for filters
   const categoryId = searchParams.get("categoryId");
@@ -131,6 +135,36 @@ export default function TemplatesContainer() {
   const pagination = templatesData?.pagination;
   const activeCategory = categories.find((c) => c.id === categoryId);
   const hasFilters = !!(categoryId || search || sortKey !== "newest");
+
+  // Track and update scrollability of category tabs
+  const checkScroll = () => {
+    const el = tabsRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 6);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 6);
+  };
+
+  useEffect(() => {
+    const el = tabsRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [categories]);
+
+  const scrollTabs = (direction: "left" | "right") => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const scrollAmount = 260;
+    el.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
 
   const goToPage = (p: number) => {
     updateParams({ page: p > 1 ? String(p) : null }, false);
@@ -243,44 +277,78 @@ export default function TemplatesContainer() {
         <div ref={gridTopRef} className="scroll-mt-20" />
         <div className="sticky top-[61px] z-30 lg:top-[67px] border-y border-slate-200/70 bg-white/80 backdrop-blur-xl dark:border-white/[0.06] dark:bg-[#05071A]/80">
           <div className="container mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-            <div className="-my-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-1 [mask-image:linear-gradient(to_right,#000_90%,transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {[{ id: null as string | null, title: "All", count: totalTemplatesAll }, ...categories.map((c) => ({ id: c.id as string | null, title: c.title, count: c.templateCount ?? 0 }))].map((c) => {
-                const active = (categoryId ?? null) === c.id;
-                return (
+            <div className="relative flex min-w-0 flex-1 items-center">
+              {/* Scroll Left Button */}
+              {canScrollLeft && (
+                <div className="absolute left-0 z-20 flex h-full items-center bg-gradient-to-r from-white via-white/90 to-transparent pr-4 dark:from-[#05071A] dark:via-[#05071A]/90">
                   <button
-                    key={c.id ?? "all"}
                     type="button"
-                    onClick={() => updateParams({ categoryId: c.id })}
-                    aria-pressed={active}
-                    className={`relative flex shrink-0 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-sm font-medium transition-colors ${
-                      active ? "text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
-                    } ${c.id === null ? "pl-3.5" : ""}`}
+                    onClick={() => scrollTabs("left")}
+                    aria-label="Scroll left"
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:scale-105 hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:bg-[#0B0F2E] dark:text-slate-300 dark:hover:bg-[#151B4F] dark:hover:text-white"
                   >
-                    {active && (
-                      <motion.span
-                        layoutId="template-cat"
-                        className="absolute inset-0 rounded-full bg-slate-900 shadow-md dark:bg-gradient-to-r dark:from-[#1D6FE0] dark:to-[#6D5DFC]"
-                        transition={{ type: "spring", stiffness: 400, damping: 34 }}
-                      />
-                    )}
-                    {c.id !== null && (
-                      <span className="relative">
-                        <PillIcon title={c.title} />
-                      </span>
-                    )}
-                    <span className="relative">{c.title}</span>
-                    {typeof c.count === "number" && (
-                      <span
-                        className={`relative rounded-full px-1.5 text-[11px] tabular-nums ${
-                          active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"
-                        }`}
-                      >
-                        {c.count}
-                      </span>
-                    )}
+                    <FiChevronLeft className="h-4 w-4" />
                   </button>
-                );
-              })}
+                </div>
+              )}
+
+              {/* Scrollable Category Tabs */}
+              <div
+                ref={tabsRef}
+                className="-my-1 flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-1 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+                {[{ id: null as string | null, title: "All", count: totalTemplatesAll }, ...categories.map((c) => ({ id: c.id as string | null, title: c.title, count: c.templateCount ?? 0 }))].map((c) => {
+                  const active = (categoryId ?? null) === c.id;
+                  return (
+                    <button
+                      key={c.id ?? "all"}
+                      type="button"
+                      onClick={() => updateParams({ categoryId: c.id })}
+                      aria-pressed={active}
+                      className={`relative flex shrink-0 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-sm font-medium transition-colors ${
+                        active ? "text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                      } ${c.id === null ? "pl-3.5" : ""}`}
+                    >
+                      {active && (
+                        <motion.span
+                          layoutId="template-cat"
+                          className="absolute inset-0 rounded-full bg-slate-900 shadow-md dark:bg-gradient-to-r dark:from-[#1D6FE0] dark:to-[#6D5DFC]"
+                          transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                        />
+                      )}
+                      {c.id !== null && (
+                        <span className="relative">
+                          <PillIcon title={c.title} />
+                        </span>
+                      )}
+                      <span className="relative">{c.title}</span>
+                      {typeof c.count === "number" && (
+                        <span
+                          className={`relative rounded-full px-1.5 text-[11px] tabular-nums ${
+                            active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"
+                          }`}
+                        >
+                          {c.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Scroll Right Button */}
+              {canScrollRight && (
+                <div className="absolute right-0 z-20 flex h-full items-center bg-gradient-to-l from-white via-white/90 to-transparent pl-4 dark:from-[#05071A] dark:via-[#05071A]/90">
+                  <button
+                    type="button"
+                    onClick={() => scrollTabs("right")}
+                    aria-label="Scroll right"
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:scale-105 hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:bg-[#0B0F2E] dark:text-slate-300 dark:hover:bg-[#151B4F] dark:hover:text-white"
+                  >
+                    <FiChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             <DropdownMenu modal={false}>
