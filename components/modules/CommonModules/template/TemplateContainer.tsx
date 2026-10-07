@@ -101,19 +101,6 @@ export default function TemplatesContainer() {
     router.push(qs ? `/template?${qs}` : "/template", { scroll: false });
   };
 
-  const { data: categoriesData } = useGetAllTemplateCategoriesForStats();
-  const categories = useMemo(
-    () =>
-      (categoriesData?.data || [])
-        .filter((c) => c.templateCount > 0)
-        .sort((a, b) => b.templateCount - a.templateCount),
-    [categoriesData]
-  );
-  const totalTemplatesAll = useMemo(
-    () => (categoriesData?.data || []).reduce((sum, c) => sum + c.templateCount, 0),
-    [categoriesData]
-  );
-
   const templateQuery: TemplateQuery = {
     page,
     limit: PAGE_SIZE,
@@ -124,6 +111,22 @@ export default function TemplatesContainer() {
   };
 
   const { data: templatesData, isLoading, isFetching, error, refetch } = useGetAllTemplates(templateQuery);
+  const { data: categoriesData } = useGetAllTemplateCategoriesForStats();
+
+  const categories = useMemo(
+    () =>
+      (categoriesData?.data || [])
+        .slice()
+        .sort((a, b) => (b.templateCount ?? 0) - (a.templateCount ?? 0) || a.title.localeCompare(b.title)),
+    [categoriesData]
+  );
+
+  const totalTemplatesAll = useMemo(() => {
+    const sumFromCats = (categoriesData?.data || [])
+      .reduce((sum, c) => sum + (c.templateCount || 0), 0);
+    return Math.max(sumFromCats, templatesData?.pagination?.total ?? 0);
+  }, [categoriesData, templatesData?.pagination?.total]);
+
   const templates = templatesData?.templates || [];
   const pagination = templatesData?.pagination;
   const activeCategory = categories.find((c) => c.id === categoryId);
@@ -221,8 +224,8 @@ export default function TemplatesContainer() {
               className="mx-auto mt-10 flex max-w-sm items-center justify-center divide-x divide-slate-200 dark:divide-white/10"
             >
               {[
-                { label: "Templates", value: totalTemplatesAll || "—" },
-                { label: "Categories", value: categories.length || "—" },
+                { label: "Templates", value: totalTemplatesAll || "0" },
+                { label: "Categories", value: (categoriesData?.data || []).length || "0" },
                 { label: "Updates", value: "Weekly" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex flex-col px-5 sm:px-7">
@@ -241,7 +244,7 @@ export default function TemplatesContainer() {
         <div className="sticky top-[61px] z-30 lg:top-[67px] border-y border-slate-200/70 bg-white/80 backdrop-blur-xl dark:border-white/[0.06] dark:bg-[#05071A]/80">
           <div className="container mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
             <div className="-my-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-1 [mask-image:linear-gradient(to_right,#000_90%,transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {[{ id: null as string | null, title: "All", count: totalTemplatesAll }, ...categories.map((c) => ({ id: c.id as string | null, title: c.title, count: c.templateCount }))].map((c) => {
+              {[{ id: null as string | null, title: "All", count: totalTemplatesAll }, ...categories.map((c) => ({ id: c.id as string | null, title: c.title, count: c.templateCount ?? 0 }))].map((c) => {
                 const active = (categoryId ?? null) === c.id;
                 return (
                   <button
@@ -266,7 +269,7 @@ export default function TemplatesContainer() {
                       </span>
                     )}
                     <span className="relative">{c.title}</span>
-                    {c.count > 0 && (
+                    {typeof c.count === "number" && (
                       <span
                         className={`relative rounded-full px-1.5 text-[11px] tabular-nums ${
                           active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"

@@ -51,7 +51,10 @@ export default function TemplatesContainer() {
   const templates = shown?.templates ?? [];
   const pagination = shown?.pagination;
   const categories = categoriesData?.data ?? [];
-  const totalThemes = categories.reduce((sum, category) => sum + (category.templateCount || 0), 0);
+  const totalThemes = Math.max(
+    categories.reduce((sum, category) => sum + (category.templateCount || 0), 0),
+    shown?.pagination?.total ?? 0
+  );
   const hasFilters = !!(search || categoryId);
 
   const selectCategory = (id: string) => { setCategoryId(id); setPage(1); };

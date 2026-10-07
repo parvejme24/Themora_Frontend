@@ -120,10 +120,13 @@ export const useCreateTemplateCategory = () => {
       return response.data.data;
     },
     onSuccess: (newCategory) => {
-      // Invalidate all template category queries to ensure instant updates
+      // Invalidate all template category and template queries to ensure instant updates
       queryClient.invalidateQueries({ queryKey: ['templateCategories'] });
       queryClient.invalidateQueries({ queryKey: ['templateCategory'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'stats'] });
       queryClient.invalidateQueries({ queryKey: ['templateCategories', 'categoryStats'] });
+      queryClient.invalidateQueries({ queryKey: ['templates'] });
+      queryClient.invalidateQueries({ queryKey: ['templates', 'stats'] });
       
       // Optimistically update the stats query
       queryClient.setQueryData(['templateCategories', 'stats'], (oldData: TemplateCategoryListResponse | undefined) => {
@@ -164,10 +167,13 @@ export const useUpdateTemplateCategory = () => {
       // Update the specific category cache
       queryClient.setQueryData(['templateCategory', updatedCategory.id], updatedCategory);
       
-      // Invalidate all template category list queries to ensure instant updates
+      // Invalidate all template category and template queries to ensure instant updates
       queryClient.invalidateQueries({ queryKey: ['templateCategories'] });
       queryClient.invalidateQueries({ queryKey: ['templateCategory'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'stats'] });
       queryClient.invalidateQueries({ queryKey: ['templateCategories', 'categoryStats'] });
+      queryClient.invalidateQueries({ queryKey: ['templates'] });
+      queryClient.invalidateQueries({ queryKey: ['templates', 'stats'] });
       
       // Optimistically update the stats query
       queryClient.setQueryData(['templateCategories', 'stats'], (oldData: TemplateCategoryListResponse | undefined) => {
@@ -195,10 +201,13 @@ export const useDeleteTemplateCategory = () => {
       // Remove the specific category from cache
       queryClient.removeQueries({ queryKey: ['templateCategory', deletedId] });
       
-      // Invalidate all template category list queries to ensure instant updates
+      // Invalidate all template category and template queries to ensure instant updates
       queryClient.invalidateQueries({ queryKey: ['templateCategories'] });
       queryClient.invalidateQueries({ queryKey: ['templateCategory'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'stats'] });
       queryClient.invalidateQueries({ queryKey: ['templateCategories', 'categoryStats'] });
+      queryClient.invalidateQueries({ queryKey: ['templates'] });
+      queryClient.invalidateQueries({ queryKey: ['templates', 'stats'] });
       
       // Optimistically update the stats query
       queryClient.setQueryData(['templateCategories', 'stats'], (oldData: TemplateCategoryListResponse | undefined) => {

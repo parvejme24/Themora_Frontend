@@ -213,9 +213,12 @@ export const useCreateTemplate = () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
       queryClient.invalidateQueries({ queryKey: ['template'] });
       queryClient.invalidateQueries({ queryKey: ['templates', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['templates', 'new-arrivals'] });
       
       // Also invalidate template categories since template count changes
       queryClient.invalidateQueries({ queryKey: ['templateCategories'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'categoryStats'] });
     },
   });
 };
@@ -293,9 +296,12 @@ export const useUpdateTemplate = () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
       queryClient.invalidateQueries({ queryKey: ['template'] });
       queryClient.invalidateQueries({ queryKey: ['templates', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['templates', 'new-arrivals'] });
       
-      // Also invalidate template categories if category changed
+      // Also invalidate template categories if category changed or stats updated
       queryClient.invalidateQueries({ queryKey: ['templateCategories'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'categoryStats'] });
     },
   });
 };
@@ -317,9 +323,12 @@ export const useDeleteTemplate = () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
       queryClient.invalidateQueries({ queryKey: ['template'] });
       queryClient.invalidateQueries({ queryKey: ['templates', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['templates', 'new-arrivals'] });
       
       // Also invalidate template categories since template count changes
       queryClient.invalidateQueries({ queryKey: ['templateCategories'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['templateCategories', 'categoryStats'] });
     },
   });
 };
