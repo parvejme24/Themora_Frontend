@@ -15,7 +15,6 @@ import { FiSearch, FiArrowRight, FiZap, FiStar } from "react-icons/fi";
 import CountUp from "react-countup";
 
 import TemplatesImage from "@/assets/images/templates.png";
-import FigmaLogo from "@/assets/images/figma.png";
 import StatImage from "@/assets/common/stat.png";
 
 import FramerIcon from "@/assets/tech-icons/framer.png";
@@ -256,7 +255,7 @@ export default function Banner() {
                 className="flex items-center gap-2.5 sm:gap-3 rounded-xl sm:rounded-2xl border border-white/70 bg-white/90 p-2 pr-3.5 sm:p-2.5 sm:pr-4 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#0D1130]/90"
               >
                 <span className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-white/10 shadow-xs">
-                  <Image src={FigmaLogo} alt="Figma" width={32} height={32} className="h-6 w-auto sm:h-7 object-contain" />
+                  <Image src={FigmaIcon} alt="Figma" width={32} height={32} className="h-6 w-auto sm:h-7 object-contain" />
                 </span>
                 <span className="text-left">
                   <span className="block text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">Figma ready</span>
