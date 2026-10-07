@@ -120,16 +120,19 @@ export default function TemplatesContainer() {
   const categories = useMemo(
     () =>
       (categoriesData?.data || [])
+        .map((c: any) => ({
+          ...c,
+          templateCount: Math.max(c.templateCount ?? 0, Array.isArray(c.templates) ? c.templates.length : 0),
+        }))
         .filter((c) => (c.templateCount ?? 0) > 0 || c.id === categoryId)
         .sort((a, b) => (b.templateCount ?? 0) - (a.templateCount ?? 0) || a.title.localeCompare(b.title)),
     [categoriesData, categoryId]
   );
 
   const totalTemplatesAll = useMemo(() => {
-    const sumFromCats = (categoriesData?.data || [])
-      .reduce((sum, c) => sum + (c.templateCount || 0), 0);
+    const sumFromCats = categories.reduce((sum, c) => sum + (c.templateCount || 0), 0);
     return Math.max(sumFromCats, templatesData?.pagination?.total ?? 0);
-  }, [categoriesData, templatesData?.pagination?.total]);
+  }, [categories, templatesData?.pagination?.total]);
 
   const templates = templatesData?.templates || [];
   const pagination = templatesData?.pagination;
