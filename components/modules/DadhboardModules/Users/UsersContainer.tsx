@@ -17,16 +17,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/useAuth";
 import {
-  useGetAllUsersQuery,
-  useGetUserStatsQuery,
-  useBanUserMutation,
-  useUnbanUserMutation,
-  useTrashUserMutation,
-  useRestoreUserMutation,
-  useChangeUserRoleMutation,
-} from "@/redux/services/authApi";
+  useGetAllUsers,
+  useGetUserStats,
+  useBanUser,
+  useUnbanUser,
+  useTrashUser,
+  useRestoreUser,
+  useChangeUserRole,
+  useAuth,
+} from "@/hooks/useAuth";
 import { IUser, UserRole } from "@/types/auth";
 import PageHeader from "../dashboard/PageHeader";
 import FilterSelect from "../dashboard/FilterSelect";
@@ -39,7 +39,7 @@ const formatDate = (value?: string) => (value ? new Date(value).toLocaleDateStri
 const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join("").toUpperCase().slice(0, 2) || "?";
 
 function errorMessage(error: unknown, fallback: string) {
-  return (error as { data?: { message?: string } })?.data?.message || fallback;
+  return (error instanceof Error && error.message) || fallback;
 }
 
 function Avatar({ user }: { user: IUser }) {
@@ -86,7 +86,7 @@ export default function UsersContainer() {
     return () => clearTimeout(id);
   }, [searchInput]);
 
-  const { data: usersData, isLoading, isFetching, error, refetch } = useGetAllUsersQuery({
+  const { data: usersData, isLoading, isFetching, error, refetch } = useGetAllUsers({
     page,
     limit: PAGE_SIZE,
     ...(search ? { search } : {}),
@@ -94,13 +94,13 @@ export default function UsersContainer() {
     isTrashed: status === "trashed",
     ...(status !== "trashed" ? { isBanned: status === "banned" } : {}),
   });
-  const { data: statsData, refetch: refetchStats } = useGetUserStatsQuery();
+  const { data: statsData, refetch: refetchStats } = useGetUserStats();
 
-  const [banUser] = useBanUserMutation();
-  const [unbanUser] = useUnbanUserMutation();
-  const [trashUser] = useTrashUserMutation();
-  const [restoreUser] = useRestoreUserMutation();
-  const [changeUserRole] = useChangeUserRoleMutation();
+  const { banUser } = useBanUser();
+  const { unbanUser } = useUnbanUser();
+  const { trashUser } = useTrashUser();
+  const { restoreUser } = useRestoreUser();
+  const { changeUserRole } = useChangeUserRole();
 
   const users = usersData?.data ?? [];
   const pagination = usersData?.pagination as { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean } | undefined;
@@ -131,16 +131,16 @@ export default function UsersContainer() {
 
   const handleBan = async (u: IUser) => {
     if (await confirm("Ban this user?", `${u.fullName} won't be able to sign in until unbanned.`, "Ban user"))
-      run(u, () => banUser(u.id).unwrap(), "User banned", "Failed to ban user");
+      run(u, () => banUser(u.id), "User banned", "Failed to ban user");
   };
   const handleTrash = async (u: IUser) => {
     if (await confirm("Move to trash?", `${u.fullName} will be hidden from the active list. You can restore them later.`, "Move to trash"))
-      run(u, () => trashUser(u.id).unwrap(), "User moved to trash", "Failed to move user to trash");
+      run(u, () => trashUser(u.id), "User moved to trash", "Failed to move user to trash");
   };
   const handleRole = async (u: IUser, next: "ADMIN" | "USER") => {
     const text = next === "ADMIN" ? `${u.fullName} will get full access to the dashboard.` : `${u.fullName} will lose admin access.`;
     if (await confirm(next === "ADMIN" ? "Make admin?" : "Remove admin access?", text, next === "ADMIN" ? "Make admin" : "Set as user", next !== "ADMIN"))
-      run(u, () => changeUserRole({ id: u.id, role: next }).unwrap(), next === "ADMIN" ? "User is now an admin" : "Admin access removed", "Failed to change role");
+      run(u, () => changeUserRole(u.id, next), next === "ADMIN" ? "User is now an admin" : "Admin access removed", "Failed to change role");
   };
 
   const handleExport = () => {
@@ -176,14 +176,14 @@ export default function UsersContainer() {
           {isSelf ? (
             <DropdownMenuLabel className="text-xs font-normal text-slate-500">This is your account</DropdownMenuLabel>
           ) : u.isTrashed ? (
-            <DropdownMenuItem onClick={() => run(u, () => restoreUser(u.id).unwrap(), "User restored", "Failed to restore user")} className="cursor-pointer gap-2"><FiRotateCcw className="h-4 w-4" /> Restore</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => run(u, () => restoreUser(u.id), "User restored", "Failed to restore user")} className="cursor-pointer gap-2"><FiRotateCcw className="h-4 w-4" /> Restore</DropdownMenuItem>
           ) : (
             <>
               {isAdmin
                 ? <DropdownMenuItem onClick={() => handleRole(u, "USER")} className="cursor-pointer gap-2"><FiUser className="h-4 w-4" /> Set as user</DropdownMenuItem>
                 : <DropdownMenuItem onClick={() => handleRole(u, "ADMIN")} className="cursor-pointer gap-2"><FiShield className="h-4 w-4" /> Make admin</DropdownMenuItem>}
               {u.isBanned
-                ? <DropdownMenuItem onClick={() => run(u, () => unbanUser(u.id).unwrap(), "User unbanned", "Failed to unban user")} className="cursor-pointer gap-2"><FiUserCheck className="h-4 w-4" /> Unban</DropdownMenuItem>
+                ? <DropdownMenuItem onClick={() => run(u, () => unbanUser(u.id), "User unbanned", "Failed to unban user")} className="cursor-pointer gap-2"><FiUserCheck className="h-4 w-4" /> Unban</DropdownMenuItem>
                 : <DropdownMenuItem onClick={() => handleBan(u)} className="cursor-pointer gap-2"><FiUserX className="h-4 w-4" /> Ban</DropdownMenuItem>}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleTrash(u)} className="cursor-pointer gap-2 text-red-600 focus:text-red-600 dark:text-red-400"><FiTrash2 className="h-4 w-4" /> Move to trash</DropdownMenuItem>

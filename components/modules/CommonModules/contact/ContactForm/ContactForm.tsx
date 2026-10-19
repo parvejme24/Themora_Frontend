@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiAlertCircle, FiArrowRight, FiBriefcase, FiCheck, FiDollarSign, FiLayers, FiMail, FiUser } from "react-icons/fi";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useContactApi } from "@/hooks/useContactApi";
+import { useCreateContact } from "@/hooks/useContactApi";
 import { useAuth } from "@/hooks/useAuth";
 
 type FormValues = {
@@ -68,8 +68,7 @@ export default function ContactForm() {
     formState: { errors },
   } = useForm<FormValues>({ defaultValues: { budget: "", serviceRequired: "" } });
 
-  const contactApi = useContactApi();
-  const [createContact, { isLoading: isCreating }] = contactApi.createContact();
+  const { mutateAsync: createContact, isPending: isCreating } = useCreateContact();
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -79,7 +78,7 @@ export default function ContactForm() {
   const onSubmit = async (data: FormValues) => {
     setSubmitError(null);
     try {
-      await createContact({ ...data, userId: user?.id }).unwrap();
+      await createContact({ ...data, userId: user?.id });
       setSentTo(data.fullName);
       reset();
     } catch (error: unknown) {

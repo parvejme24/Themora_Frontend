@@ -10,6 +10,20 @@ const getBaseURL = () => {
   return process.env.NEXT_PUBLIC_API_URL || 'https://themora-backend.vercel.app/api/v1';
 };
 
+// Session token set synchronously by AuthProvider, so queries that run during the
+// first render already carry it. localStorage is the fallback after a reload.
+let sessionToken: string | null = null;
+
+export const setApiToken = (token: string | null) => {
+  sessionToken = token;
+};
+
+const getApiToken = () => {
+  if (sessionToken) return sessionToken;
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('nextAuthSecret');
+};
+
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: getBaseURL(),
@@ -28,12 +42,9 @@ apiClient.interceptors.request.use(
       delete config.headers['content-type'];
     }
 
-    // Get token from localStorage or session
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('nextAuthSecret');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = getApiToken();
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -100,6 +111,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('nextAuthSecret');
+        sessionToken = null;
         const currentPath = window.location.pathname;
         // Only redirect to login if currently on a protected dashboard route to prevent reload loops
         if (currentPath.startsWith('/dashboard') && currentPath !== '/login') {

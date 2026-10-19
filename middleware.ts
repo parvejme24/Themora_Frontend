@@ -4,7 +4,11 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
-  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  // Must match the secret in app/api/auth/[...nextauth]/route.ts
+  const secret =
+    process.env.AUTH_SECRET ||
+    process.env.NEXTAUTH_SECRET ||
+    (process.env.NODE_ENV === "development" ? "themora-local-development-secret" : undefined);
   const token = await getToken({ req, secret });
   const isAuthenticated = !!token;
 

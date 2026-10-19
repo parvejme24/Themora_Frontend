@@ -17,8 +17,9 @@ interface Described {
 
 // Turn any thrown/axios error into a friendly, specific explanation
 export function describeError(error: unknown, subject = "this content"): Described {
-  const err = error as { message?: string; code?: string; response?: { status?: number } } | undefined;
-  const status = err?.response?.status;
+  const err = error as { message?: string; code?: string; status?: number; response?: { status?: number } } | undefined;
+  // axios errors carry response.status; ApiError (lib/api.ts) carries status
+  const status = err?.response?.status ?? (err?.status || undefined);
   const msg = (err?.message || "").toLowerCase();
 
   if ((typeof navigator !== "undefined" && !navigator.onLine) || msg.includes("network") || err?.code === "ERR_NETWORK") {

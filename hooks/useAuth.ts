@@ -1,46 +1,50 @@
 import { useSession, signIn, signOut } from "next-auth/react";
-import { useDispatch } from "react-redux";
-import { useQueryClient } from "@tanstack/react-query";
-import { authApi } from "@/redux/services/authApi";
-import {
-  useRegisterMutation,
-  useVerifyOtpMutation,
-  useResendOtpMutation,
-  useLoginMutation,
-  useGoogleLoginMutation,
-  useValidateSessionMutation,
-  useLogoutMutation,
-  useChangePasswordMutation,
-  useUpdateProfileMutation,
-  useUpdateAvatarImageMutation,
-  useGetCurrentUserQuery,
-  useGetAllUsersQuery,
-  useGetUserStatsQuery,
-  useGetUserByIdQuery,
-  useDeleteUserMutation,
-  useBanUserMutation,
-  useUnbanUserMutation,
-  useTrashUserMutation,
-  useRestoreUserMutation,
-  useChangeUserRoleMutation,
-} from "@/redux/services/authApi";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api, type ApiEnvelope } from "@/lib/api";
+import apiClient, { setApiToken } from "@/lib/api-client";
 import {
   IUser,
   IRegisterUser,
   ILoginUser,
-  IGoogleLogin,
   IVerifyOtp,
-  IResendOtp,
   IChangePassword,
   IUpdateProfile,
   IUserQuery,
+  IUserStats,
   UserRole,
 } from "@/types/auth";
+
+type SessionData = { user: IUser; nextAuthSecret?: string; expiresAt?: string };
+
+export const authKeys = {
+  me: ["auth", "me"] as const,
+  users: ["auth", "users"] as const,
+  userList: (query?: IUserQuery) => ["auth", "users", "list", query ?? {}] as const,
+  userStats: ["auth", "users", "stats"] as const,
+  user: (id: string) => ["auth", "users", id] as const,
+};
+
+const rememberSession = (data?: { nextAuthSecret?: string }) => {
+  if (data?.nextAuthSecret) localStorage.setItem("nextAuthSecret", data.nextAuthSecret);
+};
+
+// Wraps a mutation in the `{ fn, isLoading, error, data }` shape the components use
+const useAction = <TVars, TResult>(
+  mutationFn: (vars: TVars) => Promise<TResult>,
+  options: { onSuccess?: (result: TResult) => void } = {}
+) => {
+  const mutation = useMutation({ mutationFn, onSuccess: options.onSuccess });
+  return {
+    run: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    error: mutation.error,
+    data: mutation.data,
+  };
+};
 
 // Main useAuth hook - provides authentication state and common operations
 export const useAuth = () => {
   const { data: session, status } = useSession();
-  const dispatch = useDispatch();
 
   return {
     user: session?.user as IUser | undefined,
@@ -54,460 +58,170 @@ export const useAuth = () => {
 // Current user query hook - only fetch when authenticated
 export const useCurrentUser = () => {
   const { isAuthenticated } = useAuth();
-  return useGetCurrentUserQuery(undefined, {
-    skip: !isAuthenticated, // Skip the query if user is not authenticated
+  return useQuery({
+    queryKey: authKeys.me,
+    queryFn: () => api.get<{ user: IUser }>("/auth/me"),
+    enabled: isAuthenticated,
   });
 };
 
-// Registration hook
 export const useRegister = () => {
-  const [registerMutation, { isLoading, error, data }] = useRegisterMutation();
-
-  const register = async (userData: IRegisterUser) => {
-    try {
-      const result = await registerMutation(userData).unwrap();
-      
-      // Check if registration was successful
-      if (!result.success) {
-        // Extract error message from response
-        const errorMessage = result.error || result.message || "Registration failed";
-        const error = new Error(errorMessage) as any;
-        error.data = result;
-        error.status = 400;
-        throw error;
-      }
-      
-      if (result.success && result.data?.nextAuthSecret) {
-        // Store the session secret
-        localStorage.setItem("nextAuthSecret", result.data.nextAuthSecret);
-      }
-      return result;
-    } catch (err: any) {
-      // If it's already an error object with proper structure, rethrow it
-      if (err?.data?.success === false) {
-        const errorMessage = err.data.error || err.data.message || "Registration failed";
-        const error = new Error(errorMessage) as any;
-        error.data = err.data;
-        error.status = err.status || 400;
-        throw error;
-      }
-      // If it's a standard RTK Query error
-      if (err?.data) {
-        const errorMessage = err.data.error || err.data.message || "Registration failed";
-        const error = new Error(errorMessage) as any;
-        error.data = err.data;
-        error.status = err.status || 400;
-        throw error;
-      }
-      // Otherwise, rethrow as-is
-      throw err;
-    }
-  };
-
-  return {
-    register,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useAction(
+    (userData: IRegisterUser) => api.post<SessionData>("/auth/register", userData),
+    { onSuccess: (result) => rememberSession(result.data) }
+  );
+  return { register: run, ...state };
 };
 
-// OTP verification hook
 export const useVerifyOtp = () => {
-  const [verifyOtpMutation, { isLoading, error, data }] =
-    useVerifyOtpMutation();
-
-  const verifyOtp = async (otpData: IVerifyOtp) => {
-    try {
-      const result = await verifyOtpMutation(otpData).unwrap();
-      if (result.success && result.data?.nextAuthSecret) {
-        localStorage.setItem("nextAuthSecret", result.data.nextAuthSecret);
-      }
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    verifyOtp,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useAction(
+    (otpData: IVerifyOtp) => api.post<SessionData>("/auth/verify-otp", otpData),
+    { onSuccess: (result) => rememberSession(result.data) }
+  );
+  return { verifyOtp: run, ...state };
 };
 
-// Resend OTP hook
 export const useResendOtp = () => {
-  const [resendOtpMutation, { isLoading, error, data }] =
-    useResendOtpMutation();
-
-  const resendOtp = async (email: string) => {
-    try {
-      const result = await resendOtpMutation({ email }).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    resendOtp,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useAction((email: string) => api.post("/auth/resend-otp", { email }));
+  return { resendOtp: run, ...state };
 };
 
-// Login hook
 export const useLogin = () => {
-  const [loginMutation, { isLoading, error, data }] = useLoginMutation();
-
-  const login = async (credentials: ILoginUser) => {
-    try {
-      const result = await loginMutation(credentials).unwrap();
-      if (result.success && result.data?.nextAuthSecret) {
-        localStorage.setItem("nextAuthSecret", result.data.nextAuthSecret);
-      }
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    login,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useAction(
+    (credentials: ILoginUser) => api.post<SessionData>("/auth/login", credentials),
+    { onSuccess: (result) => rememberSession(result.data) }
+  );
+  return { login: run, ...state };
 };
 
-// Google login hook
-export const useGoogleLogin = () => {
-  const [googleLoginMutation, { isLoading, error, data }] =
-    useGoogleLoginMutation();
-
-  const googleLogin = async (googleData: IGoogleLogin) => {
-    try {
-      const result = await googleLoginMutation(googleData).unwrap();
-      if (result.success && result.data?.nextAuthSecret) {
-        localStorage.setItem("nextAuthSecret", result.data.nextAuthSecret);
-      }
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    googleLogin,
-    isLoading,
-    error,
-    data,
-  };
-};
-
-// Session validation hook
 export const useValidateSession = () => {
-  const [validateSessionMutation, { isLoading, error, data }] =
-    useValidateSessionMutation();
-
-  const validateSession = async (nextAuthSecret: string) => {
-    try {
-      const result = await validateSessionMutation({ nextAuthSecret }).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    validateSession,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useAction((nextAuthSecret: string) =>
+    api.post<{ user: IUser; isValid: boolean }>("/auth/validate-session", { nextAuthSecret })
+  );
+  return { validateSession: run, ...state };
 };
 
-// Logout hook
 export const useLogout = () => {
-  const [logoutMutation, { isLoading, error, data }] = useLogoutMutation();
-
-  const logout = async () => {
+  const queryClient = useQueryClient();
+  const { run, ...state } = useAction(async () => {
+    const nextAuthSecret = localStorage.getItem("nextAuthSecret");
     try {
-      const nextAuthSecret = localStorage.getItem("nextAuthSecret");
-      if (nextAuthSecret) {
-        await logoutMutation({ nextAuthSecret }).unwrap();
-      }
-      // Clear stored session
+      if (nextAuthSecret) await api.post("/auth/logout", { nextAuthSecret });
+    } finally {
+      // Even if the server call fails, the local session ends
       localStorage.removeItem("nextAuthSecret");
-      // Sign out from NextAuth
+      setApiToken(null);
+      queryClient.clear();
       signOut();
-      return { success: true };
-    } catch (err) {
-      // Even if logout fails on server, clear local storage
-      localStorage.removeItem("nextAuthSecret");
-      signOut();
-      throw err;
     }
-  };
-
-  return {
-    logout,
-    isLoading,
-    error,
-    data,
-  };
+    return { success: true };
+  });
+  return { logout: () => run(undefined), ...state };
 };
 
-// Change password hook
 export const useChangePassword = () => {
-  const [changePasswordMutation, { isLoading, error, data }] =
-    useChangePasswordMutation();
-
-  const changePassword = async (passwordData: IChangePassword) => {
-    try {
-      const result = await changePasswordMutation(passwordData).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    changePassword,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useAction((passwordData: IChangePassword) =>
+    api.post("/auth/change-password", passwordData)
+  );
+  return { changePassword: run, ...state };
 };
 
-// Update profile hook
 export const useUpdateProfile = () => {
-  const [updateProfileMutation, { isLoading, error, data }] =
-    useUpdateProfileMutation();
-  const dispatch = useDispatch();
   const queryClient = useQueryClient();
-
-  const updateProfile = async (profileData: IUpdateProfile) => {
-    try {
-      const result = await updateProfileMutation(profileData).unwrap();
-      
-      // RTK Query automatically invalidates 'Me' tag (defined in API)
-      // But we also invalidate React Query cache if used
-      queryClient.invalidateQueries({ queryKey: ['getCurrentUser'] });
-      queryClient.invalidateQueries({ queryKey: ['authApi', 'getCurrentUser'] });
-      
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    updateProfile,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useAction(
+    (profileData: IUpdateProfile) => api.put<{ user: IUser }>("/auth/profile", profileData),
+    { onSuccess: () => queryClient.invalidateQueries({ queryKey: authKeys.me }) }
+  );
+  return { updateProfile: run, ...state };
 };
 
-// Update avatar hook - using separate Cloudinary upload endpoint
 export const useUpdateAvatar = () => {
-  const [updateAvatarMutation, { isLoading, error, data }] =
-    useUpdateAvatarImageMutation();
-  const dispatch = useDispatch();
   const queryClient = useQueryClient();
-
-  const updateAvatar = async (file: File) => {
-    try {
+  const { run, ...state } = useAction(
+    async (file: File) => {
       const formData = new FormData();
       formData.append("image", file);
-      
-      // Use direct fetch instead of RTK Query (due to FormData handling)
-      const token = localStorage.getItem('nextAuthSecret');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api/v1';
-      const response = await fetch(`${baseUrl}/auth/profile/avatar`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type for FormData - let browser set it automatically
-        },
-        body: formData
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || errorData.error || `HTTP ${response.status}`);
+      try {
+        const response = await apiClient.put<ApiEnvelope<{ avatarUrl: string }>>("/auth/profile/avatar", formData);
+        return response.data;
+      } catch (err: unknown) {
+        const body = (err as { response?: { data?: { message?: string; error?: string } } })?.response?.data;
+        throw new Error(body?.message || body?.error || "Failed to upload avatar");
       }
-      
-      const result = await response.json();
-      
-      // Invalidate RTK Query cache using dispatch
-      // This ensures navbar, profile page, and all components update instantly
-      // RTK Query will automatically refetch all queries that provide the 'Me' tag
-      dispatch(authApi.util.invalidateTags(['Me']));
-      
-      // Also invalidate React Query cache if used
-      queryClient.invalidateQueries({ queryKey: ['getCurrentUser'] });
-      queryClient.invalidateQueries({ queryKey: ['authApi', 'getCurrentUser'] });
-      
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    updateAvatar,
-    isLoading,
-    error,
-    data,
-  };
+    },
+    // Navbar, profile page and sidebar all read the same query, so they update together
+    { onSuccess: () => queryClient.invalidateQueries({ queryKey: authKeys.me }) }
+  );
+  return { updateAvatar: run, ...state };
 };
 
-// Admin hooks - only fetch when user is admin
+// ---------- Admin ----------
+
 export const useGetAllUsers = (query?: IUserQuery) => {
   const { isAdmin } = useAuth();
-  return useGetAllUsersQuery(query, {
-    skip: !isAdmin, // Skip the query if user is not admin
+  return useQuery({
+    queryKey: authKeys.userList(query),
+    queryFn: () => api.get<IUser[]>("/auth/users", { page: 1, limit: 10, ...query }),
+    enabled: isAdmin,
   });
 };
 
 export const useGetUserStats = () => {
   const { isAdmin } = useAuth();
-  return useGetUserStatsQuery(undefined, {
-    skip: !isAdmin, // Skip the query if user is not admin
+  return useQuery({
+    queryKey: authKeys.userStats,
+    queryFn: () => api.get<IUserStats>("/auth/users/stats"),
+    enabled: isAdmin,
   });
 };
 
-export const useGetUserById = (id: string) => {
-  return useGetUserByIdQuery(id);
+export const useGetUserById = (id: string) =>
+  useQuery({
+    queryKey: authKeys.user(id),
+    queryFn: () => api.get<{ user: IUser }>(`/auth/users/${id}`),
+    enabled: !!id,
+  });
+
+// Every admin user change refreshes the user list and stats
+const useUserAdminAction = <TVars>(mutationFn: (vars: TVars) => Promise<ApiEnvelope<unknown>>) => {
+  const queryClient = useQueryClient();
+  return useAction(mutationFn, {
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: authKeys.users }),
+  });
 };
 
 export const useDeleteUser = () => {
-  const [deleteUserMutation, { isLoading, error, data }] =
-    useDeleteUserMutation();
-
-  const deleteUser = async (id: string) => {
-    try {
-      const result = await deleteUserMutation(id).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    deleteUser,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useUserAdminAction((id: string) => api.delete(`/auth/users/${id}`));
+  return { deleteUser: run, ...state };
 };
 
 export const useBanUser = () => {
-  const [banUserMutation, { isLoading, error, data }] = useBanUserMutation();
-
-  const banUser = async (id: string) => {
-    try {
-      const result = await banUserMutation(id).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    banUser,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useUserAdminAction((id: string) => api.patch(`/auth/users/${id}/ban`));
+  return { banUser: run, ...state };
 };
 
 export const useUnbanUser = () => {
-  const [unbanUserMutation, { isLoading, error, data }] =
-    useUnbanUserMutation();
-
-  const unbanUser = async (id: string) => {
-    try {
-      const result = await unbanUserMutation(id).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    unbanUser,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useUserAdminAction((id: string) => api.patch(`/auth/users/${id}/unban`));
+  return { unbanUser: run, ...state };
 };
 
 export const useTrashUser = () => {
-  const [trashUserMutation, { isLoading, error, data }] =
-    useTrashUserMutation();
-
-  const trashUser = async (id: string) => {
-    try {
-      const result = await trashUserMutation(id).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    trashUser,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useUserAdminAction((id: string) => api.patch(`/auth/users/${id}/trash`));
+  return { trashUser: run, ...state };
 };
 
 export const useRestoreUser = () => {
-  const [restoreUserMutation, { isLoading, error, data }] =
-    useRestoreUserMutation();
-
-  const restoreUser = async (id: string) => {
-    try {
-      const result = await restoreUserMutation(id).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return {
-    restoreUser,
-    isLoading,
-    error,
-    data,
-  };
+  const { run, ...state } = useUserAdminAction((id: string) => api.patch(`/auth/users/${id}/restore`));
+  return { restoreUser: run, ...state };
 };
 
 export const useChangeUserRole = () => {
-  const [changeUserRoleMutation, { isLoading, error, data }] =
-    useChangeUserRoleMutation();
-
-  const changeUserRole = async (id: string, role: "ADMIN" | "USER") => {
-    try {
-      const result = await changeUserRoleMutation({ id, role }).unwrap();
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  };
-
+  const { run, ...state } = useUserAdminAction(({ id, role }: { id: string; role: "ADMIN" | "USER" }) =>
+    api.patch(`/auth/users/${id}/role`, { role })
+  );
   return {
-    changeUserRole,
-    isLoading,
-    error,
-    data,
+    changeUserRole: (id: string, role: "ADMIN" | "USER") => run({ id, role }),
+    ...state,
   };
 };
 
@@ -528,7 +242,7 @@ export const useCredentialsSignIn = () => {
   };
 };
 
-// Utility hook for checking authentication status--
+// Utility hook for checking authentication status
 export const useAuthStatus = () => {
   const { user, isLoading, isAuthenticated, isAdmin } = useAuth();
 

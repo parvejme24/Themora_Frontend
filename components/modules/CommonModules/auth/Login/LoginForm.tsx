@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
-import { FiArrowRight, FiLock, FiMail, FiShield, FiUser, FiZap } from "react-icons/fi";
+import { FiArrowLeft, FiArrowRight, FiKey, FiLock, FiMail, FiShield, FiUser } from "react-icons/fi";
 import { useGoogleSignIn } from "@/hooks/useAuth";
 import { extractErrorMessage } from "@/lib/errorHandler";
 import { AuthInput, Divider, FormAlert, GoogleButton, SubmitButton } from "../AuthFields";
@@ -41,7 +41,15 @@ const AUTH_ERRORS: Record<string, string> = {
   AccessDenied: "Access denied. Please contact support.",
   Configuration: "Server configuration error. Please try again later.",
   Verification: "Please verify your email before logging in.",
+  OAuthSignin: "Google sign-in could not start. Please try again.",
+  OAuthCallback: "Google sign-in failed. Please try again.",
 };
+
+// Thrown by the NextAuth credentials providers when the account has 2FA on
+const TWO_FACTOR_PREFIX = "TwoFactorRequired:";
+
+const safeCallbackUrl = (value: string | null) =>
+  value && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
 
 export default function LoginForm() {
   const {
@@ -53,18 +61,36 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [quickLoginRole, setQuickLoginRole] = useState<"admin" | "user" | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [challengeToken, setChallengeToken] = useState<string | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const googleSignIn = useGoogleSignIn();
+  const callbackUrl = safeCallbackUrl(searchParams.get("callbackUrl"));
+
+  // Google sign-in lands back here with ?twoFactor=<token> or ?error=<code>
+  useEffect(() => {
+    const token = searchParams.get("twoFactor");
+    const error = searchParams.get("error");
+    if (token) setChallengeToken(token);
+    if (error) setFormError(AUTH_ERRORS[error] ?? "Sign-in failed. Please try again.");
+  }, [searchParams]);
+
+  const finishSignIn = (message: string) => {
+    toast.success(message);
+    router.push(callbackUrl);
+    router.refresh();
+  };
 
   const handleLoginWithCredentials = async (email: string, password: string, roleLabel?: string) => {
     setFormError(null);
     try {
       const result = await signIn("credentials", { email, password, redirect: false });
       if (result?.ok) {
-        toast.success(roleLabel ? `Welcome back! Logged in as ${roleLabel}.` : "Welcome back! Signing you in…");
-        router.push("/dashboard");
+        finishSignIn(roleLabel ? `Welcome back! Logged in as ${roleLabel}.` : "Welcome back! Signing you in…");
+      } else if (result?.error?.startsWith(TWO_FACTOR_PREFIX)) {
+        setChallengeToken(result.error.slice(TWO_FACTOR_PREFIX.length));
       } else {
-        console.error("🔐 NextAuth login failed:", result);
         setFormError((result?.error && (AUTH_ERRORS[result.error] ?? result.error)) || "Invalid email or password");
       }
     } catch (err: unknown) {
@@ -79,6 +105,27 @@ export default function LoginForm() {
     setIsLoading(false);
   };
 
+  const onSubmitTwoFactor = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!challengeToken || !twoFactorCode.trim()) return;
+    setFormError(null);
+    setIsLoading(true);
+    const result = await signIn("two-factor", { challengeToken, code: twoFactorCode.trim(), redirect: false });
+    setIsLoading(false);
+    if (result?.ok) {
+      finishSignIn("Welcome back! Signing you in…");
+    } else {
+      setFormError((result?.error && (AUTH_ERRORS[result.error] ?? result.error)) || "That code didn't work");
+    }
+  };
+
+  const cancelTwoFactor = () => {
+    setChallengeToken(null);
+    setTwoFactorCode("");
+    setFormError(null);
+    router.replace("/login");
+  };
+
   const handleQuickLogin = async (type: "admin" | "user") => {
     const creds = DEMO_ACCOUNTS[type];
     setValue("email", creds.email, { shouldValidate: true });
@@ -87,6 +134,45 @@ export default function LoginForm() {
     await handleLoginWithCredentials(creds.email, creds.password, creds.role);
     setQuickLoginRole(null);
   };
+
+  if (challengeToken) {
+    return (
+      <form onSubmit={onSubmitTwoFactor} noValidate className="space-y-5">
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Two-factor authentication</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Enter the 6-digit code from your authenticator app, or one of your recovery codes.
+          </p>
+        </div>
+
+        <FormAlert title="Couldn't verify the code" message={formError} />
+
+        <AuthInput
+          label="Authentication code"
+          icon={FiKey}
+          name="code"
+          inputMode="text"
+          autoComplete="one-time-code"
+          autoFocus
+          placeholder="123456"
+          value={twoFactorCode}
+          onChange={(e) => setTwoFactorCode(e.target.value)}
+        />
+
+        <SubmitButton loading={isLoading}>
+          Verify and sign in <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+        </SubmitButton>
+
+        <button
+          type="button"
+          onClick={cancelTwoFactor}
+          className="flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+        >
+          <FiArrowLeft /> Back to sign in
+        </button>
+      </form>
+    );
+  }
 
   return (
     <div className="space-y-5">

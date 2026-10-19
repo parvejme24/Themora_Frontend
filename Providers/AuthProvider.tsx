@@ -5,7 +5,6 @@ import {
   useCurrentUser, 
   useLogin,
   useRegister,
-  useGoogleLogin,
   useLogout,
   useVerifyOtp,
   useResendOtp,
@@ -23,6 +22,7 @@ import {
 import { IUser as User } from "@/types/auth";
 import { UserRole } from "@/types/user";
 import { signIn, signOut } from "next-auth/react";
+import { setApiToken } from "@/lib/api-client";
 
 // Request/Response interfaces for backward compatibility
 export interface RegisterRequest {
@@ -157,7 +157,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Auth hooks
   const { login: loginHook, isLoading: loginLoading } = useLogin();
   const { register: registerHook, isLoading: registerLoading } = useRegister();
-  const { googleLogin: googleLoginHook, isLoading: googleLoading } = useGoogleLogin();
   const { logout: logoutHook, isLoading: logoutLoading } = useLogout();
   const { verifyOtp: verifyOtpHook, isLoading: verifyLoading } = useVerifyOtp();
   const { resendOtp: resendOtpHook, isLoading: resendLoading } = useResendOtp();
@@ -178,6 +177,9 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loading = isLoading || (isAuthenticated && !actualUser);
   const error = currentUserError ? 'Failed to fetch user data' : null;
 
+
+  // Set before children render so their first API calls are authenticated
+  setApiToken(session?.user?.nextAuthSecret ?? null);
 
   // Store session secret when user is authenticated
   useEffect(() => {
@@ -233,7 +235,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (result.success) {
         return { user: result.data?.user };
       } else {
-        throw new Error(result.error || 'Registration failed');
+        throw new Error(result.message || 'Registration failed');
       }
     } catch (error) {
       throw error;
