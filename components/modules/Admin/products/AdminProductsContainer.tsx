@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiArchive, FiEdit2, FiExternalLink, FiLayers, FiPackage, FiPlus, FiSearch, FiTrash2 } from "react-icons/fi";
+import { FiArchive, FiDownload, FiEdit2, FiExternalLink, FiLayers, FiPackage, FiPlus, FiSearch, FiTrash2, FiUpload } from "react-icons/fi";
 import { toast } from "sonner";
-import { useAdminProducts, useDeleteProduct, useUpdateProduct, type AdminProductRow } from "@/hooks/useAdminProductsApi";
+import { exportProductsCsv, useAdminProducts, useDeleteProduct, useUpdateProduct, type AdminProductRow } from "@/hooks/useAdminProductsApi";
+import ImportProductsDialog from "./ImportProductsDialog";
 import { formatCount, formatDate, formatPrice } from "@/lib/format";
 import { PRODUCT_TYPE_LABELS, type ProductStatus, type ProductType } from "@/types/marketplace";
 import PageHeader from "@/components/modules/DadhboardModules/dashboard/PageHeader";
@@ -107,6 +108,8 @@ export default function AdminProductsContainer() {
   const [searchInput, setSearchInput] = useState("");
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -125,17 +128,38 @@ export default function AdminProductsContainer() {
     limit: 20,
   });
 
+  // Exports every product matching the current tab, type and search
+  const onExport = async () => {
+    setExporting(true);
+    try {
+      await exportProductsCsv({ q: q || undefined, status: status || undefined, type: type || undefined, sort: "newest" });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Products"
         description="Templates, apps, UI kits and plugins. Drafts stay hidden until you publish them."
         actions={
-          <Link href="/dashboard/products/new" className={buttonClass.primary}>
-            <FiPlus className="h-4 w-4" /> New product
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={onExport} disabled={exporting} className={buttonClass.secondary} title="Download the products shown by the current filters">
+              <FiDownload className="h-4 w-4" /> {exporting ? "Exporting…" : "Export CSV"}
+            </button>
+            <button type="button" onClick={() => setImportOpen(true)} className={buttonClass.secondary}>
+              <FiUpload className="h-4 w-4" /> Import CSV
+            </button>
+            <Link href="/dashboard/products/new" className={buttonClass.primary}>
+              <FiPlus className="h-4 w-4" /> New product
+            </Link>
+          </div>
         }
       />
+      <ImportProductsDialog open={importOpen} onClose={() => setImportOpen(false)} />
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex gap-1 rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/5" role="tablist">
           {TABS.map((tab) => (

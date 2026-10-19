@@ -63,6 +63,43 @@ test.describe("admin", () => {
     await expect(page.locator("main tbody tr", { hasText: title })).toHaveCount(0);
   });
 
+  test("export products as CSV, import a new draft from CSV, then delete it", async ({ page }) => {
+    await signIn(page, "admin", "/dashboard/products");
+    await page.getByRole("tab", { name: "Published" }).click();
+    const downloading = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export CSV" }).click();
+    const download = await downloading;
+    expect(download.suggestedFilename()).toMatch(/^themora-products-.*\.csv$/);
+    const exported = await download.createReadStream().then(async (stream) => {
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) chunks.push(chunk as Buffer);
+      return Buffer.concat(chunks).toString("utf8");
+    });
+    const [header, firstRow] = exported.replace(/^﻿/, "").split("\r\n");
+    expect(header).toMatch(/^id,slug,title,status,productType,category,price/);
+    // Reuse a real category from the export (the 6th column; seeded slugs have no commas or quotes)
+    const category = firstRow.match(/^(?:[^,]*,){5}([^,]*),/)?.[1];
+    expect(category).toBeTruthy();
+
+    const title = `E2E import ${Date.now().toString(36)}`;
+    const csv = `title,category,price,shortDescription,techStack\n${title},${category},19,Temporary product imported by the end-to-end tests.,React | Vite\n`;
+    await page.getByRole("button", { name: "Import CSV" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.locator('input[type="file"]').setInputFiles({ name: "import.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+    await expect(dialog).toContainText("Every row is valid: 1 new, 0 updated.");
+    await expect(dialog).toContainText(title);
+    await dialog.getByRole("button", { name: "Import 1 products" }).click();
+    await expect(dialog).toBeHidden();
+
+    await page.getByRole("tab", { name: "Drafts" }).click();
+    await page.getByLabel("Search products").fill(title);
+    const row = page.locator("main tbody tr", { hasText: title });
+    await expect(row).toContainText("Draft");
+    page.once("dialog", (confirm) => confirm.accept());
+    await row.getByRole("button", { name: "Delete" }).click();
+    await expect(page.locator("main tbody tr", { hasText: title })).toHaveCount(0);
+  });
+
   test("analytics, queues and audit log load", async ({ page }) => {
     await signIn(page, "admin", "/dashboard/analytics");
     await expect(page.locator("main canvas")).toHaveCount(2);

@@ -81,7 +81,7 @@ const toApiError = (error: unknown): ApiError => {
 async function request<T, Extra = object>(
   method: Method,
   url: string,
-  options: { query?: object; body?: unknown } = {}
+  options: { query?: object; body?: unknown; timeout?: number } = {}
 ): Promise<ApiEnvelope<T, Extra>> {
   try {
     const response = await apiClient.request<ApiEnvelope<T, Extra>>({
@@ -89,6 +89,7 @@ async function request<T, Extra = object>(
       url,
       params: options.query ? toSearchParams(options.query as Record<string, QueryValue>) : undefined,
       data: options.body,
+      timeout: options.timeout,
     });
     if (response.data && response.data.success === false) {
       throw new ApiError(response.data.message || "Request failed", response.status);
@@ -99,9 +100,29 @@ async function request<T, Extra = object>(
   }
 }
 
+/** Downloads a file response (e.g. a CSV export) with the session token and saves it */
+export const downloadFile = async (url: string, query: object, fallbackName: string) => {
+  try {
+    const response = await apiClient.get<Blob>(url, {
+      params: toSearchParams(query as Record<string, QueryValue>),
+      responseType: "blob",
+      timeout: 60000,
+    });
+    const name = /filename="([^"]+)"/.exec(response.headers["content-disposition"] ?? "")?.[1] ?? fallbackName;
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(response.data);
+    link.download = name;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  } catch (error) {
+    throw toApiError(error);
+  }
+};
+
 export const api = {
   get: <T, Extra = object>(url: string, query?: object) => request<T, Extra>("get", url, { query }),
-  post: <T, Extra = object>(url: string, body?: unknown) => request<T, Extra>("post", url, { body }),
+  post: <T, Extra = object>(url: string, body?: unknown, options?: { timeout?: number }) =>
+    request<T, Extra>("post", url, { body, ...options }),
   put: <T, Extra = object>(url: string, body?: unknown) => request<T, Extra>("put", url, { body }),
   patch: <T, Extra = object>(url: string, body?: unknown) => request<T, Extra>("patch", url, { body }),
   delete: <T, Extra = object>(url: string, body?: unknown) => request<T, Extra>("delete", url, { body }),

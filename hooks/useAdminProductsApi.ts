@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, ApiError, type ApiBody, type ApiQuery } from "@/lib/api";
+import { api, ApiError, downloadFile, type ApiBody, type ApiQuery } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 import { usePreferences } from "@/hooks/useAccountApi";
 import { useAuth } from "@/hooks/useAuth";
@@ -93,6 +93,32 @@ export const useUpdateProduct = () =>
 /** Products with orders or licences are archived instead of deleted */
 export const useDeleteProduct = () =>
   useCatalogMutation(async (id: string) => (await api.delete<{ archived?: boolean } | null>(`/admin/products/${id}`)).message);
+
+// ---------- CSV import / export ----------
+
+export interface ProductImportResult {
+  dryRun: boolean;
+  created: number;
+  updated: number;
+  rows: { row: number; action: "create" | "update"; id: string | null; title: string }[];
+}
+
+/** One problem in an import file (row 1 is the header) */
+export interface ProductImportError {
+  row: number;
+  column?: string;
+  message: string;
+}
+
+/** Downloads every product matching the filters (no paging) */
+export const exportProductsCsv = (query: Omit<AdminProductQuery, "page" | "limit">) =>
+  downloadFile("/admin/products/export", query, "themora-products.csv");
+
+// Large files take a while: each row is a separate write
+export const useImportProducts = () =>
+  useCatalogMutation(async (input: { csv: string; dryRun: boolean }) =>
+    (await api.post<ProductImportResult>("/admin/products/import", input, { timeout: 300000 })).data
+  );
 
 // ---------- Versions ----------
 
