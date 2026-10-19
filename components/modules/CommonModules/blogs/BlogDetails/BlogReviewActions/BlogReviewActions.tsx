@@ -12,9 +12,9 @@ import { AuthContext } from "@/Providers/AuthProvider";
 import { useContext } from "react";
 import { toast } from "sonner";
 import { BlogReview, UpdateBlogReview } from "@/types/blogReview";
-import { UserRole } from "@/types/user";
 import { FiEdit2, FiTrash2, FiEyeOff, FiEye } from "react-icons/fi";
 import Swal from "sweetalert2";
+import { useStaff } from "@/hooks/useAdminProductsApi";
 
 interface BlogReviewActionsProps {
   review: BlogReview;
@@ -76,10 +76,10 @@ export default function BlogReviewActions({
     }
   };
 
-  // Check if user can edit/delete this review
+  // Owners and comment moderators can edit/delete; moderators can hide
+  const { can } = useStaff();
   const isOwner = user?.id === review.userId;
-  const role = (user as { role?: UserRole })?.role;
-  const isAdmin = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
+  const isAdmin = can("reviews:moderate");
   const canEdit = isOwner || isAdmin;
   const canDelete = isOwner || isAdmin;
   const canHide = isAdmin;

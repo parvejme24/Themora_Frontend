@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { useDeleteBlog, useGetAllBlogs, useGetBlogStats, useToggleBlogPublish } from "@/hooks/useBlogApi";
 import { useGetAllBlogCategoriesForStats } from "@/hooks/useBlogCategoryApi";
 import { AuthContext } from "@/Providers/AuthProvider";
-import { UserRole } from "@/types/user";
 import { IBlog, IBlogQuery } from "@/types/blog";
 import PageHeader from "../../dashboard/PageHeader";
 import FilterSelect from "../../dashboard/FilterSelect";
 import BlogCard, { BlogActions, BlogThumb, formatBlogDate, StatusBadge } from "./BlogCard";
+import { useStaff } from "@/hooks/useAdminProductsApi";
 
 const PAGE_SIZE = 12;
 type Status = "all" | "published" | "draft";
@@ -22,7 +22,8 @@ type View = "grid" | "list";
 export default function BlogContainer() {
   const router = useRouter();
   const { user } = useContext(AuthContext) || {};
-  const isAdmin = (user?.role as UserRole) === UserRole.ADMIN || (user?.role as UserRole) === UserRole.SUPER_ADMIN;
+  // Editors and admins manage every post; other members manage their own
+  const isAdmin = useStaff().can("marketing");
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");

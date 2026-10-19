@@ -216,11 +216,11 @@ export const useRestoreUser = () => {
 };
 
 export const useChangeUserRole = () => {
-  const { run, ...state } = useUserAdminAction(({ id, role }: { id: string; role: "ADMIN" | "USER" }) =>
+  const { run, ...state } = useUserAdminAction(({ id, role }: { id: string; role: "ADMIN" | "EDITOR" | "SUPPORT" | "MODERATOR" | "USER" }) =>
     api.patch(`/auth/users/${id}/role`, { role })
   );
   return {
-    changeUserRole: (id: string, role: "ADMIN" | "USER") => run({ id, role }),
+    changeUserRole: (id: string, role: "ADMIN" | "EDITOR" | "SUPPORT" | "MODERATOR" | "USER") => run({ id, role }),
     ...state,
   };
 };

@@ -13,9 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
-import { UserRole } from "@/types/user";
 import { Contact } from "@/types/contact";
 import PageHeader from "../dashboard/PageHeader";
+import { useStaff } from "@/hooks/useAdminProductsApi";
 
 const PAGE_SIZE = 20;
 type Tab = "all" | "open" | "replied";
@@ -49,9 +49,10 @@ function ReplyBadge({ contact }: { contact: Contact }) {
   );
 }
 
-export default function ServiceRequestContainer({ userRole }: { userRole?: string }) {
+// Support staff answer every request; members see the ones they sent
+export default function ServiceRequestContainer() {
   const { user } = useAuth();
-  const isAdmin = userRole === UserRole.ADMIN || userRole === UserRole.SUPER_ADMIN;
+  const isAdmin = useStaff().can("support");
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");

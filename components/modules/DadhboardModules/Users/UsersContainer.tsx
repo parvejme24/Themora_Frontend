@@ -33,7 +33,17 @@ import FilterSelect from "../dashboard/FilterSelect";
 
 const PAGE_SIZE = 15;
 type StatusTab = "active" | "banned" | "trashed";
-type RoleFilter = "all" | "USER" | "ADMIN";
+type Role = "ADMIN" | "EDITOR" | "SUPPORT" | "MODERATOR" | "USER";
+type RoleFilter = "all" | Role;
+
+// What each role can do (mirrors the backend's role → permission map)
+const ROLES: Record<Role, { label: string; access: string }> = {
+  ADMIN: { label: "Admin", access: "Everything, including users and pricing" },
+  EDITOR: { label: "Editor", access: "Products, coupons, affiliates, analytics" },
+  SUPPORT: { label: "Support", access: "Tickets, orders, refunds, subscriptions" },
+  MODERATOR: { label: "Moderator", access: "Product reviews" },
+  USER: { label: "Customer", access: "Their own purchases only" },
+};
 
 const formatDate = (value?: string) => (value ? new Date(value).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "Never");
 const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join("").toUpperCase().slice(0, 2) || "?";
@@ -51,10 +61,10 @@ function Avatar({ user }: { user: IUser }) {
 }
 
 function RoleBadge({ role }: { role: string }) {
-  const admin = role === "ADMIN" || role === "SUPER_ADMIN";
+  const staff = role !== "USER";
   return (
-    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${admin ? "bg-[#EAF1FF] text-[#0F5BBD] dark:bg-[#1D6FE0]/15 dark:text-[#8DB8FF]" : "bg-slate-100 text-slate-600 dark:bg-white/[0.06] dark:text-slate-300"}`}>
-      {admin && <FiShield className="h-3 w-3" />}{role === "SUPER_ADMIN" ? "Super admin" : admin ? "Admin" : "User"}
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${staff ? "bg-[#EAF1FF] text-[#0F5BBD] dark:bg-[#1D6FE0]/15 dark:text-[#8DB8FF]" : "bg-slate-100 text-slate-600 dark:bg-white/[0.06] dark:text-slate-300"}`}>
+      {role === "ADMIN" && <FiShield className="h-3 w-3" />}{ROLES[role as Role]?.label ?? role}
     </span>
   );
 }
@@ -137,10 +147,11 @@ export default function UsersContainer() {
     if (await confirm("Move to trash?", `${u.fullName} will be hidden from the active list. You can restore them later.`, "Move to trash"))
       run(u, () => trashUser(u.id), "User moved to trash", "Failed to move user to trash");
   };
-  const handleRole = async (u: IUser, next: "ADMIN" | "USER") => {
-    const text = next === "ADMIN" ? `${u.fullName} will get full access to the dashboard.` : `${u.fullName} will lose admin access.`;
-    if (await confirm(next === "ADMIN" ? "Make admin?" : "Remove admin access?", text, next === "ADMIN" ? "Make admin" : "Set as user", next !== "ADMIN"))
-      run(u, () => changeUserRole(u.id, next), next === "ADMIN" ? "User is now an admin" : "Admin access removed", "Failed to change role");
+  const handleRole = async (u: IUser, next: Role) => {
+    const { label, access } = ROLES[next];
+    const text = next === "USER" ? `${u.fullName} will lose all staff access.` : `${u.fullName} will be able to manage: ${access.toLowerCase()}.`;
+    if (await confirm(`Make ${u.fullName} ${next === "USER" ? "a customer" : `${next === "ADMIN" ? "an" : "a"} ${label.toLowerCase()}`}?`, text, `Set as ${label.toLowerCase()}`, next === "USER" || u.role === "ADMIN"))
+      run(u, () => changeUserRole(u.id, next), `${u.fullName} is now ${label === "Admin" ? "an" : "a"} ${label.toLowerCase()}`, "Failed to change role");
   };
 
   const handleExport = () => {
@@ -164,7 +175,6 @@ export default function UsersContainer() {
 
   const actions = (u: IUser) => {
     const isSelf = u.id === currentUser?.id;
-    const isAdmin = u.role === "ADMIN";
     return (
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
@@ -172,16 +182,24 @@ export default function UsersContainer() {
             {busyId === u.id ? <Spinner size="xs" label="Working" /> : <FiMoreHorizontal className="h-4 w-4" />}
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52 rounded-xl">
+        <DropdownMenuContent align="end" className="w-64 rounded-xl">
           {isSelf ? (
             <DropdownMenuLabel className="text-xs font-normal text-slate-500">This is your account</DropdownMenuLabel>
           ) : u.isTrashed ? (
             <DropdownMenuItem onClick={() => run(u, () => restoreUser(u.id), "User restored", "Failed to restore user")} className="cursor-pointer gap-2"><FiRotateCcw className="h-4 w-4" /> Restore</DropdownMenuItem>
           ) : (
             <>
-              {isAdmin
-                ? <DropdownMenuItem onClick={() => handleRole(u, "USER")} className="cursor-pointer gap-2"><FiUser className="h-4 w-4" /> Set as user</DropdownMenuItem>
-                : <DropdownMenuItem onClick={() => handleRole(u, "ADMIN")} className="cursor-pointer gap-2"><FiShield className="h-4 w-4" /> Make admin</DropdownMenuItem>}
+              <DropdownMenuLabel className="text-xs font-normal text-slate-500">Role</DropdownMenuLabel>
+              {(Object.keys(ROLES) as Role[]).map((value) => (
+                <DropdownMenuItem key={value} onClick={() => u.role !== value && handleRole(u, value)} disabled={u.role === value} className="cursor-pointer items-start gap-2">
+                  {value === "USER" ? <FiUser className="mt-0.5 h-4 w-4 shrink-0" /> : <FiShield className="mt-0.5 h-4 w-4 shrink-0" />}
+                  <span>
+                    <span className="block">{ROLES[value].label}{u.role === value && " (current)"}</span>
+                    <span className="block text-xs text-slate-500">{ROLES[value].access}</span>
+                  </span>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
               {u.isBanned
                 ? <DropdownMenuItem onClick={() => run(u, () => unbanUser(u.id), "User unbanned", "Failed to unban user")} className="cursor-pointer gap-2"><FiUserCheck className="h-4 w-4" /> Unban</DropdownMenuItem>
                 : <DropdownMenuItem onClick={() => handleBan(u)} className="cursor-pointer gap-2"><FiUserX className="h-4 w-4" /> Ban</DropdownMenuItem>}
@@ -321,7 +339,7 @@ export default function UsersContainer() {
               </button>
             )}
           </div>
-          <FilterSelect ariaLabel="Filter by role" value={role} onChange={(v) => { setRole(v as RoleFilter); setPage(1); }} className="sm:w-40" options={[{ value: "all", label: "All roles" }, { value: "USER", label: "Users" }, { value: "ADMIN", label: "Admins" }]} />
+          <FilterSelect ariaLabel="Filter by role" value={role} onChange={(v) => { setRole(v as RoleFilter); setPage(1); }} className="sm:w-40" options={[{ value: "all", label: "All roles" }, ...(Object.keys(ROLES) as Role[]).map((value) => ({ value, label: ROLES[value].label }))]} />
         </div>
       </div>
 

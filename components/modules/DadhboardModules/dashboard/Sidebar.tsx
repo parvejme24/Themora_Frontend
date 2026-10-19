@@ -23,9 +23,9 @@ const staffNav: NavItem[] = [
   { label: "Profile", href: "/dashboard/profile", icon: UsersRound },
   { label: "Catalogue", icon: Layers3, permission: "catalog:write", children: [
     { label: "Products", href: "/dashboard/products", icon: Layers3, permission: "catalog:write" },
-    { label: "Categories", href: "/dashboard/templates-categories", icon: Tags, adminOnly: true },
+    { label: "Categories", href: "/dashboard/templates-categories", icon: Tags, permission: "catalog:write" },
   ] },
-  { label: "Publishing", icon: BookOpen, adminOnly: true, children: [
+  { label: "Publishing", icon: BookOpen, permission: "marketing", children: [
     { label: "Blogs", href: "/dashboard/blogs", icon: BookOpen },
     { label: "Blog categories", href: "/dashboard/blog-categories", icon: FolderKanban },
   ] },
@@ -43,8 +43,8 @@ const staffNav: NavItem[] = [
   { label: "Orders", href: "/dashboard/orders", icon: PackageCheck, permission: "support" },
   { label: "Users", href: "/dashboard/users", icon: UsersRound, adminOnly: true },
   { label: "Pricing", href: "/dashboard/pricing", icon: CreditCard, adminOnly: true },
-  { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail, adminOnly: true },
-  { label: "Service requests", href: "/dashboard/service-request", icon: Mail, adminOnly: true },
+  { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail, permission: "marketing" },
+  { label: "Service requests", href: "/dashboard/service-request", icon: Mail, permission: "support" },
   { label: "Audit log", href: "/dashboard/audit-log", icon: History, permission: "audit" },
 ];
 
