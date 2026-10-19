@@ -4,33 +4,48 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell, BookOpen, ChevronDown, Heart, Share2, ShieldCheck, ChevronRight, CreditCard, FolderKanban, LayoutDashboard,
+  BarChart3, Bell, BookOpen, History, RotateCcw, Star, ChevronDown, Heart, Share2, ShieldCheck, ChevronRight, CreditCard, FolderKanban, LayoutDashboard,
   Layers3, LifeBuoy, Mail, PackageCheck, PanelLeftClose, ShoppingBag, Tags, UsersRound, X,
 } from "lucide-react";
 import { ThemoraMark } from "@/components/shared/Logo/ThemoraLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/types/auth";
+import { useStaff, type Permission } from "@/hooks/useAdminProductsApi";
 
-type NavLink = { label: string; href: string; icon: typeof LayoutDashboard };
-type NavGroup = { label: string; icon: typeof LayoutDashboard; children: NavLink[] };
+// `permission`: staff with it see the link; `adminOnly`: legacy admin screens whose API is ADMIN-only
+type Access = { permission?: Permission; adminOnly?: boolean };
+type NavLink = { label: string; href: string; icon: typeof LayoutDashboard } & Access;
+type NavGroup = { label: string; icon: typeof LayoutDashboard; children: NavLink[] } & Access;
 type NavItem = NavLink | NavGroup;
 
-const adminNav: NavItem[] = [
+const staffNav: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { label: "Profile", href: "/dashboard/profile", icon: UsersRound },
-  { label: "Themes", icon: Layers3, children: [
-    { label: "All themes", href: "/dashboard/templates", icon: Layers3 },
-    { label: "Categories", href: "/dashboard/templates-categories", icon: Tags },
+  { label: "Catalogue", icon: Layers3, permission: "catalog:write", children: [
+    { label: "Products", href: "/dashboard/products", icon: Layers3, permission: "catalog:write" },
+    { label: "Categories", href: "/dashboard/templates-categories", icon: Tags, adminOnly: true },
   ] },
-  { label: "Publishing", icon: BookOpen, children: [
+  { label: "Publishing", icon: BookOpen, adminOnly: true, children: [
     { label: "Blogs", href: "/dashboard/blogs", icon: BookOpen },
     { label: "Blog categories", href: "/dashboard/blog-categories", icon: FolderKanban },
   ] },
-  { label: "Orders", href: "/dashboard/orders", icon: PackageCheck },
-  { label: "Users", href: "/dashboard/users", icon: UsersRound },
-  { label: "Pricing", href: "/dashboard/pricing", icon: CreditCard },
-  { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail },
-  { label: "Service requests", href: "/dashboard/service-request", icon: LifeBuoy },
+  { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3, permission: "analytics" },
+  { label: "Support", icon: LifeBuoy, permission: "support", children: [
+    { label: "Ticket queue", href: "/dashboard/tickets", icon: LifeBuoy, permission: "support" },
+    { label: "Refunds", href: "/dashboard/refunds", icon: RotateCcw, permission: "support" },
+    { label: "Subscriptions", href: "/dashboard/subscriptions-admin", icon: CreditCard, permission: "support" },
+  ] },
+  { label: "Reviews", href: "/dashboard/reviews", icon: Star, permission: "reviews:moderate" },
+  { label: "Marketing", icon: Tags, permission: "marketing", children: [
+    { label: "Coupons & sales", href: "/dashboard/coupons", icon: Tags, permission: "marketing" },
+    { label: "Affiliates", href: "/dashboard/affiliates", icon: Share2, permission: "marketing" },
+  ] },
+  { label: "Orders", href: "/dashboard/orders", icon: PackageCheck, adminOnly: true },
+  { label: "Users", href: "/dashboard/users", icon: UsersRound, adminOnly: true },
+  { label: "Pricing", href: "/dashboard/pricing", icon: CreditCard, adminOnly: true },
+  { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail, adminOnly: true },
+  { label: "Service requests", href: "/dashboard/service-request", icon: Mail, adminOnly: true },
+  { label: "Audit log", href: "/dashboard/audit-log", icon: History, permission: "audit" },
 ];
 
 const userNav: NavLink[] = [
@@ -63,12 +78,17 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
   const pathname = usePathname();
   const { user } = useAuth();
   const isAdmin = user?.role === UserRole.ADMIN;
-  const items = isAdmin ? adminNav : userNav;
+  const { isStaff, can } = useStaff();
+  const allowed = (access: Access) => (access.adminOnly ? isAdmin : access.permission ? can(access.permission) : true);
+  // Staff see the sections their role allows; customers see their account pages
+  const items: NavItem[] = isStaff
+    ? staffNav.filter(allowed).map((item) => (isGroup(item) ? { ...item, children: item.children.filter(allowed) } : item))
+    : userNav;
   const [expanded, setExpanded] = useState<string[]>([]);
 
   useEffect(() => {
     setExpanded((current) => {
-      const activeGroups = adminNav.filter(isGroup).filter((group) => group.children.some((child) => isActive(pathname, child.href))).map((group) => group.label);
+      const activeGroups = staffNav.filter(isGroup).filter((group) => group.children.some((child) => isActive(pathname, child.href))).map((group) => group.label);
       return Array.from(new Set([...current, ...activeGroups]));
     });
   }, [pathname]);
@@ -142,7 +162,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">{displayName}</span>
-              <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">{isAdmin ? "Administrator" : "Member"}</span>
+              <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">{isAdmin ? "Administrator" : isStaff ? "Staff" : "Member"}</span>
             </span>
           </div>
         </div>

@@ -14,7 +14,7 @@ export default function OverviewPage() {
   const displayName = user?.fullName || user?.email?.split("@")[0] || "there";
   const quickActions = isAdmin
     ? [
-        { label: "Add a theme", href: "/dashboard/templates/create", icon: Layers3 },
+        { label: "Add a product", href: "/dashboard/products/new", icon: Layers3 },
         { label: "Write a blog", href: "/dashboard/blogs/create", icon: BookOpen },
         { label: "Manage users", href: "/dashboard/users", icon: UsersRound },
         { label: "Pricing plans", href: "/dashboard/pricing", icon: PackageCheck },

@@ -20,7 +20,7 @@ export default function TopSellingTemplates() {
             Top selling themes <Flame size={18} className="text-amber-500 fill-amber-500/20" />
           </h2>
         </div>
-        <Link href="/dashboard/templates" className="inline-flex items-center gap-1 text-sm font-semibold text-[#1D6FE0] hover:text-[#0F5BBD] dark:text-[#8DB8FF]">
+        <Link href="/dashboard/products" className="inline-flex items-center gap-1 text-sm font-semibold text-[#1D6FE0] hover:text-[#0F5BBD] dark:text-[#8DB8FF]">
           Catalog <ArrowUpRight size={15} aria-hidden="true" />
         </Link>
       </div>

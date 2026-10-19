@@ -11,13 +11,14 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 import NotificationBell from "@/components/modules/Account/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/types/auth";
+import { useStaff } from "@/hooks/useAdminProductsApi";
 
 type Item = { label: string; href: string; icon: typeof LayoutDashboard; keywords?: string; external?: boolean };
 type Group = { title: string; items: Item[] };
 
 const adminPages: Item[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard, keywords: "home stats revenue analytics" },
-  { label: "Themes", href: "/dashboard/templates", icon: Layers3, keywords: "templates products catalog" },
+  { label: "Products", href: "/dashboard/products", icon: Layers3, keywords: "templates themes catalog versions files" },
   { label: "Theme categories", href: "/dashboard/templates-categories", icon: Tags, keywords: "template categories" },
   { label: "Blog", href: "/dashboard/blogs", icon: BookOpen, keywords: "posts articles drafts" },
   { label: "Blog categories", href: "/dashboard/blog-categories", icon: FolderKanban, keywords: "topics" },
@@ -26,10 +27,18 @@ const adminPages: Item[] = [
   { label: "Pricing", href: "/dashboard/pricing", icon: CreditCard, keywords: "plans subscriptions" },
   { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail, keywords: "subscribers emails" },
   { label: "Service requests", href: "/dashboard/service-request", icon: LifeBuoy, keywords: "contact inbox leads support" },
+  { label: "Analytics", href: "/dashboard/analytics", icon: LayoutDashboard, keywords: "revenue sales conversion reports" },
+  { label: "Support queue", href: "/dashboard/tickets", icon: LifeBuoy, keywords: "tickets help customers" },
+  { label: "Refunds", href: "/dashboard/refunds", icon: PackageCheck, keywords: "refund requests money back" },
+  { label: "Subscriptions", href: "/dashboard/subscriptions-admin", icon: CreditCard, keywords: "all-access subscribers" },
+  { label: "Reviews", href: "/dashboard/reviews", icon: BookOpen, keywords: "ratings moderation hide reply" },
+  { label: "Coupons & sales", href: "/dashboard/coupons", icon: Tags, keywords: "discount codes flash sale" },
+  { label: "Affiliates", href: "/dashboard/affiliates", icon: UsersRound, keywords: "referrals commission payouts" },
+  { label: "Audit log", href: "/dashboard/audit-log", icon: Clock3, keywords: "history changes staff activity" },
   { label: "Profile", href: "/dashboard/profile", icon: UserRound, keywords: "account settings avatar" },
 ];
 const adminActions: Item[] = [
-  { label: "Add theme", href: "/dashboard/templates/create", icon: Plus, keywords: "new template create upload" },
+  { label: "New product", href: "/dashboard/products/new", icon: Plus, keywords: "new template theme create upload" },
   { label: "Write blog post", href: "/dashboard/blogs/create", icon: PenSquare, keywords: "new post article create" },
   { label: "New pricing plan", href: "/dashboard/pricing/create", icon: Plus, keywords: "create plan" },
 ];
@@ -52,14 +61,17 @@ const memberActions: Item[] = [
 ];
 
 const pageTitles: Record<string, string> = {
-  "/dashboard": "Overview", "/dashboard/profile": "Profile", "/dashboard/templates": "Themes",
+  "/dashboard": "Overview", "/dashboard/profile": "Profile", "/dashboard/products": "Products", "/dashboard/products/new": "New product",
+  "/dashboard/analytics": "Analytics", "/dashboard/tickets": "Support queue", "/dashboard/refunds": "Refunds",
+  "/dashboard/subscriptions-admin": "Subscriptions", "/dashboard/reviews": "Reviews", "/dashboard/coupons": "Coupons & sales",
+  "/dashboard/affiliates": "Affiliates", "/dashboard/audit-log": "Audit log",
   "/dashboard/templates-categories": "Theme categories", "/dashboard/blogs": "Blog",
   "/dashboard/blog-categories": "Blog categories", "/dashboard/orders": "Orders",
   "/dashboard/users": "Users", "/dashboard/pricing": "Pricing", "/dashboard/newsletter": "Newsletter",
   "/dashboard/service-request": "Service requests", "/dashboard/library": "My library",
   "/dashboard/subscription": "Subscription", "/dashboard/wishlist": "Wishlist", "/dashboard/support": "Support",
   "/dashboard/notifications": "Notifications", "/dashboard/affiliate": "Affiliate", "/dashboard/security": "Security & email",
-  "/dashboard/templates/create": "Add theme",
+
   "/dashboard/blogs/create": "New post", "/dashboard/pricing/create": "New plan",
 };
 
@@ -77,8 +89,9 @@ export default function Topbar({ onMenuToggle }: { onMenuToggle: () => void }) {
   const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === UserRole.ADMIN;
-  const pages = isAdmin ? adminPages : memberPages;
-  const actions = isAdmin ? adminActions : memberActions;
+  const { isStaff } = useStaff();
+  const pages = isAdmin || isStaff ? adminPages : memberPages;
+  const actions = isAdmin || isStaff ? adminActions : memberActions;
 
   const [accountOpen, setAccountOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);

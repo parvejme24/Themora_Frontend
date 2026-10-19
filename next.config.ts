@@ -39,6 +39,11 @@ const nextConfig: NextConfig = {
     return [
       { source: "/template", destination: "/products", permanent: false },
       { source: "/template/:id", destination: "/products/:id", permanent: false },
+      // Admin product screens moved to the marketplace API
+      { source: "/dashboard/templates", destination: "/dashboard/products", permanent: false },
+      { source: "/dashboard/templates/create", destination: "/dashboard/products/new", permanent: false },
+      { source: "/dashboard/templates/edit/:id", destination: "/dashboard/products/:id", permanent: false },
+      { source: "/dashboard/templates/:id", destination: "/dashboard/products/:id", permanent: false },
     ];
   },
   // Proxy API requests in development to bypass CORS
