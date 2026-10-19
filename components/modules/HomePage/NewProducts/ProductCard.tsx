@@ -64,7 +64,7 @@ export default function ProductCard({ template }: { template: Template }) {
             )}
           </div>
           <Link
-            href={`/template/${template.id}`}
+            href={`/products/${template.slug || template.id}`}
             aria-label={`View details for ${template.title}`}
             className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors duration-300 group-hover:bg-[#0F5BBD] dark:bg-white dark:text-slate-900 dark:group-hover:bg-[#8DB8FF]"
           >

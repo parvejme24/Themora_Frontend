@@ -39,7 +39,7 @@ export function ThemeActions({ template, busy, onEdit, onDelete, className = "" 
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-lg border border-slate-200 dark:border-white/10">
         <DropdownMenuItem asChild className="cursor-pointer gap-2.5 text-xs font-medium">
-          <Link href={`/template/${template.id}`} target="_blank">
+          <Link href={`/products/${template.id}`} target="_blank">
             <FiEye className="h-3.5 w-3.5 text-slate-500" /> View public page
           </Link>
         </DropdownMenuItem>
@@ -107,7 +107,7 @@ export default function TemplateCard({
         {/* Hover quick preview button */}
         <div className="absolute right-3 top-3 flex items-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           <Link
-            href={`/template/${template.id}`}
+            href={`/products/${template.id}`}
             target="_blank"
             aria-label="View public page"
             className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur hover:bg-white hover:text-slate-900 dark:bg-[#0B0F2E]/90 dark:text-slate-200 dark:hover:bg-[#0B0F2E] dark:hover:text-white"

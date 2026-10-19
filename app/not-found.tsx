@@ -49,7 +49,7 @@ export default function NotFound() {
                 <LifeBuoy size={16} aria-hidden="true" /> Contact support
               </Link>
             </div>
-            <Link href="/template" className="mt-7 inline-flex items-center gap-1 text-sm font-medium text-[#53647a] underline decoration-[#aab8c8] underline-offset-4 transition hover:text-[#1559a8] dark:text-[#a7b2c2] dark:hover:text-[#8dbdff]">
+            <Link href="/products" className="mt-7 inline-flex items-center gap-1 text-sm font-medium text-[#53647a] underline decoration-[#aab8c8] underline-offset-4 transition hover:text-[#1559a8] dark:text-[#a7b2c2] dark:hover:text-[#8dbdff]">
               Browse templates <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
           </div>

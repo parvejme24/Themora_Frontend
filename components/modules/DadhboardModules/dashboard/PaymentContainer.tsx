@@ -201,7 +201,7 @@ export default function PaymentContainer() {
         </div>
 
         {!isAdmin && (
-          <Link href="/template">
+          <Link href="/products">
             <Button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#1D6FE0] to-[#0F4BB8] text-white shadow-md transition hover:scale-[1.02]">
               <FiShoppingBag className="h-4 w-4" /> Browse Themes
             </Button>
@@ -350,7 +350,7 @@ export default function PaymentContainer() {
               : "When you purchase premium templates or subscribe to a plan, your receipts and licenses will appear here automatically."}
           </p>
           {!isAdmin && (
-            <Link href="/template" className="mt-6 inline-block">
+            <Link href="/products" className="mt-6 inline-block">
               <Button className="rounded-full bg-slate-900 px-6 font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900">
                 Explore Marketplace <FiArrowRight className="ml-1.5 h-4 w-4" />
               </Button>

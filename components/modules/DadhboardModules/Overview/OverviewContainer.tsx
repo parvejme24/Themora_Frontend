@@ -19,7 +19,7 @@ export default function OverviewPage() {
         { label: "Pricing plans", href: "/dashboard/pricing", icon: PackageCheck },
       ]
     : [
-        { label: "Browse themes", href: "/template", icon: Layers3 },
+        { label: "Browse themes", href: "/products", icon: Layers3 },
         { label: "View purchases", href: "/dashboard/purchases", icon: PackageCheck },
         { label: "Update profile", href: "/dashboard/profile", icon: UsersRound },
       ];

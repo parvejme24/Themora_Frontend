@@ -50,7 +50,7 @@ export default function TopSellingTemplates() {
           topSelling.map((item, index) => (
             <Link
               key={item.template.id}
-              href={`/template/${item.template.id}`}
+              href={`/products/${item.template.id}`}
               className="flex min-w-0 items-center gap-3 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.04] sm:px-2 rounded-xl"
             >
               <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-100 dark:border-white/10 dark:bg-white/[0.04]">

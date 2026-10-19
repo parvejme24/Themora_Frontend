@@ -5,7 +5,7 @@ import { ThemoraMark } from "@/components/shared/Logo/ThemoraLogo";
 import { ArrowRight, ArrowUp, ArrowUpRight, Facebook, Instagram, Mail, Twitter, Youtube } from "lucide-react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { toast } from "sonner";
-import { useNewsletter } from "@/hooks/useNewsletterApi";
+import { useSubscribeNewsletter } from "@/hooks/useNewsletterApi";
 
 const socialLinks = [
   { icon: Twitter, label: "Twitter", href: "#" },
@@ -15,7 +15,7 @@ const socialLinks = [
 ];
 
 const companyLinks = [
-  { label: "Template", href: "/template" },
+  { label: "Products", href: "/products" },
   { label: "Pricing", href: "/pricing" },
   { label: "Blogs", href: "/blogs" },
   { label: "Contact", href: "/contact" },
@@ -71,7 +71,11 @@ const FooterLinks = ({ title, links }: { title: string; links: typeof companyLin
 
 const NewsletterSection = () => {
   const [email, setEmail] = useState("");
-  const { subscribe, isSubscribing, subscribeError } = useNewsletter();
+  // Subscribe only; the combined hook also loads the admin subscriber list
+  const subscribeMutation = useSubscribeNewsletter();
+  const subscribe = (email: string) => subscribeMutation.mutateAsync({ email });
+  const isSubscribing = subscribeMutation.isPending;
+  const subscribeError = subscribeMutation.error;
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,7 +216,7 @@ export default function Footer() {
           </div>
           <div className="relative mt-7 flex flex-col gap-3 sm:flex-row lg:mt-0 lg:shrink-0">
             <Link
-              href="/template"
+              href="/products"
               className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
             >
               Browse templates

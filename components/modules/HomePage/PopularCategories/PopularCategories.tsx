@@ -12,7 +12,7 @@ import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 const exploreLink = (
   <Link
-    href="/template"
+    href="/products"
     className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-[#0F5BBD]/40 hover:text-[#0F5BBD] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:text-[#8DB8FF]"
   >
     Explore all
@@ -91,7 +91,7 @@ export default function Categories() {
     const real: CategoryTile[] = categories.map((c) => ({
       key: c.id,
       title: c.title,
-      href: `/template?categoryId=${c.id}`,
+      href: c.slug ? `/products?category=${c.slug}` : `/products?q=${encodeURIComponent(c.title)}`,
       image: c.image,
       count: c.templateCount,
     }));
@@ -101,7 +101,7 @@ export default function Categories() {
       .map((name) => ({
         key: `suggested-${name}`,
         title: name,
-        href: `/template?search=${encodeURIComponent(name)}`,
+        href: `/products?q=${encodeURIComponent(name)}`,
       }));
     return [...real, ...extra];
   }, [categories]);

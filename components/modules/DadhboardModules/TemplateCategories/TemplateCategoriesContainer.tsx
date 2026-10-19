@@ -269,7 +269,7 @@ export default function TemplateCategoriesContainer() {
                 <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-white/[0.06] dark:text-slate-400">
                   <span>Added {new Date(category.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
                   {count > 0 && (
-                    <Link href={`/template?categoryId=${category.id}`} className="font-medium text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">View on site</Link>
+                    <Link href={category.slug ? `/products?category=${category.slug}` : "/products"} className="font-medium text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">View on site</Link>
                   )}
                 </div>
               </li>

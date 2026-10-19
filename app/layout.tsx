@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SITE_URL } from "@/lib/config";
 import { ThemeProvider } from "next-themes";
 import AuthProvider from "@/Providers/AuthProvider";
 import SessionProvider from "@/Providers/SessionProvider";
@@ -20,6 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Themora - Premium Template Collections",
   description:
     "Themora is a platform for selling premium templates and plugins.",

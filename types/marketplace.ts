@@ -183,3 +183,62 @@ export interface CheckoutResult {
   gateway: PaymentGateway | "free";
   productTitle?: string;
 }
+
+export interface MyLicense {
+  id: string;
+  licenseKey: string;
+  licenseType: LicenseType;
+  isActive: boolean;
+  createdAt: string;
+  product: { id: string; slug: string; title: string; imageUrl: string | null };
+  activations: { id: string; domain: string; createdAt: string }[];
+  activationsUsed: number;
+  canUpgrade: boolean;
+  upgradePrice: number | null;
+}
+
+export interface MySubscription {
+  id: string;
+  status: "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED";
+  provider: "STRIPE" | "SSLCOMMERZ";
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd?: boolean;
+  isActive: boolean;
+  canManageBilling: boolean;
+  pricingPlan: { id: string; title?: string; slug?: string } | null;
+}
+
+export interface DownloadLinks {
+  version: string;
+  releasedAt: string;
+  files: { id: string; name: string; size: number | null; url: string; expiresAt: string | null }[];
+}
+
+export type OrderStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "CANCELLED" | "REFUNDED";
+
+/** Public order view for the checkout result pages (no customer details) */
+export interface OrderStatusView {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  subtotal: number;
+  discountTotal: number;
+  totalAmount: number;
+  currency: string;
+  couponCode: string | null;
+  chargeAmount: number | null;
+  chargeCurrency: string | null;
+  provider: string | null;
+  paidAt: string | null;
+  failureReason: string | null;
+  createdAt: string;
+  items: {
+    title: string;
+    licenseType: LicenseType | null;
+    unitPrice: number;
+    discount: number;
+    total: number;
+    product: { id: string; slug: string; imageUrl: string | null } | null;
+    pricingPlan: { id: string; slug: string } | null;
+  }[];
+}

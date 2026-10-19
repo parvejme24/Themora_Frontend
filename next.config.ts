@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
       "media.licdn.com",
       "i.ibb.co.com",
       "res.cloudinary.com",
+      // Demo seed images and avatars
+      "picsum.photos",
+      "fastly.picsum.photos",
+      "i.pravatar.cc",
     ],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
@@ -29,6 +33,13 @@ const nextConfig: NextConfig = {
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // The storefront moved from /template (legacy API) to /products; product pages accept an id or a slug
+  async redirects() {
+    return [
+      { source: "/template", destination: "/products", permanent: false },
+      { source: "/template/:id", destination: "/products/:id", permanent: false },
+    ];
   },
   // Proxy API requests in development to bypass CORS
   async rewrites() {

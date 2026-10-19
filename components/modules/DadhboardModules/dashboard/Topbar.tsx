@@ -41,7 +41,7 @@ const memberPages: Item[] = [
   { label: "Profile", href: "/dashboard/profile", icon: UserRound, keywords: "account settings avatar" },
 ];
 const memberActions: Item[] = [
-  { label: "Browse themes", href: "/template", icon: Layers3, keywords: "store marketplace shop" },
+  { label: "Browse themes", href: "/products", icon: Layers3, keywords: "store marketplace shop" },
   { label: "Start a project request", href: "/contact", icon: Plus, keywords: "hire custom service" },
 ];
 
@@ -109,7 +109,7 @@ export default function Topbar({ onMenuToggle }: { onMenuToggle: () => void }) {
     const actionHits = actions.filter(match);
     if (pageHits.length) result.push({ title: "Pages", items: pageHits });
     if (actionHits.length) result.push({ title: "Actions", items: actionHits });
-    result.push({ title: "Store", items: [{ label: `Search themes for “${query.trim()}”`, href: `/template?search=${encodeURIComponent(query.trim())}`, icon: ExternalLink, external: true }] });
+    result.push({ title: "Store", items: [{ label: `Search themes for “${query.trim()}”`, href: `/products?q=${encodeURIComponent(query.trim())}`, icon: ExternalLink, external: true }] });
     return result;
   }, [query, pages, actions, recent, pathname]);
 

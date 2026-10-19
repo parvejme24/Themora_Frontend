@@ -173,7 +173,7 @@ export default function CheckoutContainer({ templateId }: { templateId: string }
           error={templateError}
           subject="this template"
           onRetry={refetchTemplate}
-          backHref="/template"
+          backHref="/products"
           backLabel="Browse templates"
         />
       </div>
@@ -194,7 +194,7 @@ export default function CheckoutContainer({ templateId }: { templateId: string }
         {/* Top Back Navigation (Clean, no "Encrypted Checkout" text) */}
         <div className="mb-6 flex items-center justify-between">
           <Link
-            href={`/template/${templateData.id}`}
+            href={`/products/${templateData.id}`}
             className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white transition-all"
           >
             <FiArrowLeft className="w-3.5 h-3.5" />

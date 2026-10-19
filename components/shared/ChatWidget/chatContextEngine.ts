@@ -84,7 +84,7 @@ export function generateContextualResponse(
         {
           title: `Matching ${userBriefHistory?.techStack || "Next.js"} Templates`,
           description: "Production-ready foundation with clean architecture and components.",
-          href: `/template?search=${encodeURIComponent(userBriefHistory?.techStack.split(" ")[0] || "React")}`,
+          href: `/products?q=${encodeURIComponent(userBriefHistory?.techStack.split(" ")[0] || "React")}`,
           tag: "Ready to Deploy",
           icon: "theme",
         },
@@ -179,14 +179,14 @@ export function generateContextualResponse(
         {
           title: `${stackName} Premium Collection`,
           description: "Fully responsive, optimized Lighthouse score, dark mode & source assets included.",
-          href: `/template?search=${encodeURIComponent(searchParam)}`,
+          href: `/products?q=${encodeURIComponent(searchParam)}`,
           tag: "Recommended",
           icon: "theme",
         },
         {
           title: "All Hand-Picked Templates",
           description: "Explore 2,000+ templates with live demos, ratings, and instant downloads.",
-          href: "/template",
+          href: "/products",
           tag: "Catalog",
           icon: "theme",
         },
@@ -252,7 +252,7 @@ export function generateContextualResponse(
       {
         title: `Search "${query}" in Marketplace`,
         description: "Find matching themes, UI kits, and plugins.",
-        href: `/template?search=${encodeURIComponent(query)}`,
+        href: `/products?q=${encodeURIComponent(query)}`,
         tag: "Search Results",
         icon: "theme",
       },

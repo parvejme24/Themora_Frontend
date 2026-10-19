@@ -36,7 +36,7 @@ export const TopNavbar = () => {
           Themora provides website templates for creative entrepreneurs
         </p>
         <Link
-          href="/template"
+          href="/products"
           className="group hidden shrink-0 items-center gap-1 rounded-full bg-white/15 px-3 py-0.5 font-medium ring-1 ring-white/25 transition hover:bg-white/25 sm:inline-flex"
         >
           Browse

@@ -29,11 +29,15 @@ export const useProductFacets = () =>
   });
 
 /** Accepts a slug or an id. Drafts and archived products return 404. */
-export const useProduct = (slug: string | undefined) =>
+export const useProduct = (slug: string | undefined, initialData?: ProductDetail) =>
   useQuery({
     queryKey: queryKeys.products.detail(slug ?? ""),
     queryFn: () => api.data<ProductDetail>(`/products/${encodeURIComponent(slug!)}`),
     enabled: !!slug,
+    // Server-rendered pages pass the product they already fetched. It is marked stale so the
+    // browser still fetches once: that request counts the view and records "recently viewed".
+    initialData,
+    initialDataUpdatedAt: 0,
   });
 
 export const useRelatedProducts = (slug: string | undefined) =>

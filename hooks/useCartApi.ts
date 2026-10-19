@@ -125,11 +125,15 @@ export const useMergeGuestCart = () => {
   useEffect(() => {
     if (!isAuthenticated || guestItems.length === 0 || merging.current) return;
     merging.current = true;
-    api
-      .post<Cart>("/me/cart/merge", { items: guestItems.slice(0, 50) })
+    // A cart fetch that started before the merge could finish after it and overwrite
+    // the merged cart with the empty one, so cancel it and refetch once the merge commits
+    queryClient
+      .cancelQueries({ queryKey: queryKeys.cart.all })
+      .then(() => api.post<Cart>("/me/cart/merge", { items: guestItems.slice(0, 50) }))
       .then((res) => {
         guestCart.clear();
         queryClient.setQueryData(queryKeys.cart.all, res.data);
+        return queryClient.invalidateQueries({ queryKey: queryKeys.cart.all });
       })
       .catch(() => {
         // Keep the guest cart so the next page load retries

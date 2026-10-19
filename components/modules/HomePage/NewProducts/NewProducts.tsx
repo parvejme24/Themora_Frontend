@@ -9,7 +9,7 @@ import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import { useGetNewArrivals } from "@/hooks/useTemplateApi";
-import TemplateCardSkeleton from "../../CommonModules/template/TemplateCardSkeleton";
+import TemplateCardSkeleton from "./TemplateCardSkeleton";
 import SectionHeading from "../shared/SectionHeading";
 import Reveal, { EASE_OUT } from "../shared/Reveal";
 import ProductCard from "./ProductCard";
@@ -177,7 +177,7 @@ export default function NewProducts() {
 
         <Reveal delay={0.15} className="mt-12 flex justify-center">
           <Link
-            href="/template"
+            href="/products"
             className="tf-shine group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-7 py-3.5 text-sm font-semibold text-white shadow-xl shadow-[#0F5BBD]/25 transition hover:shadow-[#0F5BBD]/40 sm:text-base"
           >
             Explore all products

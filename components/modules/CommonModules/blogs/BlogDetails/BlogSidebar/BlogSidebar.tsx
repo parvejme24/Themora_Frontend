@@ -53,7 +53,7 @@ export default function BlogSidebar({ excludeId }: { excludeId?: string }) {
         <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
         <h3 className="relative text-2xl font-bold leading-tight">Check out all our templates</h3>
         <p className="relative mt-2 text-sm text-white/75">Premium themes and plugins to launch your next project faster.</p>
-        <Link href="/template" className="group relative mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5">
+        <Link href="/products" className="group relative mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5">
           Explore now <FiArrowRight className="transition-transform group-hover:translate-x-1" />
         </Link>
       </div>

@@ -241,7 +241,7 @@ export default function OrdersView({ admin = false, title = admin ? "Orders" : "
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-white/5"><FiShoppingBag className="h-5 w-5" /></span>
           <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">{term || status ? "No orders match" : "No orders yet"}</h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{term || status ? "Try another status or search." : admin ? "Orders appear here once customers check out." : "Your purchases will show up here."}</p>
-          {!admin && !term && !status && <Button onClick={() => router.push("/template")} className="tf-btn-primary mt-5 cursor-pointer px-5">Browse themes</Button>}
+          {!admin && !term && !status && <Button onClick={() => router.push("/products")} className="tf-btn-primary mt-5 cursor-pointer px-5">Browse themes</Button>}
         </div>
       ) : (
         <div className={`transition-opacity ${isFetching ? "opacity-60" : ""}`}>

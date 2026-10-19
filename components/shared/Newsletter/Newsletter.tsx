@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useNewsletter } from "@/hooks/useNewsletterApi";
+import { useSubscribeNewsletter } from "@/hooks/useNewsletterApi";
 
 const NewsletterHeader = () => (
   <motion.div
@@ -24,7 +24,11 @@ const NewsletterHeader = () => (
 
 const NewsletterForm = () => {
   const [email, setEmail] = useState("");
-  const { subscribe, isSubscribing, subscribeError } = useNewsletter();
+  // Subscribe only; the combined hook also loads the admin subscriber list
+  const subscribeMutation = useSubscribeNewsletter();
+  const subscribe = (email: string) => subscribeMutation.mutateAsync({ email });
+  const isSubscribing = subscribeMutation.isPending;
+  const subscribeError = subscribeMutation.error;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

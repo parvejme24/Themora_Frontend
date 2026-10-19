@@ -9,7 +9,7 @@ export interface NavItem {
 
 export const navigation: NavItem[] = [
   { name: "Home", href: "/", icon: Home },
-  { name: "Template", href: "/template", icon: LayoutTemplate },
+  { name: "Products", href: "/products", icon: LayoutTemplate },
   { name: "Pricing", href: "/pricing", icon: BadgeDollarSign },
   { name: "Blogs", href: "/blogs", icon: Newspaper },
   { name: "Contact", href: "/contact", icon: Mail },

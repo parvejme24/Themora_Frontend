@@ -105,7 +105,7 @@ export default function EditTemplateHeader({
         </button>
 
         <Link
-          href={`/template/${templateId}`}
+          href={`/products/${templateId}`}
           target="_blank"
           className="inline-flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 sm:px-3.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200"
         >

@@ -97,7 +97,7 @@ export default function Banner() {
 
   const search = (term: string) => {
     const value = term.trim();
-    router.push(value ? `/template?search=${encodeURIComponent(value)}` : "/template");
+    router.push(value ? `/products?q=${encodeURIComponent(value)}` : "/products");
   };
 
   return (
@@ -129,7 +129,7 @@ export default function Banner() {
           <motion.div initial="hidden" animate="show" className="text-center lg:text-left">
             <motion.div custom={0} variants={fadeUp}>
               <Link
-                href="/template"
+                href="/products"
                 className="group inline-flex items-center gap-2 rounded-full border border-[#0F5BBD]/15 bg-white/70 py-1 pl-1 pr-3 text-xs font-medium text-slate-700 shadow-sm backdrop-blur transition hover:border-[#0F5BBD]/40 sm:text-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
               >
                 <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#6D5DFC] px-2.5 py-0.5 text-white">

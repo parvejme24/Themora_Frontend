@@ -63,7 +63,7 @@ export default function page() {
             Explore our premium templates and launch something beautiful today.
           </p>
           <Link
-            href="/template"
+            href="/products"
             className="group relative mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-900"
           >
             Explore templates <FiArrowRight className="transition-transform group-hover:translate-x-1" />

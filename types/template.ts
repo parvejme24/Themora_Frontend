@@ -2,6 +2,8 @@
 export interface Template {
   id: string;
   title: string;
+  // Every product has a slug since the marketplace migration
+  slug?: string;
   price: number;
   lemonsqueezyProductId?: string | null;
   lemonsqueezyVariantId?: string | null;

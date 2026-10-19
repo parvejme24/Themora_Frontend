@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, LayoutDashboard, LogOut, Menu, User as UserIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import CartButton from "@/components/modules/Storefront/cart/CartButton";
 import React, { useContext, useState } from "react";
 import { AuthContext } from "@/Providers/AuthProvider";
 import { useAuth, useCurrentUser } from "@/hooks/useAuth";
@@ -91,6 +92,7 @@ export const NavActions = ({ isOpen, setIsOpen }: NavActionsProps) => {
 
   return (
     <div className="flex items-center gap-2 sm:gap-2.5">
+      <CartButton />
       <div className="relative z-[102]">
         <ModeToggle />
       </div>
