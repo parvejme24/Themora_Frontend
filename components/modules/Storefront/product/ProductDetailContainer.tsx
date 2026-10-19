@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiCheck, FiChevronRight, FiDownload, FiLayers, FiRefreshCw, FiShoppingBag } from "react-icons/fi";
 import { useAlsoBought, useProduct, useProductVersions, useRelatedProducts } from "@/hooks/useProductApi";
@@ -93,6 +93,14 @@ export default function ProductDetailContainer({ slug, initialProduct }: { slug:
   const { data: alsoBought } = useAlsoBought(slug);
   const [tab, setTab] = useState<Tab>("overview");
 
+  // Links like /products/x#reviews (e.g. "Write a review" in the library) open that tab
+  useEffect(() => {
+    if (window.location.hash === "#reviews") {
+      setTab("reviews");
+      document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
   if (isLoading && !product) return <LoadingState className="min-h-screen" />;
   if (!product) {
     return (
@@ -162,7 +170,7 @@ export default function ProductDetailContainer({ slug, initialProduct }: { slug:
           <div className="min-w-0">
             <ProductGallery title={product.title} images={images} videoUrl={product.videoUrl} />
 
-            <div className="mt-10 border-b border-slate-200 dark:border-white/10" role="tablist">
+            <div id="reviews" className="mt-10 scroll-mt-24 border-b border-slate-200 dark:border-white/10" role="tablist">
               {tabs.map((t) => (
                 <button
                   key={t.value}

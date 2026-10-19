@@ -488,3 +488,19 @@ html body[data-scroll-locked] {
   .tf-aurora, .tf-aurora-slow { animation: none; }
   .tf-lift:hover, .tf-btn-primary:hover { transform: none; }
 }
+
+/* Printing from the dashboard (invoices): drop the app shell and its fixed-height scrolling */
+@media print {
+  .tf-dashboard,
+  .tf-dashboard main {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  .tf-dashboard main > div[aria-hidden="true"] {
+    display: none !important;
+  }
+  .tf-invoice {
+    color: #0f172a !important;
+  }
+}

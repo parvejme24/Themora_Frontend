@@ -83,7 +83,7 @@ export default function CheckoutResult({ page }: { page: ReturnPage }) {
   if (error && !order) {
     return (
       <div className="px-4 py-24">
-        <ErrorState error={error} subject="your order" onRetry={refetch} backHref="/dashboard/purchases" backLabel="My purchases" />
+        <ErrorState error={error} subject="your order" onRetry={refetch} backHref="/dashboard/orders" backLabel="My orders" />
       </div>
     );
   }
@@ -153,7 +153,7 @@ export default function CheckoutResult({ page }: { page: ReturnPage }) {
       <div className="mt-8 flex flex-wrap gap-3">
         {key === "completed" ? (
           <>
-            <Link href="/dashboard/purchases" className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-6 text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30">
+            <Link href="/dashboard/library" className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-6 text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30">
               <FiDownload className="h-4 w-4" /> Go to my downloads
             </Link>
             <Link href="/products" className="inline-flex h-12 items-center rounded-full border border-slate-200 px-6 text-sm font-semibold text-slate-800 hover:bg-slate-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5">

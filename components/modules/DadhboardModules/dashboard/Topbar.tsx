@@ -5,9 +5,10 @@ import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  ArrowLeft, ArrowRight, BookOpen, Clock3, CornerDownLeft, CreditCard, ExternalLink, FolderKanban, Layers3, LayoutDashboard, LifeBuoy, LogOut, Mail, Menu, PackageCheck, PenSquare, Plus, Search, ShoppingBag, Tags, UserRound, UsersRound, X,
+  ArrowLeft, ArrowRight, Bell, BookOpen, Heart, Share2, ShieldCheck, Clock3, CornerDownLeft, CreditCard, ExternalLink, FolderKanban, Layers3, LayoutDashboard, LifeBuoy, LogOut, Mail, Menu, PackageCheck, PenSquare, Plus, Search, ShoppingBag, Tags, UserRound, UsersRound, X,
 } from "lucide-react";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import NotificationBell from "@/components/modules/Account/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/types/auth";
 
@@ -34,10 +35,15 @@ const adminActions: Item[] = [
 ];
 const memberPages: Item[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard, keywords: "home" },
-  { label: "My purchases", href: "/dashboard/purchases", icon: ShoppingBag, keywords: "downloads bought licenses" },
-  { label: "My orders", href: "/dashboard/orders", icon: PackageCheck, keywords: "invoices receipts" },
-  { label: "Payment history", href: "/dashboard/payment", icon: CreditCard, keywords: "billing payments" },
-  { label: "Service requests", href: "/dashboard/service-request", icon: LifeBuoy, keywords: "support contact project" },
+  { label: "My library", href: "/dashboard/library", icon: ShoppingBag, keywords: "downloads purchases licences licenses keys upgrade" },
+  { label: "Orders", href: "/dashboard/orders", icon: PackageCheck, keywords: "invoices receipts refunds payments" },
+  { label: "Subscription", href: "/dashboard/subscription", icon: CreditCard, keywords: "all-access billing cancel" },
+  { label: "Wishlist", href: "/dashboard/wishlist", icon: Heart, keywords: "saved favourites" },
+  { label: "Support", href: "/dashboard/support", icon: LifeBuoy, keywords: "tickets help contact" },
+  { label: "Notifications", href: "/dashboard/notifications", icon: Bell, keywords: "alerts updates" },
+  { label: "Affiliate", href: "/dashboard/affiliate", icon: Share2, keywords: "referral commission payout earn" },
+  { label: "Security & email", href: "/dashboard/security", icon: ShieldCheck, keywords: "2fa two-factor password preferences" },
+  { label: "Service requests", href: "/dashboard/service-request", icon: LifeBuoy, keywords: "custom project contact" },
   { label: "Profile", href: "/dashboard/profile", icon: UserRound, keywords: "account settings avatar" },
 ];
 const memberActions: Item[] = [
@@ -50,8 +56,10 @@ const pageTitles: Record<string, string> = {
   "/dashboard/templates-categories": "Theme categories", "/dashboard/blogs": "Blog",
   "/dashboard/blog-categories": "Blog categories", "/dashboard/orders": "Orders",
   "/dashboard/users": "Users", "/dashboard/pricing": "Pricing", "/dashboard/newsletter": "Newsletter",
-  "/dashboard/service-request": "Service requests", "/dashboard/purchases": "My purchases",
-  "/dashboard/payment": "Payment history", "/dashboard/templates/create": "Add theme",
+  "/dashboard/service-request": "Service requests", "/dashboard/library": "My library",
+  "/dashboard/subscription": "Subscription", "/dashboard/wishlist": "Wishlist", "/dashboard/support": "Support",
+  "/dashboard/notifications": "Notifications", "/dashboard/affiliate": "Affiliate", "/dashboard/security": "Security & email",
+  "/dashboard/templates/create": "Add theme",
   "/dashboard/blogs/create": "New post", "/dashboard/pricing/create": "New plan",
 };
 
@@ -199,7 +207,7 @@ export default function Topbar({ onMenuToggle }: { onMenuToggle: () => void }) {
   );
 
   return (
-    <header className="sticky top-0 z-30 flex h-[72px] shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 bg-white/75 px-3 backdrop-blur-xl backdrop-saturate-150 sm:px-5 lg:px-7 dark:border-white/[0.06] dark:bg-[#05071A]/75">
+    <header className="sticky top-0 z-30 flex print:hidden h-[72px] shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 bg-white/75 px-3 backdrop-blur-xl backdrop-saturate-150 sm:px-5 lg:px-7 dark:border-white/[0.06] dark:bg-[#05071A]/75">
       <div className="flex min-w-0 items-center gap-3">
         <button type="button" onClick={onMenuToggle} aria-label="Open dashboard navigation" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900 lg:hidden dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:text-white">
           <Menu size={19} aria-hidden="true" />
@@ -259,6 +267,7 @@ export default function Topbar({ onMenuToggle }: { onMenuToggle: () => void }) {
           document.body
         )}
 
+        <NotificationBell />
         <ModeToggle />
 
         {/* Account: avatar only; details live in the menu */}

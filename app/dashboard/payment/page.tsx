@@ -1,10 +1,6 @@
-import React from "react";
-import PaymentContainer from "@/components/modules/DadhboardModules/dashboard/PaymentContainer";
+import { redirect } from "next/navigation";
 
+// Payment history lives on the orders page (receipts, invoices, refunds)
 export default function PaymentPage() {
-  return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <PaymentContainer />
-    </div>
-  );
+  redirect("/dashboard/orders");
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BookOpen, ChevronDown, ChevronRight, CreditCard, FolderKanban, LayoutDashboard,
+  Bell, BookOpen, ChevronDown, Heart, Share2, ShieldCheck, ChevronRight, CreditCard, FolderKanban, LayoutDashboard,
   Layers3, LifeBuoy, Mail, PackageCheck, PanelLeftClose, ShoppingBag, Tags, UsersRound, X,
 } from "lucide-react";
 import { ThemoraMark } from "@/components/shared/Logo/ThemoraLogo";
@@ -35,11 +35,16 @@ const adminNav: NavItem[] = [
 
 const userNav: NavLink[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { label: "My library", href: "/dashboard/library", icon: ShoppingBag },
+  { label: "Orders", href: "/dashboard/orders", icon: PackageCheck },
+  { label: "Subscription", href: "/dashboard/subscription", icon: CreditCard },
+  { label: "Wishlist", href: "/dashboard/wishlist", icon: Heart },
+  { label: "Support", href: "/dashboard/support", icon: LifeBuoy },
+  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
+  { label: "Affiliate", href: "/dashboard/affiliate", icon: Share2 },
+  { label: "Security & email", href: "/dashboard/security", icon: ShieldCheck },
+  { label: "Service requests", href: "/dashboard/service-request", icon: Mail },
   { label: "Profile", href: "/dashboard/profile", icon: UsersRound },
-  { label: "My purchases", href: "/dashboard/purchases", icon: ShoppingBag },
-  { label: "My orders", href: "/dashboard/orders", icon: PackageCheck },
-  { label: "Payment history", href: "/dashboard/payment", icon: CreditCard },
-  { label: "Service requests", href: "/dashboard/service-request", icon: LifeBuoy },
 ];
 
 // Same active / hover treatment as the public navbar pills
@@ -82,7 +87,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
   return (
     <>
       {isOpen && <button aria-label="Close navigation" onClick={onClose} className="fixed inset-0 z-40 cursor-pointer bg-slate-900/40 backdrop-blur-[2px] lg:hidden" />}
-      <aside aria-label="Dashboard navigation" className={`isolate overflow-hidden fixed inset-y-0 left-0 z-50 flex w-[264px] shrink-0 flex-col border-r border-slate-200/70 bg-[#F5F7FB] text-slate-600 transition-transform duration-200 lg:relative lg:z-auto lg:translate-x-0 dark:border-white/[0.06] dark:bg-[#05071A] dark:text-slate-300 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside aria-label="Dashboard navigation" className={`print:hidden isolate overflow-hidden fixed inset-y-0 left-0 z-50 flex w-[264px] shrink-0 flex-col border-r border-slate-200/70 bg-[#F5F7FB] text-slate-600 transition-transform duration-200 lg:relative lg:z-auto lg:translate-x-0 dark:border-white/[0.06] dark:bg-[#05071A] dark:text-slate-300 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div aria-hidden="true" className="pointer-events-none absolute -left-24 -top-24 -z-10 h-64 w-64 rounded-full bg-[#3B82F6]/15 blur-[90px] dark:bg-[#2563EB]/20" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -right-24 -z-10 h-64 w-64 rounded-full bg-[#8B5CF6]/10 blur-[90px] dark:bg-[#7C3AED]/20" />
         <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-slate-200/70 px-5 dark:border-white/[0.06]">

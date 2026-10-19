@@ -7,6 +7,7 @@ import StatsGrid from "./StatsGrid";
 import RevenueChart from "./RevenueChart";
 import RecentActivity from "./RecentActivity";
 import TopSellingTemplates from "./TopSellingTemplates";
+import BuyerOverview from "@/components/modules/Account/BuyerOverview";
 
 export default function OverviewPage() {
   const { user, isAdmin } = useAuth();
@@ -18,11 +19,7 @@ export default function OverviewPage() {
         { label: "Manage users", href: "/dashboard/users", icon: UsersRound },
         { label: "Pricing plans", href: "/dashboard/pricing", icon: PackageCheck },
       ]
-    : [
-        { label: "Browse themes", href: "/products", icon: Layers3 },
-        { label: "View purchases", href: "/dashboard/purchases", icon: PackageCheck },
-        { label: "Update profile", href: "/dashboard/profile", icon: UsersRound },
-      ];
+    : [];
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -38,7 +35,7 @@ export default function OverviewPage() {
               {isAdmin ? "Administration" : "Your workspace"}
             </span>
             <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Welcome back, <span className="bg-gradient-to-r from-[#8DB8FF] via-[#B9A8FF] to-[#67E8F9] bg-clip-text text-transparent">{displayName.split(" ")[0]}</span></h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">{isAdmin ? "Your store at a glance. Review recent orders, revenue, and the people using Themora." : "Your purchases, account, and themes in one place."}</p>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">{isAdmin ? "Your store at a glance. Review recent orders, revenue, and the people using Themora." : "Your products, orders and support in one place."}</p>
           </div>
           <div className="shrink-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left backdrop-blur sm:text-right">
             <p className="text-sm font-medium text-white">{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
@@ -47,31 +44,37 @@ export default function OverviewPage() {
         </div>
       </section>
 
-      <StatsGrid />
+      {isAdmin ? (
+        <>
+        <StatsGrid />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(260px,0.8fr)] xl:gap-5">
-        <RevenueChart />
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#0B0F2E] sm:p-6">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Shortcuts</p>
-          <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">Move things forward</h2>
-          <div className="mt-4 divide-y divide-slate-100 dark:divide-white/10">
-            {quickActions.map(({ label, href, icon: Icon }) => (
-              <Link key={href} href={href} className="group flex min-h-12 items-center gap-3 py-2 text-sm font-medium text-slate-700 transition hover:text-[#1D6FE0] dark:text-slate-200 dark:hover:text-[#8DB8FF]">
-                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-50 text-slate-600 group-hover:bg-[#EAF1FF] group-hover:text-[#1D6FE0] dark:bg-white/[0.06] dark:text-slate-400 dark:group-hover:bg-[#1D6FE0]/15 dark:group-hover:text-[#8DB8FF]">
-                  <Icon size={16} aria-hidden="true" />
-                </span>
-                <span className="flex-1">{label}</span>
-                <ArrowUpRight size={15} className="text-slate-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
-              </Link>
-            ))}
-          </div>
-        </section>
-      </div>
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(260px,0.8fr)] xl:gap-5">
+          <RevenueChart />
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#0B0F2E] sm:p-6">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Shortcuts</p>
+            <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">Move things forward</h2>
+            <div className="mt-4 divide-y divide-slate-100 dark:divide-white/10">
+              {quickActions.map(({ label, href, icon: Icon }) => (
+                <Link key={href} href={href} className="group flex min-h-12 items-center gap-3 py-2 text-sm font-medium text-slate-700 transition hover:text-[#1D6FE0] dark:text-slate-200 dark:hover:text-[#8DB8FF]">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-50 text-slate-600 group-hover:bg-[#EAF1FF] group-hover:text-[#1D6FE0] dark:bg-white/[0.06] dark:text-slate-400 dark:group-hover:bg-[#1D6FE0]/15 dark:group-hover:text-[#8DB8FF]">
+                    <Icon size={16} aria-hidden="true" />
+                  </span>
+                  <span className="flex-1">{label}</span>
+                  <ArrowUpRight size={15} className="text-slate-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
 
-      <div className={`grid grid-cols-1 gap-4 ${isAdmin ? "lg:grid-cols-2" : ""} xl:gap-5`}>
-        <RecentActivity />
-        {isAdmin && <TopSellingTemplates />}
-      </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:gap-5">
+          <RecentActivity />
+          <TopSellingTemplates />
+        </div>
+        </>
+      ) : (
+        <BuyerOverview />
+      )}
     </div>
   );
 }

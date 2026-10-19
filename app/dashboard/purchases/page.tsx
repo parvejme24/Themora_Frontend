@@ -1,7 +1,6 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import UserOrderContainer from "@/components/modules/DadhboardModules/Orders/UserOrderContainer";
-
+// "My purchases" became the library (downloads, licence keys, upgrades)
 export default function PurchasesPage() {
-  return <UserOrderContainer title="My purchases" />;
+  redirect("/dashboard/library");
 }
