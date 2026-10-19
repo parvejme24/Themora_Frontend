@@ -14,13 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return { title: "Product not found | Themora" };
-  const images = [product.imageUrl, ...product.screenshots].filter((src): src is string => !!src).slice(0, 4);
+  // The share image comes from opengraph-image.tsx next to this page
   return {
     title: `${product.title} | Themora`,
     description: product.shortDescription,
     alternates: { canonical: `/products/${product.slug}` },
-    openGraph: { title: product.title, description: product.shortDescription, images, type: "website" },
-    twitter: { card: "summary_large_image", title: product.title, description: product.shortDescription, images },
+    openGraph: { title: product.title, description: product.shortDescription, type: "website" },
+    twitter: { card: "summary_large_image", title: product.title, description: product.shortDescription },
   };
 }
 

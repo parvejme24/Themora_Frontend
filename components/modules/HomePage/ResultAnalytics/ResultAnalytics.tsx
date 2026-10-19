@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import type { IconType } from "react-icons";
 import { FiBox, FiMail, FiDownloadCloud, FiUsers } from "react-icons/fi";
 import Reveal, { EASE_OUT } from "../shared/Reveal";
+import { useProductFacets } from "@/hooks/useProductApi";
 
 interface AnaliticsData {
   title: string;
@@ -21,6 +22,13 @@ const analitics: AnaliticsData[] = [
 ];
 
 export default function Analytcis() {
+  // The product count is live; the other figures are marketing numbers
+  const { data: facets } = useProductFacets();
+  const productCount = facets?.types.reduce((sum, t) => sum + t.count, 0);
+  const stats = analitics.map((stat) =>
+    stat.title === "Total Product" && productCount ? { ...stat, count: productCount } : stat
+  );
+
   return (
     <section className="py-20 sm:py-24">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -60,7 +68,7 @@ export default function Analytcis() {
           </div>
 
           <dl className="mt-10 grid grid-cols-2 gap-2.5 sm:gap-4 lg:mt-16 lg:grid-cols-4">
-            {analitics.map(({ title, count, icon: Icon }, i) => (
+            {stats.map(({ title, count, icon: Icon }, i) => (
               <motion.div
                 key={title}
                 initial={{ opacity: 0, y: 24 }}

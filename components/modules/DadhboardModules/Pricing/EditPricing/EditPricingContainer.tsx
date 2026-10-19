@@ -22,7 +22,6 @@ const EMPTY_FORM: UpdatePricingData = {
   description: "",
   price: 0,
   websiteLimit: 3,
-  lemonsqueezyVariantId: "",
   features: [""],
   recommended: false,
 };
@@ -34,7 +33,6 @@ const toFormData = (plan: PricingPlan): UpdatePricingData => ({
   description: plan.description,
   price: plan.price,
   websiteLimit: plan.websiteLimit,
-  lemonsqueezyVariantId: plan.lemonsqueezyVariantId || "",
   features: plan.features.length > 0 ? plan.features : [""],
   recommended: plan.recommended,
 });
@@ -93,7 +91,6 @@ export default function EditPricingContainer({ planId }: { planId: string }) {
           description: formData.description?.trim(),
           price: formData.price,
           websiteLimit: formData.websiteLimit,
-          lemonsqueezyVariantId: formData.lemonsqueezyVariantId?.trim() || null,
           features: validFeatures,
           recommended: formData.recommended,
         },
@@ -140,7 +137,6 @@ export default function EditPricingContainer({ planId }: { planId: string }) {
           <PricingLicensingSection
             price={formData.price || 0}
             websiteLimit={formData.websiteLimit}
-            lemonsqueezyVariantId={formData.lemonsqueezyVariantId || ""}
             onChange={handleChange}
           />
           <PlanFeaturesSection
@@ -164,7 +160,7 @@ export default function EditPricingContainer({ planId }: { planId: string }) {
               websiteLimit={formData.websiteLimit}
               features={validFeatures}
               recommended={!!formData.recommended}
-              hasVariant={!!formData.lemonsqueezyVariantId?.trim()}
+              billingInterval={pricingPlan.billingInterval}
               isActive={pricingPlan.isActive}
             />
             <PricingTipsCard />

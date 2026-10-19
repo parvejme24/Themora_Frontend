@@ -52,7 +52,7 @@ export default function EditPricingHeader({ title, recommended, isActive, saving
         </div>
 
         <p className="mt-1 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
-          Configure pricing tier specifications, license entitlements, and checkout variant settings.
+          Configure pricing tier specifications, and license entitlements.
         </p>
       </div>
 

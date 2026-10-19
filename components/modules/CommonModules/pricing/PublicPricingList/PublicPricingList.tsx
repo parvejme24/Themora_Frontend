@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { FiCheck, FiLock, FiRefreshCw, FiZap } from "react-icons/fi";
 import PricingCard from "./PricingCard/PricingCard";
+import AllAccessSection from "./AllAccessSection";
 import { useGetPricingPlans } from "@/hooks/usePricingApi";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -14,7 +15,10 @@ const trust = [
 ];
 
 export default function PublicPricingList() {
-  const { data: plans = [], isLoading, isError } = useGetPricingPlans();
+  const { data: allPlans = [], isLoading, isError } = useGetPricingPlans();
+  // One-time plans fill the cards and comparison table; subscriptions get their own section
+  const plans = allPlans.filter((plan) => plan.billingInterval === "ONE_TIME");
+  const subscriptions = allPlans.filter((plan) => plan.billingInterval !== "ONE_TIME");
   const compareRows = [
     { label: "Website licences", values: plans.map((plan) => plan.websiteLimit ?? "Unlimited") },
     { label: "Access to all templates", values: plans.map((plan) => plan.features.some((feature) => /all templates/i.test(feature))) },
@@ -66,6 +70,8 @@ export default function PublicPricingList() {
           ))}
         </motion.ul>
       </section>
+
+      <AllAccessSection plans={subscriptions} />
 
       {/* Plans */}
       <section className="py-8 lg:py-12">

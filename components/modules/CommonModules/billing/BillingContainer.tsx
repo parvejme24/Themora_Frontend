@@ -1,358 +1,219 @@
 "use client";
 
-import Spinner from "@/components/shared/Feedback/Spinner";
-import React, { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { usePathname } from "next/navigation";
+import { FiArrowLeft, FiCheck, FiLock, FiRefreshCw, FiShield, FiTag } from "react-icons/fi";
 import { toast } from "sonner";
-import { useAuth, useCurrentUser } from "@/hooks/useAuth";
-import { useCreateCheckout, useGetPricingPlan } from "@/hooks/usePricingApi";
-import { FiArrowLeft, FiCheck, FiLock } from "react-icons/fi";
-import { SiLemonsqueezy } from "react-icons/si";
+import { useAuth } from "@/hooks/useAuth";
+import { useMySubscription } from "@/hooks/useLibraryApi";
+import { useGetPricingPlan, usePlanCheckout, usePreviewPlanCoupon, type CouponPreview } from "@/hooks/usePricingApi";
+import { formatPrice } from "@/lib/format";
+import { getReferralCode } from "@/lib/referral";
+import type { PaymentGateway } from "@/types/marketplace";
+import ErrorState from "@/components/shared/Feedback/ErrorState";
+import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
+import GatewayPicker from "@/components/modules/Storefront/cart/GatewayPicker";
 
-interface BillingForm {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
+const INTERVAL_LABEL = { ONE_TIME: "one-time payment", MONTH: "per month", YEAR: "per year" } as const;
 
-interface BillingContainerProps {
-  pricingPlanId: string;
-}
+export default function BillingContainer({ pricingPlanId }: { pricingPlanId: string }) {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const pathname = usePathname();
+  const { data: plan, isLoading, error, refetch } = useGetPricingPlan(pricingPlanId);
+  const { data: subscription } = useMySubscription();
+  const checkout = usePlanCheckout();
+  const previewCoupon = usePreviewPlanCoupon();
+  const [gateway, setGateway] = useState<PaymentGateway>("stripe");
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState<CouponPreview | null>(null);
 
-export default function BillingContainer({ pricingPlanId }: BillingContainerProps) {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
-  const { data: currentUserData } = useCurrentUser();
-  const { data: pricingPlan, isLoading: planLoading, isError: planError } = useGetPricingPlan(pricingPlanId);
-  const createCheckout = useCreateCheckout();
-
-  const [processing, setProcessing] = useState(false);
-  const [selectedGateway, setSelectedGateway] = useState<"lemonsqueezy" | "fastspring">("fastspring");
-
-  const fullUser = currentUserData?.data?.user || user;
-
-  const splitName = (fullName: string) => {
-    const parts = fullName?.split(" ") || [];
-    return {
-      firstName: parts[0] || "",
-      lastName: parts.slice(1).join(" ") || "",
-    };
-  };
-
-  const { firstName: userFirstName, lastName: userLastName } = splitName(fullUser?.fullName || "");
-
-  const [formData, setFormData] = useState<BillingForm>({
-    firstName: "",
-    lastName: "",
-    email: "",
-  });
-
-  useEffect(() => {
-    if (isAuthenticated && fullUser) {
-      setFormData((prev) => ({
-        firstName: userFirstName || prev.firstName,
-        lastName: userLastName || prev.lastName,
-        email: fullUser.email || prev.email,
-      }));
-    }
-  }, [isAuthenticated, fullUser, userFirstName, userLastName]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const isFormValid = useMemo(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (isLoading || authLoading) return <LoadingState className="min-h-[70vh]" />;
+  if (!plan || !plan.isActive) {
     return (
-      Boolean(formData.firstName.trim()) &&
-      Boolean(formData.lastName.trim()) &&
-      emailRegex.test(formData.email.trim())
+      <div className="px-4 py-24">
+        <ErrorState
+          error={error}
+          title={plan ? "This plan is no longer available" : undefined}
+          subject="this plan"
+          onRetry={plan ? undefined : refetch}
+          backHref="/pricing"
+          backLabel="See all plans"
+        />
+      </div>
     );
-  }, [formData]);
+  }
 
-  const handleCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      toast.error("Please enter your name");
-      return;
-    }
+  const isSubscription = plan.billingInterval !== "ONE_TIME";
+  const alreadySubscribed = isSubscription && subscription?.isActive;
+  const total = coupon ? coupon.totalAmount : plan.price;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email.trim())) {
-      toast.error("Please enter a valid email");
-      return;
-    }
+  const applyCoupon = (event: React.FormEvent) => {
+    event.preventDefault();
+    const code = couponInput.trim();
+    if (!code) return;
+    previewCoupon.mutate({ planId: plan.id, code }, { onSuccess: setCoupon });
+  };
 
-    if (!pricingPlan) {
-      toast.error("Pricing plan not found");
-      return;
-    }
-
-    setProcessing(true);
-
-    try {
-      const checkout = await createCheckout.mutateAsync({
-        productType: "plan",
-        productId: pricingPlan.id,
-        customerEmail: formData.email.trim().toLowerCase(),
-        customerName: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
-        gateway: selectedGateway,
-      });
-
-      if (checkout?.checkoutUrl) {
-        try {
-          const urlObj = new URL(checkout.checkoutUrl);
-          if (urlObj.pathname.includes("/purchase/success")) {
-            router.push(`${urlObj.pathname}${urlObj.search}`);
-            return;
-          }
-        } catch {
-          if (checkout.checkoutUrl.startsWith("/")) {
-            router.push(checkout.checkoutUrl);
-            return;
-          }
-        }
-        window.location.assign(checkout.checkoutUrl);
-      } else {
-        throw new Error("No checkout URL returned");
+  const pay = () => {
+    checkout.mutate(
+      { planId: plan.id, gateway, couponCode: coupon?.code, referralCode: getReferralCode() },
+      {
+        onSuccess: (result) => window.location.assign(result.checkoutUrl),
+        onError: (err) => toast.error(err.message),
       }
-    } catch (error: any) {
-      console.error("Error during checkout:", error);
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to process checkout. Please try again."
-      );
-      setProcessing(false);
-    }
+    );
   };
-
-  if (planLoading) {
-    return (
-      <div className="tf-noise relative isolate min-h-screen overflow-x-clip bg-[#F5F7FB] py-20 flex items-center justify-center dark:bg-[#05071A]">
-        <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
-        <div className="flex flex-col items-center gap-3">
-          <Spinner size="lg" />
-        </div>
-      </div>
-    );
-  }
-
-  if (planError || !pricingPlan) {
-    return (
-      <div className="tf-noise relative isolate min-h-screen overflow-x-clip bg-[#F5F7FB] py-20 flex items-center justify-center dark:bg-[#05071A]">
-        <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
-        <div className="text-center space-y-4 max-w-md mx-auto px-4">
-          <p className="text-sm font-medium text-rose-500">Plan unavailable.</p>
-          <Button asChild variant="outline" size="sm" className="rounded-xl">
-            <Link href="/pricing">Return to Pricing</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const formattedPrice = Number(pricingPlan.price).toFixed(2);
 
   return (
-    <div className="tf-noise relative isolate min-h-screen overflow-x-clip bg-[#F5F7FB] py-12 lg:py-20 dark:bg-[#05071A]">
-      {/* Background Grids & Ambient Glow Orbs */}
-      <div aria-hidden className="tf-grid-bg pointer-events-none absolute inset-0 -z-10" />
-      <div aria-hidden className="pointer-events-none absolute -left-32 -top-40 -z-10 h-[500px] w-[500px] rounded-full bg-[#3B82F6]/15 blur-[120px] dark:bg-[#2563EB]/25" />
-      <div aria-hidden className="pointer-events-none absolute -right-32 top-20 -z-10 h-[460px] w-[460px] rounded-full bg-[#8B5CF6]/15 blur-[120px] dark:bg-[#7C3AED]/20" />
+    <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+      <Link href="/pricing" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+        <FiArrowLeft className="h-4 w-4" /> All plans
+      </Link>
 
-      <div className="container mx-auto max-w-4xl px-4 sm:px-6">
-        {/* Sleek Top Navigation */}
-        <div className="mb-8 flex items-center justify-between">
-          <Link
-            href="/pricing"
-            className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors dark:text-slate-400 dark:hover:text-white"
-          >
-            <FiArrowLeft className="w-3.5 h-3.5" />
-            <span>Back</span>
-          </Link>
-          <div className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
-            <FiLock className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Encrypted Checkout</span>
+      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_400px]">
+        {/* Plan summary */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-7 dark:border-white/10 dark:bg-[#0B0F2E]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1D6FE0] dark:text-[#8DB8FF]">
+            {isSubscription ? "All-Access subscription" : "One-time plan"}
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{plan.title}</h1>
+          {plan.description && <p className="mt-2 text-slate-600 dark:text-slate-300">{plan.description}</p>}
+          <p className="mt-6 flex items-baseline gap-2">
+            <span className="text-4xl font-bold tabular-nums text-slate-900 dark:text-white">{formatPrice(plan.price)}</span>
+            <span className="text-sm text-slate-500">{INTERVAL_LABEL[plan.billingInterval]}</span>
+          </p>
+          <ul className="mt-6 space-y-3">
+            {plan.features.map((feature) => (
+              <li key={feature} className="flex gap-3 text-sm text-slate-600 dark:text-slate-300">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <FiCheck className="h-3 w-3" />
+                </span>
+                {feature}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8 grid gap-3 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:grid-cols-2 dark:border-white/10 dark:text-slate-400">
+            <p className="flex items-center gap-2">
+              <FiShield className="h-4 w-4 text-[#1D6FE0]" /> Secure payment, no card details stored by us
+            </p>
+            <p className="flex items-center gap-2">
+              <FiRefreshCw className="h-4 w-4 text-[#1D6FE0]" />
+              {isSubscription ? "Cancel anytime from your dashboard" : "Refunds within the refund window"}
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* Main Checkout Form (7 Cols) */}
-          <div className="lg:col-span-7">
-            <div className="rounded-[28px] border border-slate-200/80 bg-white/80 dark:border-white/10 dark:bg-[#0B0F2E] backdrop-blur-md p-6 sm:p-8 shadow-sm">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-6">
-                Subscribe
-              </h1>
-
-              <form onSubmit={handleCheckout} className="space-y-6">
-                {/* Payment Gateway Toggle */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Payment Method
-                  </Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Lemon Squeezy */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedGateway("lemonsqueezy")}
-                      className={`relative flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
-                        selectedGateway === "lemonsqueezy"
-                          ? "border-[#3B82F6] bg-[#3B82F6]/5 dark:border-[#3B82F6] dark:bg-[#3B82F6]/15 shadow-sm"
-                          : "border-slate-200/80 hover:border-slate-300 bg-white dark:border-white/10 dark:hover:border-white/20 dark:bg-[#070B2A]/60"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <SiLemonsqueezy className="w-4 h-4 text-amber-500 shrink-0" />
-                        <span className="text-xs font-semibold text-slate-900 dark:text-white">Lemon Squeezy</span>
-                      </div>
-                      {selectedGateway === "lemonsqueezy" && (
-                        <div className="w-4 h-4 rounded-full bg-[#3B82F6] flex items-center justify-center text-white">
-                          <FiCheck className="w-2.5 h-2.5" />
-                        </div>
-                      )}
-                    </button>
-
-                    {/* FastSpring */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedGateway("fastspring")}
-                      className={`relative flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
-                        selectedGateway === "fastspring"
-                          ? "border-[#3B82F6] bg-[#3B82F6]/5 dark:border-[#3B82F6] dark:bg-[#3B82F6]/15 shadow-sm"
-                          : "border-slate-200/80 hover:border-slate-300 bg-white dark:border-white/10 dark:hover:border-white/20 dark:bg-[#070B2A]/60"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-4 h-4 rounded-full bg-slate-900 dark:bg-white text-[9px] font-bold flex items-center justify-center text-white dark:text-slate-900">
-                          FS
-                        </div>
-                        <span className="text-xs font-semibold text-slate-900 dark:text-white">FastSpring</span>
-                      </div>
-                      {selectedGateway === "fastspring" && (
-                        <div className="w-4 h-4 rounded-full bg-[#3B82F6] flex items-center justify-center text-white">
-                          <FiCheck className="w-2.5 h-2.5" />
-                        </div>
-                      )}
+        {/* Payment */}
+        <div className="h-fit space-y-5 rounded-3xl border border-slate-200 bg-white p-6 dark:border-white/10 dark:bg-[#0B0F2E]">
+          {!isAuthenticated ? (
+            <>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Sign in so the {isSubscription ? "subscription" : "licence"} is added to your account. It only takes a moment.
+              </p>
+              <Link
+                href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}
+                className="flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30"
+              >
+                <FiLock className="h-4 w-4" /> Sign in to continue
+              </Link>
+              <p className="text-center text-xs text-slate-500">
+                New here?{" "}
+                <Link href="/register" className="font-semibold text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">
+                  Create an account
+                </Link>
+              </p>
+            </>
+          ) : alreadySubscribed ? (
+            <>
+              <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+                You already have an active All-Access subscription until{" "}
+                {new Date(subscription!.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
+              </p>
+              <Link href="/products" className="flex h-12 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">
+                Browse products
+              </Link>
+            </>
+          ) : (
+            <>
+              {/* Subscriptions can't use coupons */}
+              {!isSubscription &&
+                (coupon ? (
+                  <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2 text-sm dark:bg-emerald-500/10">
+                    <span className="inline-flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-300">
+                      <FiTag className="h-4 w-4" /> {coupon.code}
+                    </span>
+                    <button type="button" onClick={() => setCoupon(null)} className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-300">
+                      Remove
                     </button>
                   </div>
-                </div>
-
-                {/* Customer Contact Details */}
-                <div className="space-y-4 pt-2">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Your Information
-                  </Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="firstName" className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                        First Name
-                      </Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        placeholder="John"
-                        required
-                        className="h-11 text-sm bg-white dark:bg-[#070B2A] border-slate-200/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#3B82F6] dark:focus:border-[#3B82F6] transition-colors"
+                ) : (
+                  <div>
+                    <form onSubmit={applyCoupon} className="flex gap-2">
+                      <input
+                        value={couponInput}
+                        onChange={(e) => {
+                          setCouponInput(e.target.value.toUpperCase());
+                          if (previewCoupon.error) previewCoupon.reset();
+                        }}
+                        placeholder="Coupon code"
+                        aria-label="Coupon code"
+                        className="h-10 min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm uppercase outline-none focus:border-[#1D6FE0]/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                       />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="lastName" className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                        Last Name
-                      </Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        placeholder="Doe"
-                        required
-                        className="h-11 text-sm bg-white dark:bg-[#070B2A] border-slate-200/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#3B82F6] dark:focus:border-[#3B82F6] transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Email Address
-                    </Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="john@example.com"
-                      required
-                      className="h-11 text-sm bg-white dark:bg-[#070B2A] border-slate-200/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#3B82F6] dark:focus:border-[#3B82F6] transition-colors"
-                    />
-                  </div>
-                </div>
-
-                {/* Primary Action Button */}
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    disabled={processing || !isFormValid}
-                    className="w-full h-12 text-sm font-semibold rounded-2xl bg-gradient-to-r from-[#0F5BBD] to-[#3B82F6] hover:from-[#0d4ea3] hover:to-[#2563eb] text-white shadow-lg shadow-[#0F5BBD]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {processing ? (
-                      <>
-                        <Spinner size="xs" tone="light" label="Redirecting" />
-                        <span>Redirecting...</span>
-                      </>
-                    ) : (
-                      <>
-                        <FiLock className="w-4 h-4" />
-                        <span>Pay ${formattedPrice}</span>
-                      </>
+                      <button
+                        type="submit"
+                        disabled={previewCoupon.isPending || !couponInput.trim()}
+                        className="h-10 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-white/10 dark:text-slate-200"
+                      >
+                        {previewCoupon.isPending ? <Spinner size="sm" /> : "Apply"}
+                      </button>
+                    </form>
+                    {previewCoupon.error && (
+                      <p role="alert" className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">
+                        {previewCoupon.error.message}
+                      </p>
                     )}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
+                  </div>
+                ))}
 
-          {/* Minimalist Order Summary Card (5 Cols) */}
-          <div className="lg:col-span-5">
-            <div className="rounded-[28px] border border-slate-200/80 bg-white/80 dark:border-white/10 dark:bg-[#0B0F2E] backdrop-blur-md p-6 shadow-sm space-y-5">
-              {/* Plan Info */}
-              <div>
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                  {pricingPlan.title}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {pricingPlan.description || "Themora Membership"}
+              <dl className="space-y-1.5 text-sm">
+                <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                  <dt>{plan.title}</dt>
+                  <dd className="tabular-nums">{formatPrice(plan.price)}</dd>
+                </div>
+                {coupon && coupon.discountTotal > 0 && (
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                    <dt>Discount</dt>
+                    <dd className="tabular-nums">−{formatPrice(coupon.discountTotal)}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between pt-1 text-base font-semibold text-slate-900 dark:text-white">
+                  <dt>{isSubscription ? `Total ${INTERVAL_LABEL[plan.billingInterval]}` : "Total"}</dt>
+                  <dd className="tabular-nums">{formatPrice(total)}</dd>
+                </div>
+              </dl>
+
+              <GatewayPicker value={gateway} onChange={setGateway} />
+              {isSubscription && gateway === "sslcommerz" && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Local payments don&apos;t renew automatically: you get access for one {plan.billingInterval === "YEAR" ? "year" : "month"}, and paying
+                  again extends it.
                 </p>
-              </div>
+              )}
 
-              {/* Total Due */}
-              <div className="border-t border-slate-100 dark:border-white/10 pt-4 flex items-baseline justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Total Due
-                </span>
-                <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  ${formattedPrice}{" "}
-                  <span className="text-xs font-normal text-slate-400">USD</span>
-                </div>
-              </div>
-
-              {/* Minimal Trust Badge */}
-              <div className="border-t border-slate-100 dark:border-white/10 pt-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
-                <FiLock className="w-3 h-3 text-emerald-500" />
-                <span>Instant activation upon payment</span>
-              </div>
-            </div>
-          </div>
+              <button
+                type="button"
+                onClick={pay}
+                disabled={checkout.isPending}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30 transition hover:brightness-110 disabled:opacity-60"
+              >
+                {checkout.isPending ? <Spinner size="sm" tone="light" /> : <FiLock className="h-4 w-4" />}
+                {isSubscription && gateway === "stripe" ? `Subscribe · ${formatPrice(total)}` : `Pay ${formatPrice(total)}`}
+              </button>
+            </>
+          )}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

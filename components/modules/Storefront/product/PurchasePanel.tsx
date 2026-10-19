@@ -15,6 +15,7 @@ import type { LicenseType, ProductDetail } from "@/types/marketplace";
 import Spinner from "@/components/shared/Feedback/Spinner";
 import PriceTag from "../shared/PriceTag";
 import WishlistButton from "../shared/WishlistButton";
+import CompareToggle from "../compare/CompareToggle";
 import { cartDrawer } from "../cart/cartDrawerStore";
 
 const LICENSES: { value: LicenseType; title: string; detail: string }[] = [
@@ -66,7 +67,10 @@ export default function PurchasePanel({ product }: { product: ProductDetail }) {
         ) : (
           <PriceTag product={product} size="lg" />
         )}
-        <WishlistButton productId={product.id} className="border border-slate-200 dark:border-white/10" />
+        <div className="flex items-center gap-1.5">
+          <CompareToggle productId={product.id} compact />
+          <WishlistButton productId={product.id} className="border border-slate-200 dark:border-white/10" />
+        </div>
       </div>
       {product.salePrice != null && product.saleEndsAt && license === "SINGLE" && (
         <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">

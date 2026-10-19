@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiArrowRight, FiArrowUpRight, FiGrid } from "react-icons/fi";
 import { useGetAllTemplateCategoriesForStats } from "@/hooks/useTemplateCategoryApi";
+import { useProductFacets } from "@/hooks/useProductApi";
 import { getTechIcon, normaliseTech, SUGGESTED_STACKS } from "./techIcons";
 import SectionHeading from "../shared/SectionHeading";
 import { EASE_OUT } from "../shared/Reveal";
@@ -71,29 +72,27 @@ const TechTile = ({ title, image }: { title: string; image?: string | null }) =>
 };
 
 export default function Categories() {
-  const { data: categoriesData, isLoading, error, refetch } = useGetAllTemplateCategoriesForStats();
+  // Counts come from facets (published products only); images from the category list
+  const { data: facets, isLoading, error, refetch } = useProductFacets();
+  const { data: categoriesData } = useGetAllTemplateCategoriesForStats();
 
-  // Most-used categories first, then newest; top 12
   const categories = useMemo(() => {
-    if (!categoriesData?.data) return [];
-    return [...categoriesData.data]
-      .sort((a, b) => {
-        if (b.templateCount !== a.templateCount) {
-          return b.templateCount - a.templateCount;
-        }
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      })
-      .slice(0, GRID_SIZE);
-  }, [categoriesData]);
+    if (!facets) return [];
+    const images = new Map((categoriesData?.data ?? []).map((c) => [c.id, c.image]));
+    return [...facets.categories]
+      .sort((a, b) => b.count - a.count || a.title.localeCompare(b.title))
+      .slice(0, GRID_SIZE)
+      .map((c) => ({ ...c, image: images.get(c.id) ?? null }));
+  }, [facets, categoriesData]);
 
   // Real categories first, then suggested stacks to fill the grid
   const tiles = useMemo<CategoryTile[]>(() => {
     const real: CategoryTile[] = categories.map((c) => ({
       key: c.id,
       title: c.title,
-      href: c.slug ? `/products?category=${c.slug}` : `/products?q=${encodeURIComponent(c.title)}`,
+      href: `/products?category=${c.slug}`,
       image: c.image,
-      count: c.templateCount,
+      count: c.count,
     }));
     const taken = new Set(real.map((t) => normaliseTech(t.title)));
     const extra: CategoryTile[] = SUGGESTED_STACKS.filter((name) => !taken.has(normaliseTech(name)))
@@ -167,7 +166,7 @@ export default function Categories() {
                         ) : (
                           <>
                             <span className="font-semibold text-[#0F5BBD] dark:text-[#8DB8FF]">{category.count}</span>{" "}
-                            {category.count === 1 ? "template" : "templates"}
+                            {category.count === 1 ? "product" : "products"}
                           </>
                         )}
                       </p>

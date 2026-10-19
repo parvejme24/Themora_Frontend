@@ -1,5 +1,5 @@
 import React from "react";
-import { FiAlertTriangle, FiCheckCircle, FiDollarSign } from "react-icons/fi";
+import { FiDollarSign } from "react-icons/fi";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SectionCard from "./SectionCard";
@@ -8,17 +8,16 @@ import { inputClass, labelClass, LICENSE_PRESETS, PricingFieldChange } from "./s
 interface PricingLicensingSectionProps {
   price: number;
   websiteLimit: number | null | undefined;
-  lemonsqueezyVariantId: string;
   onChange: PricingFieldChange;
 }
 
-export default function PricingLicensingSection({ price, websiteLimit, lemonsqueezyVariantId, onChange }: PricingLicensingSectionProps) {
+export default function PricingLicensingSection({ price, websiteLimit, onChange }: PricingLicensingSectionProps) {
   return (
     <SectionCard
       icon={FiDollarSign}
       iconClassName="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
       title="Pricing & Licensing"
-      description="Set billing price, website limits, and Lemon Squeezy integration"
+      description="Set the price and how many websites the licence covers"
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {/* Price */}
@@ -85,33 +84,6 @@ export default function PricingLicensingSection({ price, websiteLimit, lemonsque
         </div>
       </div>
 
-      {/* Lemon Squeezy variant */}
-      <div className="space-y-2 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-white/[0.02]">
-        <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="lemonsqueezyVariantId" className={labelClass}>
-            Lemon Squeezy Variant ID
-          </Label>
-          {lemonsqueezyVariantId ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-              <FiCheckCircle className="h-3 w-3" /> Connected
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-              <FiAlertTriangle className="h-3 w-3" /> No checkout variant
-            </span>
-          )}
-        </div>
-        <Input
-          id="lemonsqueezyVariantId"
-          value={lemonsqueezyVariantId}
-          onChange={(e) => onChange("lemonsqueezyVariantId", e.target.value)}
-          placeholder="e.g. 123456 (Numeric variant ID)"
-          className="h-10 rounded-xl border-slate-200 font-mono text-base sm:text-sm dark:border-white/10 dark:bg-white/[0.03]"
-        />
-        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-          Find this ID in your Lemon Squeezy Dashboard under Products &rarr; Variants &rarr; Variant ID.
-        </p>
-      </div>
     </SectionCard>
   );
 }

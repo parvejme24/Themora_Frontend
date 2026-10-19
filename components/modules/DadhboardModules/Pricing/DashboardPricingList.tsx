@@ -18,7 +18,6 @@ export default function DashboardPricingList() {
   const active = plans.filter((p) => p.isActive);
   const inactive = plans.filter((p) => !p.isActive);
   const shown = (tab === "active" ? active : inactive).slice().sort((a, b) => a.price - b.price);
-  const missingCheckout = active.filter((p) => !p.lemonsqueezyVariantId).length;
   const recommendedCount = active.filter((p) => p.recommended).length;
 
   const createButton = (
@@ -50,9 +49,9 @@ export default function DashboardPricingList() {
             </button>
           ))}
         </div>
-        {!isLoading && tab === "active" && (missingCheckout > 0 || recommendedCount > 1) && (
+        {!isLoading && tab === "active" && recommendedCount > 1 && (
           <p className="text-sm text-amber-600 dark:text-amber-400">
-            {[missingCheckout > 0 && `${missingCheckout} plan${missingCheckout === 1 ? " has" : "s have"} no checkout variant`, recommendedCount > 1 && `${recommendedCount} plans are marked recommended`].filter(Boolean).join(" · ")}
+            {[recommendedCount > 1 && `${recommendedCount} plans are marked recommended`].filter(Boolean).join(" · ")}
           </p>
         )}
       </div>

@@ -16,6 +16,7 @@ const socialLinks = [
 
 const companyLinks = [
   { label: "Products", href: "/products" },
+  { label: "Compare", href: "/compare" },
   { label: "Pricing", href: "/pricing" },
   { label: "Blogs", href: "/blogs" },
   { label: "Contact", href: "/contact" },

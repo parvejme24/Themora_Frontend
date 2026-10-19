@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
-import { FiAlertTriangle, FiCheck, FiEdit, FiEyeOff, FiGlobe, FiMoreHorizontal, FiRotateCcw, FiStar } from "react-icons/fi";
+import { FiCheck, FiEdit, FiEyeOff, FiGlobe, FiMoreHorizontal, FiRotateCcw, FiStar } from "react-icons/fi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -122,11 +122,11 @@ export default function PricingCard({ plan }: { plan: PricingPlan }) {
       )}
 
       <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-5 text-xs text-slate-500 dark:text-slate-400">
-        {plan.lemonsqueezyVariantId ? (
-          <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Checkout connected</span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400"><FiAlertTriangle className="h-3.5 w-3.5" /> No checkout variant</span>
-        )}
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          {plan.billingInterval === "ONE_TIME" ? "One-time" : plan.billingInterval === "MONTH" ? "Monthly subscription" : "Yearly subscription"}
+          {plan.grantsAllAccess && " · All-Access"}
+        </span>
         <span>Created {new Date(plan.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
       </div>
     </article>

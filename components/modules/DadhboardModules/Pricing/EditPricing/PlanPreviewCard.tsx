@@ -1,5 +1,5 @@
 import React from "react";
-import { FiAlertTriangle, FiCheck, FiEye, FiGlobe, FiStar } from "react-icons/fi";
+import { FiCheck, FiEye, FiGlobe, FiStar } from "react-icons/fi";
 import { formatMoney, licenceLabel } from "./shared";
 
 interface PlanPreviewCardProps {
@@ -10,7 +10,7 @@ interface PlanPreviewCardProps {
   websiteLimit: number | null | undefined;
   features: string[];
   recommended: boolean;
-  hasVariant: boolean;
+  billingInterval: "ONE_TIME" | "MONTH" | "YEAR";
   isActive: boolean;
 }
 
@@ -23,7 +23,7 @@ export default function PlanPreviewCard({
   websiteLimit,
   features,
   recommended,
-  hasVariant,
+  billingInterval,
   isActive,
 }: PlanPreviewCardProps) {
   return (
@@ -106,17 +106,7 @@ export default function PlanPreviewCard({
 
         {/* Status */}
         <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] text-slate-500 dark:border-white/[0.06] dark:text-slate-400">
-          {hasVariant ? (
-            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Checkout connected
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
-              <FiAlertTriangle className="h-3 w-3" />
-              No variant configured
-            </span>
-          )}
+          <span>{billingInterval === "ONE_TIME" ? "One-time purchase" : billingInterval === "MONTH" ? "Monthly subscription" : "Yearly subscription"}</span>
           <span>Status: {isActive ? "Active" : "Inactive"}</span>
         </div>
       </div>

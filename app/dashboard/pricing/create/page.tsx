@@ -59,7 +59,6 @@ export default function CreatePricingPage() {
   const [unlimited, setUnlimited] = useState(false);
   const [websiteLimit, setWebsiteLimit] = useState("3");
   const [features, setFeatures] = useState<string[]>([""]);
-  const [variantId, setVariantId] = useState("");
   const [recommended, setRecommended] = useState(false);
 
   const priceValue = parseFloat(price) || 0;
@@ -93,7 +92,6 @@ export default function CreatePricingPage() {
         price: priceValue,
         currency: "USD",
         websiteLimit: unlimited ? null : limitValue,
-        lemonsqueezyVariantId: variantId.trim() || null,
         features: cleanFeatures,
         recommended,
         isActive: true,
@@ -200,11 +198,8 @@ export default function CreatePricingPage() {
           {/* Checkout & visibility */}
           <section className={cardClass}>
             <h2 className="text-base font-semibold text-slate-900 dark:text-white">Checkout & visibility</h2>
-            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Connect payments and decide how the plan is highlighted.</p>
+            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Decide how the plan is highlighted on the pricing page.</p>
             <div className="mt-5 space-y-4">
-              <Field label="Lemon Squeezy variant ID" htmlFor="variantId" hint={variantId.trim() ? "Buyers can check out with this plan." : <span className="text-amber-600 dark:text-amber-400">Without a variant ID, buyers can&apos;t check out with this plan yet.</span>}>
-                <Input id="variantId" value={variantId} onChange={(e) => setVariantId(e.target.value)} placeholder="e.g. 123456" disabled={saving} className={`${inputClass} font-mono sm:max-w-xs`} />
-              </Field>
               <Toggle checked={recommended} onChange={setRecommended} label="Mark as recommended" description="Highlights this plan on the pricing page." />
             </div>
           </section>

@@ -10,6 +10,7 @@ import { formatCount } from "@/lib/format";
 import PriceTag from "./PriceTag";
 import Stars from "./Stars";
 import WishlistButton from "./WishlistButton";
+import CompareToggle from "../compare/CompareToggle";
 
 export default function MarketplaceCard({ product }: { product: ProductCard }) {
   const cart = useStorefrontCart();
@@ -75,6 +76,7 @@ export default function MarketplaceCard({ product }: { product: ProductCard }) {
         <div className="mt-auto flex items-center justify-between gap-3 pt-5">
           <PriceTag product={product} />
           <div className="flex items-center gap-1.5">
+            <CompareToggle productId={product.id} compact />
             {product.previewLink && (
               <a
                 href={product.previewLink}
