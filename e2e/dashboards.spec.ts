@@ -100,6 +100,22 @@ test.describe("admin", () => {
     await expect(page.locator("main tbody tr", { hasText: title })).toHaveCount(0);
   });
 
+  test("orders list filters and opens an order with items and payment", async ({ page }) => {
+    await signIn(page, "admin", "/dashboard/orders");
+    await expect(page.getByRole("heading", { name: "Orders", level: 1 })).toBeVisible();
+    await page.getByRole("tab", { name: /^Paid/ }).click();
+    const first = page.locator("main tbody tr").first();
+    await expect(first).toContainText("Paid");
+    const orderNumber = (await first.locator("a").first().textContent())!.trim();
+
+    await page.getByLabel("Search orders").fill(orderNumber);
+    await expect(page.locator("main tbody tr")).toHaveCount(1);
+    await page.getByRole("link", { name: orderNumber }).click();
+    await expect(page.getByRole("heading", { name: orderNumber, level: 1 })).toBeVisible();
+    await expect(page.getByText("Items", { exact: true })).toBeVisible();
+    await expect(page.getByText("Payment", { exact: true })).toBeVisible();
+  });
+
   test("analytics, queues and audit log load", async ({ page }) => {
     await signIn(page, "admin", "/dashboard/analytics");
     await expect(page.locator("main canvas")).toHaveCount(2);

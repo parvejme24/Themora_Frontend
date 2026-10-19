@@ -40,7 +40,7 @@ const staffNav: NavItem[] = [
     { label: "Coupons & sales", href: "/dashboard/coupons", icon: Tags, permission: "marketing" },
     { label: "Affiliates", href: "/dashboard/affiliates", icon: Share2, permission: "marketing" },
   ] },
-  { label: "Orders", href: "/dashboard/orders", icon: PackageCheck, adminOnly: true },
+  { label: "Orders", href: "/dashboard/orders", icon: PackageCheck, permission: "support" },
   { label: "Users", href: "/dashboard/users", icon: UsersRound, adminOnly: true },
   { label: "Pricing", href: "/dashboard/pricing", icon: CreditCard, adminOnly: true },
   { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail, adminOnly: true },

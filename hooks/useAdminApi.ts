@@ -1,8 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
-import type { AffiliateAccount, AffiliatePayout, RefundRequestStatus, TicketPriority, TicketStatus, TicketSummary } from "@/types/account";
-import type { ProductReview, ProductStatus } from "@/types/marketplace";
+import type { AffiliateAccount, AffiliatePayout, MyOrder, RefundRequestStatus, TicketPriority, TicketStatus, TicketSummary } from "@/types/account";
+import type { OrderStatus, ProductReview, ProductStatus } from "@/types/marketplace";
 
 // ---------- Types ----------
 
@@ -132,6 +132,7 @@ const useAdminMutation = <TVars, TResult>(invalidate: QueryKey[], mutationFn: (v
 };
 
 const K = {
+  orders: ["admin", "orders"],
   refunds: ["admin", "refunds"],
   tickets: ["admin", "tickets"],
   reviews: ["admin", "reviews"],
@@ -142,6 +143,81 @@ const K = {
   audit: ["admin", "audit"],
   analytics: ["admin", "analytics"],
 } as const;
+
+// ---------- Orders ----------
+
+export type OrderProvider = NonNullable<MyOrder["provider"]>;
+
+export interface AdminOrderQuery {
+  q?: string;
+  status?: OrderStatus;
+  provider?: OrderProvider;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminOrderRow {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  totalAmount: number;
+  currency: string;
+  provider: OrderProvider | null;
+  couponCode: string | null;
+  customerName: string | null;
+  customerEmail: string;
+  createdAt: string;
+  paidAt: string | null;
+  user: { id: string; fullName: string } | null;
+  itemCount: number;
+  firstItem: string;
+  refundStatus: RefundRequestStatus | null;
+}
+
+export interface AdminOrder extends Omit<MyOrder, "licenses"> {
+  licenses: (MyOrder["licenses"][number] & { _count: { activations: number } })[];
+  refundRequests: {
+    id: string;
+    status: RefundRequestStatus;
+    reason: string;
+    adminNote: string | null;
+    amount: number;
+    providerRefundId: string | null;
+    failureReason: string | null;
+    createdAt: string;
+    resolvedAt: string | null;
+    resolvedBy: { id: string; fullName: string } | null;
+  }[];
+  user: { id: string; fullName: string; email: string; role: string } | null;
+  affiliate: { id: string; code: string } | null;
+  tickets: { id: string; subject: string; status: TicketStatus; createdAt: string }[];
+  providerPaymentId: string | null;
+  providerSessionId: string | null;
+  failureReason: string | null;
+  updatedAt: string;
+}
+
+/** Orders plus how many orders each status has (for the tabs) */
+export const useAdminOrders = (query: AdminOrderQuery) =>
+  useQuery({
+    queryKey: [...K.orders, "list", query],
+    queryFn: async () => {
+      const res = await api.get<AdminOrderRow[], { counts: Partial<Record<OrderStatus, number>> }>("/admin/orders", query);
+      return { items: res.data ?? [], counts: res.counts ?? {}, pagination: res.pagination };
+    },
+    placeholderData: keepPreviousData,
+  });
+
+export const useAdminOrder = (id: string) =>
+  useQuery({ queryKey: [...K.orders, id], queryFn: () => api.data<AdminOrder>(`/admin/orders/${id}`), enabled: !!id });
+
+/** Refunds through the original gateway and revokes licences */
+export const useRefundOrder = () =>
+  useAdminMutation([K.orders, K.refunds], ({ id, reason }: { id: string; reason: string }) =>
+    api.post(`/admin/orders/${id}/refund`, { reason })
+  );
 
 // ---------- Refunds ----------
 
