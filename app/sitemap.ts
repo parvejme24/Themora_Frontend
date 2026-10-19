@@ -5,7 +5,7 @@ import type { ProductCard } from "@/types/marketplace";
 
 export const revalidate = 3600;
 
-const STATIC_PAGES = ["", "/products", "/pricing", "/blogs", "/contact", "/terms", "/privacy"];
+const STATIC_PAGES = ["", "/products", "/pricing", "/blogs", "/contact", "/terms", "/privacy", "/license", "/refund-policy"];
 const PAGE_SIZE = 60;
 const MAX_PAGES = 50;
 

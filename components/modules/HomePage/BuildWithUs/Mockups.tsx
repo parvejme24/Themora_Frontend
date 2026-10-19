@@ -869,9 +869,9 @@ export function DashboardMockup({ progress }: MockupProps) {
             {/* Top Workspace Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-xs sm:text-base font-bold text-slate-900 dark:text-white">
+                <p className="text-xs sm:text-base font-bold text-slate-900 dark:text-white">
                   Production Cloud Analytics
-                </h4>
+                </p>
                 <p className="text-[9px] sm:text-[10px] text-slate-400">Live Telemetry · Real-Time Events</p>
               </div>
               <div className="flex items-center gap-2">

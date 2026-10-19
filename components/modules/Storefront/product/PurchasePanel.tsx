@@ -97,12 +97,15 @@ export default function PurchasePanel({ product }: { product: ProductDetail }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-slate-900 dark:text-white">{option.title}</span>
-                  <span className="block text-xs text-slate-500 dark:text-slate-400">{option.detail}</span>
+                  <span className="block text-xs text-slate-600 dark:text-slate-400">{option.detail}</span>
                 </span>
                 <span className="text-sm font-semibold tabular-nums text-slate-900 dark:text-white">{formatPrice(optionPrice)}</span>
               </label>
             );
           })}
+          <Link href="/license" className="justify-self-start text-xs font-medium text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">
+            What do the licences cover?
+          </Link>
         </fieldset>
       )}
 
@@ -158,7 +161,7 @@ export default function PurchasePanel({ product }: { product: ProductDetail }) {
       {/* Previews */}
       {(product.previewLink || product.figmaUrl || product.playStoreUrl || product.appStoreUrl || mobileDemo) && (
         <div className="mt-6 space-y-2 border-t border-slate-200 pt-5 dark:border-white/10">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Try before you buy</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Try before you buy</p>
           {product.previewLink && (
             <Link
               href={`/preview/${product.slug}`}
@@ -191,7 +194,7 @@ export default function PurchasePanel({ product }: { product: ProductDetail }) {
                 <p className="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-white">
                   <FiSmartphone className="h-4 w-4" /> Demo app
                 </p>
-                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Scan with your phone to install the demo build.</p>
+                <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">Scan with your phone to install the demo build.</p>
                 <div className="mt-1.5 flex gap-3 text-xs font-medium">
                   {product.apkUrl && (
                     <a href={product.apkUrl} className="text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">

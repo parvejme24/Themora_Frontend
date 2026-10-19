@@ -198,7 +198,7 @@ export default function CompareContainer() {
         </div>
       )}
       {ids.length === 1 && (
-        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
           Add at least one more product to compare.{" "}
           <Link href="/products" className="font-semibold text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">
             Browse products

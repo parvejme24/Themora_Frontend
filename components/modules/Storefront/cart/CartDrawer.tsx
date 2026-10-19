@@ -76,7 +76,7 @@ const LineItem = ({
               <option value="EXTENDED">Extended licence</option>
             </select>
           ) : (
-            <span className="text-xs text-slate-500 dark:text-slate-400">Single licence</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">Single licence</span>
           )}
           <span className="text-right">
             <span className="block text-sm font-semibold tabular-nums text-slate-900 dark:text-white">{formatPrice(line.total)}</span>
@@ -181,7 +181,7 @@ export default function CartDrawer() {
         {cart.isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <Spinner />
-            {cart.merging && <p className="text-sm text-slate-500 dark:text-slate-400">Moving your cart to your account…</p>}
+            {cart.merging && <p className="text-sm text-slate-600 dark:text-slate-400">Moving your cart to your account…</p>}
           </div>
         ) : lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
@@ -189,7 +189,7 @@ export default function CartDrawer() {
               <FiShoppingBag className="h-6 w-6" />
             </span>
             <p className="mt-4 font-semibold text-slate-900 dark:text-white">Your cart is empty</p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Find a template, app or UI kit you like and add it here.</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Find a template, app or UI kit you like and add it here.</p>
             <Link
               href="/products"
               onClick={() => cartDrawer.close()}
@@ -306,7 +306,7 @@ export default function CartDrawer() {
                   >
                     <FiLock className="h-4 w-4" /> Sign in to check out
                   </Link>
-                  <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-center text-xs text-slate-600 dark:text-slate-400">
                     Your cart is saved and moves to your account when you sign in. Coupons apply at checkout.
                   </p>
                 </>

@@ -227,7 +227,7 @@ export default function Topbar({ onMenuToggle }: { onMenuToggle: () => void }) {
         </button>
         <div className="min-w-0">
           <p className="hidden truncate font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#1D6FE0] sm:block dark:text-[#8DB8FF]">Themora / Workspace</p>
-          <h1 className="truncate text-base font-semibold tracking-tight text-slate-900 sm:mt-0.5 sm:text-lg dark:text-white">{title}</h1>
+          <p className="truncate text-base font-semibold tracking-tight text-slate-900 sm:mt-0.5 sm:text-lg dark:text-white">{title}</p>
         </div>
       </div>
 

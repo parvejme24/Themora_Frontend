@@ -1,3 +1,8 @@
+import type { Metadata } from "next";
+import LegalPage from "@/components/shared/Legal/LegalPage";
+
+export const metadata: Metadata = { title: "Privacy & cookies | Themora" };
+
 const sections = [
   {
     title: "Information we collect",
@@ -36,35 +41,13 @@ const sections = [
   },
 ];
 
-export default function PrivacyPage() {
-  return (
-    <article className="mx-auto max-w-4xl px-6 py-16 sm:py-24">
-      <header className="border-b border-[#d9e1eb] pb-10 dark:border-[#293448]">
-        <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[#1559a8] dark:text-[#8dbdff]">Legal</p>
-        <h1 className="mt-4 text-4xl font-bold tracking-tight text-[#10233f] sm:text-5xl dark:text-white">Privacy Policy</h1>
-        <p className="mt-4 text-sm text-[#64748b] dark:text-[#a7b2c2]">Effective October 3, 2026</p>
-        <p className="mt-6 max-w-2xl text-base leading-7 text-[#53647a] dark:text-[#b5c0cf]">
-          This policy describes the information Themora may collect, how it is used, and the choices available to you.
-        </p>
-      </header>
-
-      <div className="divide-y divide-[#d9e1eb] dark:divide-[#293448]">
-        {sections.map((section, index) => (
-          <section key={section.title} className="grid gap-3 py-8 sm:grid-cols-[3rem_1fr] sm:gap-6">
-            <span className="pt-1 font-mono text-xs text-[#8a9aaf]">0{index + 1}</span>
-            <div>
-              <h2 className="text-xl font-semibold text-[#10233f] dark:text-white">{section.title}</h2>
-              <div className="mt-3 space-y-4 text-[15px] leading-7 text-[#53647a] dark:text-[#b5c0cf]">
-                {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-              </div>
-            </div>
-          </section>
-        ))}
-      </div>
-
-      <p className="border-t border-[#d9e1eb] pt-7 text-sm leading-6 text-[#64748b] dark:border-[#293448] dark:text-[#a7b2c2]">
-        Privacy questions or requests? <a className="font-semibold text-[#1559a8] underline underline-offset-4 dark:text-[#8dbdff]" href="/contact">Contact our team</a>.
-      </p>
-    </article>
-  );
+export default function Page() {
+  return <LegalPage title="Privacy & cookies" effective="October 19, 2026" intro="How Themora collects, uses and protects your information, and what we store in your browser." sections={[...sections, {
+      title: "Cookies and browser storage",
+      id: "cookies",
+      paragraphs: [
+        "We only use what the site needs to work: a sign-in cookie that keeps you logged in, and browser storage for your theme (light or dark), a cart you build before signing in, products you pick to compare, and a referral code for 30 days if you arrived through an affiliate link.",
+        "We don't use advertising or third-party tracking cookies. Payment pages are run by Stripe and SSLCommerz, which set their own cookies under their policies. Clearing your browser data removes everything we store.",
+      ],
+    }]} />;
 }

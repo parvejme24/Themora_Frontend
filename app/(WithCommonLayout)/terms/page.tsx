@@ -1,4 +1,10 @@
-const sections = [
+import type { Metadata } from "next";
+import Link from "next/link";
+import LegalPage, { type LegalSection } from "@/components/shared/Legal/LegalPage";
+
+export const metadata: Metadata = { title: "Terms & Conditions | Themora" };
+
+const sections: LegalSection[] = [
   {
     title: "Using Themora",
     paragraphs: [
@@ -9,7 +15,7 @@ const sections = [
   {
     title: "Purchases and product licenses",
     paragraphs: [
-      "Prices, product descriptions, and any purchase conditions are shown on the relevant product or checkout page. A purchase does not transfer ownership of a product's underlying intellectual property. Your permitted use is governed by the license or usage terms presented with that product at purchase.",
+      <>Prices, product descriptions, and any purchase conditions are shown on the relevant product or checkout page. A purchase does not transfer ownership of a product&apos;s underlying intellectual property. What you may build with it is set out in our <Link href="/license" className="font-medium text-[#1559a8] underline underline-offset-4 dark:text-[#8dbdff]">Licence terms</Link> for the Single or Extended licence you choose.</>,
       "Do not resell, redistribute, or publicly share purchased files unless the applicable product license expressly allows it. Contact us before purchasing if you need clarification about a license.",
     ],
   },
@@ -17,7 +23,7 @@ const sections = [
     title: "Payments and order issues",
     paragraphs: [
       "Payment options and any applicable taxes are displayed during checkout. Payment processing may be provided by a third party and is also subject to that provider's terms. If you have a problem with an order, contact us with the order details so we can look into it.",
-      "Any cancellation or refund terms shown at checkout or for a specific product form part of that purchase. Nothing in these Terms limits rights that cannot be excluded under applicable consumer-protection law.",
+      <>Refunds follow our <Link href="/refund-policy" className="font-medium text-[#1559a8] underline underline-offset-4 dark:text-[#8dbdff]">Refund policy</Link>: requests within 14 days of payment are reviewed case by case. All-Access subscriptions can be cancelled at any time and run until the end of the paid period. Nothing in these Terms limits rights that cannot be excluded under applicable consumer-protection law.</>,
     ],
   },
   {
@@ -36,35 +42,6 @@ const sections = [
   },
 ];
 
-export default function TermsPage() {
-  return (
-    <article className="mx-auto max-w-4xl px-6 py-16 sm:py-24">
-      <header className="border-b border-[#d9e1eb] pb-10 dark:border-[#293448]">
-        <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[#1559a8] dark:text-[#8dbdff]">Legal</p>
-        <h1 className="mt-4 text-4xl font-bold tracking-tight text-[#10233f] sm:text-5xl dark:text-white">Terms &amp; Conditions</h1>
-        <p className="mt-4 text-sm text-[#64748b] dark:text-[#a7b2c2]">Effective October 3, 2026</p>
-        <p className="mt-6 max-w-2xl text-base leading-7 text-[#53647a] dark:text-[#b5c0cf]">
-          These terms explain the rules for using Themora and purchasing products through the site.
-        </p>
-      </header>
-
-      <div className="divide-y divide-[#d9e1eb] dark:divide-[#293448]">
-        {sections.map((section, index) => (
-          <section key={section.title} className="grid gap-3 py-8 sm:grid-cols-[3rem_1fr] sm:gap-6">
-            <span className="pt-1 font-mono text-xs text-[#8a9aaf]">0{index + 1}</span>
-            <div>
-              <h2 className="text-xl font-semibold text-[#10233f] dark:text-white">{section.title}</h2>
-              <div className="mt-3 space-y-4 text-[15px] leading-7 text-[#53647a] dark:text-[#b5c0cf]">
-                {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-              </div>
-            </div>
-          </section>
-        ))}
-      </div>
-
-      <p className="border-t border-[#d9e1eb] pt-7 text-sm leading-6 text-[#64748b] dark:border-[#293448] dark:text-[#a7b2c2]">
-        Questions about these Terms? <a className="font-semibold text-[#1559a8] underline underline-offset-4 dark:text-[#8dbdff]" href="/contact">Contact our team</a>.
-      </p>
-    </article>
-  );
+export default function Page() {
+  return <LegalPage title="Terms & Conditions" effective="October 19, 2026" intro="These terms explain the rules for using Themora and purchasing products through the site." sections={[...sections]} />;
 }

@@ -10,7 +10,7 @@ const GATEWAYS: { value: PaymentGateway; title: string; detail: string; icon: Re
 export default function GatewayPicker({ value, onChange }: { value: PaymentGateway; onChange: (value: PaymentGateway) => void }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pay with</legend>
+      <legend className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Pay with</legend>
       <div className="grid gap-2">
         {GATEWAYS.map(({ value: option, title, detail, icon: Icon }) => {
           const checked = value === option;
@@ -24,10 +24,10 @@ export default function GatewayPicker({ value, onChange }: { value: PaymentGatew
               }`}
             >
               <input type="radio" name="gateway" value={option} checked={checked} onChange={() => onChange(option)} className="sr-only" />
-              <Icon className="h-5 w-5 shrink-0 text-slate-500 dark:text-slate-400" />
+              <Icon className="h-5 w-5 shrink-0 text-slate-600 dark:text-slate-400" />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-slate-900 dark:text-white">{title}</span>
-                <span className="block text-xs text-slate-500 dark:text-slate-400">{detail}</span>
+                <span className="block text-xs text-slate-600 dark:text-slate-400">{detail}</span>
               </span>
               {checked && <FiCheck className="h-4 w-4 text-[#1D6FE0] dark:text-[#8DB8FF]" />}
             </label>

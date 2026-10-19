@@ -93,7 +93,7 @@ const Avatar = ({ item, size = 44 }: { item: TestimonialsData; size?: number }) 
 );
 
 const Stars = () => (
-  <div className="flex gap-1 text-[#F5B301]" aria-label="5 out of 5 stars">
+  <div role="img" className="flex gap-1 text-[#F5B301]" aria-label="5 out of 5 stars">
     {[...Array(5)].map((_, i) => (
       <FaStar key={i} className="h-4 w-4" />
     ))}

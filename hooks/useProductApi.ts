@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { api, type ApiQuery } from "@/lib/api";
+import { api, type ApiQuery, type Paginated } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 import { useAuth } from "@/hooks/useAuth";
 import type { ProductCard, ProductDetail, ProductFacets, ProductVersion, TagRef } from "@/types/marketplace";
@@ -13,19 +13,23 @@ export type ProductQuery = Omit<ApiQuery<"/products">, "type" | "category" | "te
   tag?: string | string[];
 };
 
-export const useProducts = (query: ProductQuery = {}) =>
+export const useProducts = (query: ProductQuery = {}, initialData?: Paginated<ProductCard>) =>
   useQuery({
     queryKey: queryKeys.products.list(query),
     queryFn: () => api.list<ProductCard>("/products", query),
     // Keep the current page on screen while the next filter result loads
     placeholderData: keepPreviousData,
+    // Server-rendered first page, so product images start loading before hydration
+    initialData,
+    initialDataUpdatedAt: initialData ? Date.now() : undefined,
   });
 
-export const useProductFacets = () =>
+export const useProductFacets = (initialData?: ProductFacets) =>
   useQuery({
     queryKey: queryKeys.products.facets(),
     queryFn: () => api.data<ProductFacets>("/products/facets"),
     staleTime: 5 * 60_000,
+    initialData,
   });
 
 /** Accepts a slug or an id. Drafts and archived products return 404. */

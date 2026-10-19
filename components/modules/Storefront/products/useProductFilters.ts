@@ -3,7 +3,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import type { ProductQuery } from "@/hooks/useProductApi";
 import type { ProductSort } from "@/types/marketplace";
 
-export const PAGE_SIZE = 12;
+export { PAGE_SIZE } from "./constants";
+import { PAGE_SIZE } from "./constants";
 
 export const SORTS: { value: ProductSort; label: string }[] = [
   { value: "newest", label: "Newest" },

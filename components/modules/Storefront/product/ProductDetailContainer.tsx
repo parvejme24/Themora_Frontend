@@ -42,7 +42,7 @@ const Changelog = ({ slug }: { slug: string }) => {
             Version {version.version}
             {version.isLatest && <span className="rounded-full bg-[#1D6FE0]/10 px-2 py-0.5 text-[11px] font-semibold text-[#1D6FE0] dark:text-[#8DB8FF]">Latest</span>}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(version.releasedAt)}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400">{formatDate(version.releasedAt)}</p>
           {version.changelog && <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600 dark:text-slate-300">{version.changelog}</p>}
         </li>
       ))}
@@ -61,12 +61,12 @@ const Overview = ({ product }: { product: ProductDetail }) => (
     )}
     {product.keyFeatures.length > 0 && (
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Key features</h3>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Key features</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {product.keyFeatures.map((feature, i) => (
             <div key={i} className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
               <p className="font-semibold text-slate-900 dark:text-white">{feature.title}</p>
-              {feature.description && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{feature.description}</p>}
+              {feature.description && <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{feature.description}</p>}
             </div>
           ))}
         </div>
@@ -74,7 +74,7 @@ const Overview = ({ product }: { product: ProductDetail }) => (
     )}
     {product.whatsIncluded.length > 0 && (
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">What&apos;s included</h3>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">What&apos;s included</h2>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {product.whatsIncluded.map((item, i) => (
             <li key={i} className="flex gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -128,7 +128,7 @@ export default function ProductDetailContainer({ slug, initialProduct }: { slug:
   return (
     <div className="bg-[#F5F7FB] dark:bg-[#05071A]">
       <div className="container mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
-        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
+        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
           <Link href="/products" className="hover:text-slate-900 dark:hover:text-white">
             Products
           </Link>
@@ -142,14 +142,14 @@ export default function ProductDetailContainer({ slug, initialProduct }: { slug:
 
         <header className="mt-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-[#1D6FE0]/10 px-3 py-1 text-xs font-semibold text-[#1D6FE0] dark:text-[#8DB8FF]">
+            <span className="rounded-full bg-[#1D6FE0]/10 px-3 py-1 text-xs font-semibold text-[#1559a8] dark:text-[#8DB8FF]">
               {PRODUCT_TYPE_LABELS[product.productType]}
             </span>
-            {product.isFeatured && <span className="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">Featured</span>}
+            {product.isFeatured && <span className="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-semibold text-amber-800 dark:text-amber-300">Featured</span>}
           </div>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">{product.title}</h1>
           <p className="mt-3 max-w-3xl text-slate-600 dark:text-slate-300">{product.shortDescription}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600 dark:text-slate-400">
             {product.reviewCount > 0 && (
               <button type="button" onClick={() => setTab("reviews")} className="inline-flex items-center gap-2 hover:text-slate-900 dark:hover:text-white">
                 <Stars rating={product.avgRating} />
@@ -181,7 +181,7 @@ export default function ProductDetailContainer({ slug, initialProduct }: { slug:
                   className={`-mb-px mr-6 border-b-2 pb-3 text-sm font-semibold transition ${
                     tab === t.value
                       ? "border-[#1D6FE0] text-slate-900 dark:border-[#8DB8FF] dark:text-white"
-                      : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                      : "border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                   }`}
                 >
                   {t.label}
@@ -201,14 +201,14 @@ export default function ProductDetailContainer({ slug, initialProduct }: { slug:
               <dl className="space-y-3 text-sm">
                 {facts.map((fact) => (
                   <div key={fact.label} className="flex justify-between gap-4">
-                    <dt className="text-slate-500 dark:text-slate-400">{fact.label}</dt>
+                    <dt className="text-slate-600 dark:text-slate-400">{fact.label}</dt>
                     <dd className="text-right font-medium text-slate-900 dark:text-white">{fact.value}</dd>
                   </div>
                 ))}
               </dl>
               {product.techStack.length > 0 && (
                 <div className="mt-5 border-t border-slate-200 pt-5 dark:border-white/10">
-                  <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                     <FiLayers className="h-3.5 w-3.5" /> Built with
                   </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">

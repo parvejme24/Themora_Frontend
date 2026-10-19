@@ -3,7 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FiChevronDown, FiFilter, FiPackage, FiSearch, FiX } from "react-icons/fi";
 import { useProductFacets, useProducts } from "@/hooks/useProductApi";
-import { PRODUCT_TYPE_LABELS, type ProductType } from "@/types/marketplace";
+import { PRODUCT_TYPE_LABELS, type ProductCard, type ProductFacets, type ProductType } from "@/types/marketplace";
+import type { Paginated } from "@/lib/api";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,11 +21,20 @@ import { PAGE_SIZE, PRICE_RANGES, SORTS, useProductFilters } from "./useProductF
 
 const SEARCH_DEBOUNCE_MS = 350;
 
-export default function ProductsContainer() {
+export default function ProductsContainer({
+  initialProducts,
+  initialFacets,
+}: {
+  /** First page of the unfiltered catalogue, rendered on the server */
+  initialProducts?: Paginated<ProductCard>;
+  initialFacets?: ProductFacets;
+}) {
   const filterState = useProductFilters();
   const { filters, query, update, toggle, clearAll, activeCount } = filterState;
-  const { data, isLoading, isFetching, error, refetch } = useProducts(query);
-  const { data: facets } = useProductFacets();
+  // The server-rendered page only matches the default view (no filters, first page)
+  const isDefaultView = !filters.q && activeCount === 0 && filters.sort === "newest" && filters.page === 1;
+  const { data, isLoading, isFetching, error, refetch } = useProducts(query, isDefaultView ? initialProducts : undefined);
+  const { data: facets } = useProductFacets(initialFacets);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const gridTopRef = useRef<HTMLDivElement>(null);
 
@@ -95,7 +105,7 @@ export default function ProductsContainer() {
           <aside aria-label="Filters" className="hidden lg:block">
             <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 [scrollbar-width:thin]">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Filters</h2>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Filters</h2>
                 {activeCount > 0 && (
                   <button type="button" onClick={clearAll} className="text-xs font-medium text-[#1D6FE0] hover:underline dark:text-[#8DB8FF]">
                     Clear all
@@ -119,7 +129,7 @@ export default function ProductsContainer() {
                   <span className="rounded-full bg-[#1D6FE0] px-1.5 text-[11px] font-semibold text-white">{activeCount}</span>
                 )}
               </button>
-              <p className="text-sm text-slate-500 dark:text-slate-400" aria-live="polite">
+              <p className="text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
                 {isLoading ? (
                   "Loading products…"
                 ) : (
@@ -193,14 +203,14 @@ export default function ProductsContainer() {
                 />
               ) : (
                 <div className={`grid gap-6 transition-opacity sm:grid-cols-2 xl:grid-cols-3 ${isFetching ? "opacity-60" : ""}`}>
-                  {products.map((product) => (
-                    <MarketplaceCard key={product.id} product={product} />
+                  {products.map((product, i) => (
+                    <MarketplaceCard key={product.id} product={product} priority={i < 3} />
                   ))}
                 </div>
               )}
               {pagination && <Pagination pagination={pagination} onPage={goToPage} />}
               {pagination && pagination.total > PAGE_SIZE && (
-                <p className="mt-4 text-center text-xs text-slate-400">
+                <p className="mt-4 text-center text-xs text-slate-600">
                   Page {pagination.page} of {pagination.totalPages}
                 </p>
               )}

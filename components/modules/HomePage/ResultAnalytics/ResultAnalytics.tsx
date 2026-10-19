@@ -67,9 +67,9 @@ export default function Analytcis() {
             </p>
           </div>
 
-          <dl className="mt-10 grid grid-cols-2 gap-2.5 sm:gap-4 lg:mt-16 lg:grid-cols-4">
+          <ul className="mt-10 grid grid-cols-2 gap-2.5 sm:gap-4 lg:mt-16 lg:grid-cols-4">
             {stats.map(({ title, count, icon: Icon }, i) => (
-              <motion.div
+              <motion.li
                 key={title}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -80,13 +80,13 @@ export default function Analytcis() {
                 <span className="order-1 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#7C3AED] text-white shadow-lg shadow-[#3B82F6]/30 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
                   <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </span>
-                <dt className="order-3 mt-1 text-xs text-slate-300 sm:text-base">{title}</dt>
-                <dd className="order-2 mt-3 sm:mt-5 text-xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+                <p className="order-3 mt-1 text-xs text-slate-300 sm:text-base">{title}</p>
+                <p className="order-2 mt-3 sm:mt-5 text-xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
                   <CountUp end={count} duration={2.5} separator="," enableScrollSpy scrollSpyOnce suffix="+" />
-                </dd>
-              </motion.div>
+                </p>
+              </motion.li>
             ))}
-          </dl>
+          </ul>
         </Reveal>
       </div>
     </section>

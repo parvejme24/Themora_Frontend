@@ -184,6 +184,7 @@ export default function Banner() {
                 />
                 <motion.button
                   type="submit"
+                  aria-label="Search"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   className="tf-shine inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-3.5 py-2 text-xs font-semibold text-white shadow-lg shadow-[#0F5BBD]/30 sm:px-6 sm:py-2.5 sm:text-sm"
@@ -213,8 +214,9 @@ export default function Banner() {
 
           {/* Visual */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            // No fade-in: the screenshot is the page's largest paint, so it must be visible at once
+            initial={{ scale: 0.96, y: 24 }}
+            animate={{ scale: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3, ease: EASE_OUT }}
             onPointerMove={handlePointerMove}
             onPointerLeave={resetTilt}

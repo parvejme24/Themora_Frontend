@@ -112,7 +112,7 @@ export default function CheckoutResult({ page }: { page: ReturnPage }) {
       {order && (
         <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#0B0F2E]">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Order</span>
+            <span className="text-slate-600 dark:text-slate-400">Order</span>
             <span className="font-mono font-semibold text-slate-900 dark:text-white">{order.orderNumber}</span>
           </div>
           <ul className="mt-4 divide-y divide-slate-200 dark:divide-white/10">

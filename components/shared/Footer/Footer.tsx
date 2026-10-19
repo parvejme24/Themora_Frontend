@@ -23,8 +23,9 @@ const companyLinks = [
 ];
 
 const helpLinks = [
-  { label: "Customer Support", href: "/support" },
-  { label: "Delivery Details", href: "/delivery" },
+  { label: "Customer Support", href: "/dashboard/support" },
+  { label: "Licence Terms", href: "/license" },
+  { label: "Refund Policy", href: "/refund-policy" },
   { label: "Terms & Conditions", href: "/terms" },
   { label: "Privacy Policy", href: "/privacy" },
 ];
@@ -50,7 +51,7 @@ const SocialLinks = () => (
 
 const FooterLinks = ({ title, links }: { title: string; links: typeof companyLinks }) => (
   <div>
-    <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{title}</h4>
+    <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{title}</h3>
     <ul className="mt-5 space-y-3">
       {links.map(({ label, href }) => (
         <li key={label}>
@@ -133,7 +134,7 @@ const NewsletterSection = () => {
       <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D6FE0] to-[#7C5CFC] text-white shadow-lg shadow-[#3F5BF0]/30">
         <Mail className="h-[18px] w-[18px]" />
       </span>
-      <h4 className="relative mt-4 text-lg font-semibold text-white">Join our newsletter</h4>
+      <h3 className="relative mt-4 text-lg font-semibold text-white">Join our newsletter</h3>
       <p className="relative mt-1 text-sm text-slate-400">
         Fresh templates, design tips and exclusive deals — straight to your inbox.
       </p>
@@ -208,9 +209,9 @@ export default function Footer() {
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-white/15 blur-2xl" />
           <div aria-hidden className="pointer-events-none absolute -bottom-24 left-1/4 h-60 w-60 rounded-full bg-[#22D3EE]/25 blur-3xl" />
           <div className="relative max-w-xl">
-            <h3 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
+            <h2 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
               Ready to launch something beautiful?
-            </h3>
+            </h2>
             <p className="mt-3 text-sm text-white/75 sm:text-base">
               Grab a premium template today or let our team build it with you.
             </p>

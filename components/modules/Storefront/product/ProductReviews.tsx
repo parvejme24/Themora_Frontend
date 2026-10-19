@@ -39,7 +39,7 @@ const ReviewItem = ({ review }: { review: ProductReview }) => (
             </span>
           )}
         </p>
-        <p className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <p className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
           <Stars rating={review.rating} className="h-3 w-3" /> {formatDate(review.createdAt)}
         </p>
       </div>
@@ -145,7 +145,7 @@ export default function ProductReviews({ slug }: { slug: string }) {
             <div className="mt-2">
               <Stars rating={summary.avgRating} className="h-4 w-4" />
             </div>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               {summary.reviewCount} {summary.reviewCount === 1 ? "review" : "reviews"}
             </p>
             <div className="mt-5 space-y-1.5">
@@ -198,7 +198,7 @@ export default function ProductReviews({ slug }: { slug: string }) {
       <div>
         {writing && <ReviewForm slug={slug} onDone={() => setWriting(false)} />}
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             {query.rating ? `Showing ${query.rating}-star reviews` : "All reviews"}
           </p>
           <select

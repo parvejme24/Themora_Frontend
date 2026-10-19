@@ -1,6 +1,6 @@
 import Footer from "@/components/shared/Footer/Footer";
 import { Navbar } from "@/components/shared/Navbar/Navbar";
-import ChatWidget from "@/components/shared/ChatWidget/ChatWidget";
+import ChatWidget from "@/components/shared/ChatWidget/LazyChatWidget";
 import StorefrontRoot from "@/components/modules/Storefront/cart/StorefrontRoot";
 import React from "react";
 

@@ -11,15 +11,15 @@ export default function PriceTag({ product, size = "md" }: { product: PriceProdu
   const main = size === "lg" ? "text-3xl" : "text-lg";
 
   if (product.isFree) {
-    return <span className={`${main} font-bold text-emerald-600 dark:text-emerald-400`}>Free</span>;
+    return <span className={`${main} font-bold text-emerald-700 dark:text-emerald-400`}>Free</span>;
   }
   return (
     <span className="inline-flex flex-wrap items-baseline gap-x-2">
       <span className={`${main} font-bold tabular-nums text-slate-900 dark:text-white`}>{formatPrice(current)}</span>
       {off > 0 && (
         <>
-          <span className="text-sm tabular-nums text-slate-400 line-through">{formatPrice(product.price)}</span>
-          <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-xs font-semibold text-rose-600 dark:text-rose-400">
+          <span className="text-sm tabular-nums text-slate-500 line-through">{formatPrice(product.price)}</span>
+          <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-xs font-semibold text-rose-700 dark:text-rose-400">
             -{off}%
           </span>
         </>
