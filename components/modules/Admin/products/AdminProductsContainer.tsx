@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiArchive, FiDownload, FiEdit2, FiExternalLink, FiLayers, FiPackage, FiPlus, FiSearch, FiTrash2, FiUpload } from "react-icons/fi";
@@ -14,6 +15,7 @@ import EmptyState from "@/components/shared/Feedback/EmptyState";
 import { LoadingState } from "@/components/shared/Feedback/Spinner";
 import Pagination from "@/components/modules/Storefront/shared/Pagination";
 import { Badge, Card, Thumb, buttonClass, inputClass, type Tone } from "@/components/modules/Account/ui";
+import { SelectField } from "@/components/ui/select-field";
 
 export const STATUS_TONE: Record<ProductStatus, { label: string; tone: Tone }> = {
   PUBLISHED: { label: "Published", tone: "green" },
@@ -161,41 +163,26 @@ export default function AdminProductsContainer() {
       />
       <ImportProductsDialog open={importOpen} onClose={() => setImportOpen(false)} />
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex gap-1 rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/5" role="tablist">
-          {TABS.map((tab) => (
-            <button
-              key={tab.value || "all"}
-              type="button"
-              role="tab"
-              aria-selected={status === tab.value}
-              onClick={() => {
-                setStatus(tab.value);
-                setPage(1);
-              }}
-              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-                status === tab.value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        <select
-          value={type}
-          onChange={(e) => {
-            setType(e.target.value as ProductType | "");
+        <AnimatedTabs
+          ariaLabel="Product status"
+          value={status}
+          onChange={(value) => {
+            setStatus(value);
             setPage(1);
           }}
+          options={TABS}
+        />
+        <SelectField
+          value={type}
+          onValueChange={(next) => {
+            setType(next as ProductType | "");
+            setPage(1);
+          }}
+          emptyLabel="All types"
+          options={Object.entries(PRODUCT_TYPE_LABELS).map(([value, label]) => ({ value, label }))}
           aria-label="Product type"
           className={`${inputClass} !w-auto`}
-        >
-          <option value="">All types</option>
-          {Object.entries(PRODUCT_TYPE_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        />
         <div className="relative ml-auto min-w-[220px] flex-1 sm:max-w-xs">
           <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} type="search" placeholder="Search products" aria-label="Search products" className={`${inputClass} pl-9`} />

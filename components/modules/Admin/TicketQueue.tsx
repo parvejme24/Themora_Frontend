@@ -13,6 +13,7 @@ import { LoadingState } from "@/components/shared/Feedback/Spinner";
 import Pagination from "@/components/modules/Storefront/shared/Pagination";
 import { Badge, Card, inputClass, timeAgo, type Tone } from "@/components/modules/Account/ui";
 import { StatusTabs } from "./AdminUi";
+import { SelectField } from "@/components/ui/select-field";
 
 export const STAFF_TICKET_STATUS: Record<TicketStatus, { label: string; tone: Tone }> = {
   AWAITING_SUPPORT: { label: "Needs reply", tone: "amber" },
@@ -69,18 +70,30 @@ export default function TicketQueue() {
             { value: "", label: "All" },
           ]}
         />
-        <select value={scope} onChange={(e) => setScope(e.target.value as typeof scope)} aria-label="Assignment" className={`${inputClass} !w-auto`}>
-          <option value="all">Everyone&apos;s</option>
-          <option value="mine">Assigned to me</option>
-          <option value="unassigned">Unassigned</option>
-        </select>
-        <select value={priority} onChange={(e) => setPriority(e.target.value as TicketPriority | "")} aria-label="Priority" className={`${inputClass} !w-auto`}>
-          <option value="">Any priority</option>
-          <option value="URGENT">Urgent</option>
-          <option value="HIGH">High</option>
-          <option value="NORMAL">Normal</option>
-          <option value="LOW">Low</option>
-        </select>
+        <SelectField
+          value={scope}
+          onValueChange={(next) => setScope(next as typeof scope)}
+          options={[
+            { value: "all", label: "Everyone\u2019s" },
+            { value: "mine", label: "Assigned to me" },
+            { value: "unassigned", label: "Unassigned" },
+          ]}
+          aria-label="Assignment"
+          className={`${inputClass} !w-auto`}
+        />
+        <SelectField<TicketPriority>
+          value={priority}
+          onValueChange={setPriority}
+          emptyLabel="Any priority"
+          options={[
+            { value: "URGENT", label: "Urgent" },
+            { value: "HIGH", label: "High" },
+            { value: "NORMAL", label: "Normal" },
+            { value: "LOW", label: "Low" },
+          ]}
+          aria-label="Priority"
+          className={`${inputClass} !w-auto`}
+        />
         <div className="relative ml-auto min-w-[200px] flex-1 sm:max-w-xs">
           <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} type="search" placeholder="Subject, email or number" aria-label="Search tickets" className={`${inputClass} pl-9`} />

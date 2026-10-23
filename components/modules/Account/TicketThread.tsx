@@ -15,6 +15,7 @@ import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 import { Badge, Card, buttonClass, formatDateTime, inputClass } from "./ui";
 import { TICKET_STATUS } from "./SupportContainer";
 import { STAFF_TICKET_STATUS } from "@/components/modules/Admin/TicketQueue";
+import { SelectField } from "@/components/ui/select-field";
 
 const Message = ({ message, mine }: { message: TicketMessage; mine: boolean }) => (
   <li className={`flex gap-3 ${mine ? "flex-row-reverse" : ""}`}>
@@ -60,20 +61,23 @@ const StaffControls = ({ ticketId, status, priority, assignedToId }: { ticketId:
     update.mutate({ id: ticketId, ...input }, { onError: (e) => toast.error(e.message) });
   return (
     <Card className="flex flex-wrap items-center gap-3 !p-4">
-      <select value={status} onChange={(e) => change({ status: e.target.value as TicketStatus })} aria-label="Status" className={`${inputClass} !w-auto`}>
-        {(Object.keys(STAFF_TICKET_STATUS) as TicketStatus[]).map((s) => (
-          <option key={s} value={s}>
-            {STAFF_TICKET_STATUS[s].label}
-          </option>
-        ))}
-      </select>
-      <select value={priority} onChange={(e) => change({ priority: e.target.value as TicketPriority })} aria-label="Priority" className={`${inputClass} !w-auto`}>
-        {(["URGENT", "HIGH", "NORMAL", "LOW"] as TicketPriority[]).map((p) => (
-          <option key={p} value={p}>
-            {p.charAt(0) + p.slice(1).toLowerCase()} priority
-          </option>
-        ))}
-      </select>
+      <SelectField
+        value={status}
+        onValueChange={(next) => change({ status: next as TicketStatus })}
+        options={(Object.keys(STAFF_TICKET_STATUS) as TicketStatus[]).map((s) => ({ value: s, label: STAFF_TICKET_STATUS[s].label }))}
+        aria-label="Status"
+        className={`${inputClass} !w-auto`}
+      />
+      <SelectField
+        value={priority}
+        onValueChange={(next) => change({ priority: next as TicketPriority })}
+        options={(["URGENT", "HIGH", "NORMAL", "LOW"] as TicketPriority[]).map((p) => ({
+          value: p,
+          label: `${p.charAt(0) + p.slice(1).toLowerCase()} priority`,
+        }))}
+        aria-label="Priority"
+        className={`${inputClass} !w-auto`}
+      />
       {assignedToId === user?.id ? (
         <button type="button" onClick={() => change({ assignedToId: null })} className={buttonClass.secondary}>
           Unassign me

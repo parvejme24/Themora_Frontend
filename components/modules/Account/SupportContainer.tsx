@@ -8,12 +8,14 @@ import { useCreateTicket, useMyOrders, useMyTickets, type NewTicket } from "@/ho
 import { useMyLicenses } from "@/hooks/useLibraryApi";
 import type { TicketStatus } from "@/types/account";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import PageHeader from "@/components/modules/DadhboardModules/dashboard/PageHeader";
 import ErrorState from "@/components/shared/Feedback/ErrorState";
 import EmptyState from "@/components/shared/Feedback/EmptyState";
 import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 import Pagination from "@/components/modules/Storefront/shared/Pagination";
 import { Badge, Card, buttonClass, inputClass, timeAgo, type Tone } from "./ui";
+import { SelectField } from "@/components/ui/select-field";
 
 export const TICKET_STATUS: Record<TicketStatus, { label: string; tone: Tone }> = {
   AWAITING_SUPPORT: { label: "Waiting for us", tone: "amber" },
@@ -69,22 +71,22 @@ const NewTicketDialog = ({ open, onClose }: { open: boolean; onClose: () => void
             className={inputClass}
           />
           <div className="grid gap-3 sm:grid-cols-2">
-            <select value={form.productId ?? ""} onChange={(e) => setForm({ ...form, productId: e.target.value })} aria-label="Product" className={inputClass}>
-              <option value="">No specific product</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title}
-                </option>
-              ))}
-            </select>
-            <select value={form.orderId ?? ""} onChange={(e) => setForm({ ...form, orderId: e.target.value })} aria-label="Order" className={inputClass}>
-              <option value="">No specific order</option>
-              {(orders?.items ?? []).map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.orderNumber}
-                </option>
-              ))}
-            </select>
+            <SelectField
+              value={form.productId ?? ""}
+              onValueChange={(productId) => setForm({ ...form, productId })}
+              emptyLabel="No specific product"
+              options={products.map((p) => ({ value: p.id, label: p.title }))}
+              aria-label="Product"
+              className={inputClass}
+            />
+            <SelectField
+              value={form.orderId ?? ""}
+              onValueChange={(orderId) => setForm({ ...form, orderId })}
+              emptyLabel="No specific order"
+              options={(orders?.items ?? []).map((o) => ({ value: o.id, label: o.orderNumber }))}
+              aria-label="Order"
+              className={inputClass}
+            />
           </div>
           <textarea
             value={form.message}
@@ -133,25 +135,15 @@ export default function SupportContainer() {
           </button>
         }
       />
-      <div className="flex flex-wrap gap-2" role="tablist">
-        {FILTERS.map((filter) => (
-          <button
-            key={filter.value || "all"}
-            type="button"
-            role="tab"
-            aria-selected={status === filter.value}
-            onClick={() => {
-              setStatus(filter.value);
-              setPage(1);
-            }}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-              status === filter.value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
-      </div>
+      <AnimatedTabs
+        ariaLabel="Ticket status"
+        value={status}
+        onChange={(value) => {
+          setStatus(value);
+          setPage(1);
+        }}
+        options={FILTERS.map((filter) => ({ value: filter.value, label: filter.label }))}
+      />
       {isLoading ? (
         <LoadingState className="min-h-[30vh]" />
       ) : error ? (

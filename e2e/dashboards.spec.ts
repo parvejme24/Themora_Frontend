@@ -44,8 +44,8 @@ test.describe("admin", () => {
     const title = `E2E product ${Date.now().toString(36)}`;
     await page.locator("#title").fill(title);
     await page.locator("#shortDescription").fill("Temporary product created by the end-to-end tests.");
-    await page.locator("#categoryId option").nth(1).waitFor({ state: "attached" });
-    await page.locator("#categoryId").selectOption({ index: 1 });
+    await page.locator("#categoryId").click();
+    await page.getByRole("option").first().click();
     await page.locator("#price").fill("39");
     await page.getByRole("button", { name: "Create" }).click();
     await page.waitForURL(/\/versions$/);

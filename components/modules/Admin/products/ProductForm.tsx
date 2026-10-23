@@ -12,6 +12,7 @@ import Spinner from "@/components/shared/Feedback/Spinner";
 import { Card, CardTitle, buttonClass, inputClass } from "@/components/modules/Account/ui";
 import { GalleryField, ImageField } from "./ImageField";
 import { STATUS_TONE } from "./AdminProductsContainer";
+import { SelectField } from "@/components/ui/select-field";
 
 const PLATFORMS = ["Web", "iOS", "Android", "Desktop", "Figma", "WordPress"];
 
@@ -175,13 +176,13 @@ export default function ProductForm({ product }: { product?: AdminProduct }) {
               <FiLayers className="h-4 w-4" /> Versions & files
             </Link>
           )}
-          <select value={form.status} onChange={(e) => set("status", e.target.value as ProductStatus)} aria-label="Status" className={`${inputClass} !w-auto`}>
-            {(Object.keys(STATUS_TONE) as ProductStatus[]).map((s) => (
-              <option key={s} value={s}>
-                {STATUS_TONE[s].label}
-              </option>
-            ))}
-          </select>
+          <SelectField
+            value={form.status}
+            onValueChange={(status) => set("status", status as ProductStatus)}
+            options={(Object.keys(STATUS_TONE) as ProductStatus[]).map((s) => ({ value: s, label: STATUS_TONE[s].label }))}
+            aria-label="Status"
+            className={`${inputClass} !w-auto`}
+          />
           <button type="submit" disabled={saving} className={buttonClass.primary}>
             {saving ? <Spinner size="xs" tone="light" /> : <FiSave className="h-4 w-4" />} {product ? "Save" : "Create"}
           </button>
@@ -212,23 +213,24 @@ export default function ProductForm({ product }: { product?: AdminProduct }) {
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Type" htmlFor="productType">
-                  <select id="productType" value={form.productType} onChange={(e) => set("productType", e.target.value as ProductType)} className={inputClass}>
-                    {Object.entries(PRODUCT_TYPE_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
+                  <SelectField
+                    id="productType"
+                    value={form.productType}
+                    onValueChange={(productType) => set("productType", productType as ProductType)}
+                    options={Object.entries(PRODUCT_TYPE_LABELS).map(([value, label]) => ({ value, label }))}
+                    className={inputClass}
+                  />
                 </Field>
                 <Field label="Category" htmlFor="categoryId">
-                  <select id="categoryId" value={form.categoryId} onChange={(e) => set("categoryId", e.target.value)} required className={inputClass}>
-                    <option value="">Choose a category</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.title}
-                      </option>
-                    ))}
-                  </select>
+                  <SelectField
+                    id="categoryId"
+                    value={form.categoryId}
+                    onValueChange={(categoryId) => set("categoryId", categoryId)}
+                    options={categories.map((c) => ({ value: c.id, label: c.title }))}
+                    placeholder="Choose a category"
+                    required
+                    className={inputClass}
+                  />
                 </Field>
               </div>
               <Field label="Tags" htmlFor="tags" hint="Comma separated, e.g. SaaS, Stripe, Dashboard">

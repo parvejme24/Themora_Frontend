@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FiEdit2, FiPercent, FiPlus, FiTag, FiTrash2, FiZap } from "react-icons/fi";
+import { FiChevronDown, FiEdit2, FiPercent, FiPlus, FiTag, FiTrash2, FiZap } from "react-icons/fi";
 import { toast } from "sonner";
 import { useCoupons, useDeleteCoupon, useEndSale, useSaveCoupon, useStartSale, type Coupon, type CouponInput } from "@/hooks/useAdminApi";
 import { useStaff } from "@/hooks/useAdminProductsApi";
@@ -15,6 +15,8 @@ import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 import Pagination from "@/components/modules/Storefront/shared/Pagination";
 import { Badge, Card, CardTitle, buttonClass, inputClass } from "@/components/modules/Account/ui";
 import { StatusTabs } from "./AdminUi";
+import { SelectField } from "@/components/ui/select-field";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const toLocalInput = (iso: string | null) => (iso ? iso.slice(0, 16) : "");
 const fromLocalInput = (value: string) => (value ? new Date(value).toISOString() : null);
@@ -84,10 +86,16 @@ const CouponDialog = ({ coupon, open, onClose }: { coupon: Coupon | null; open: 
           <div className="grid grid-cols-2 gap-3">
             <input value={form.code} onChange={(e) => set({ code: e.target.value.toUpperCase() })} required minLength={3} maxLength={30} pattern="[A-Za-z0-9_\-]+" placeholder="CODE" aria-label="Code" className={`${inputClass} font-mono uppercase`} />
             <div className="flex gap-2">
-              <select value={form.type} onChange={(e) => set({ type: e.target.value as "PERCENT" | "FIXED" })} aria-label="Type" className={inputClass}>
-                <option value="PERCENT">% off</option>
-                <option value="FIXED">$ off</option>
-              </select>
+              <SelectField
+                value={form.type}
+                onValueChange={(type) => set({ type: type as "PERCENT" | "FIXED" })}
+                options={[
+                  { value: "PERCENT", label: "% off" },
+                  { value: "FIXED", label: "$ off" },
+                ]}
+                aria-label="Type"
+                className={inputClass}
+              />
               <input value={form.value} onChange={(e) => set({ value: e.target.value })} type="number" min={0.01} max={form.type === "PERCENT" ? 100 : undefined} step="0.01" required placeholder="10" aria-label="Value" className={inputClass} />
             </div>
           </div>
@@ -120,21 +128,37 @@ const CouponDialog = ({ coupon, open, onClose }: { coupon: Coupon | null; open: 
               <input value={form.endsAt} onChange={(e) => set({ endsAt: e.target.value })} type="datetime-local" className={inputClass} />
             </label>
           </div>
-          <label className="block space-y-1">
+          <div className="space-y-1">
             <span className="text-xs text-slate-500">Only for these categories (none = everything)</span>
-            <select
-              multiple
-              value={form.categoryIds}
-              onChange={(e) => set({ categoryIds: Array.from(e.target.selectedOptions).map((o) => o.value) })}
-              className={`${inputClass} h-28`}
-            >
-              {(categoriesData?.data ?? []).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                </option>
-              ))}
-            </select>
-          </label>
+            <DropdownMenu>
+              <DropdownMenuTrigger className={`${inputClass} flex items-center justify-between gap-2 text-left`} aria-label="Categories">
+                <span className="truncate">
+                  {form.categoryIds.length === 0
+                    ? "All categories"
+                    : (categoriesData?.data ?? [])
+                        .filter((c) => form.categoryIds.includes(c.id))
+                        .map((c) => c.title)
+                        .join(", ")}
+                </span>
+                <FiChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="max-h-64 w-(--radix-dropdown-menu-trigger-width)">
+                {(categoriesData?.data ?? []).map((c) => (
+                  <DropdownMenuCheckboxItem
+                    key={c.id}
+                    checked={form.categoryIds.includes(c.id)}
+                    // Keep the menu open so several categories can be picked
+                    onSelect={(e) => e.preventDefault()}
+                    onCheckedChange={(checked) =>
+                      set({ categoryIds: checked ? [...form.categoryIds, c.id] : form.categoryIds.filter((id) => id !== c.id) })
+                    }
+                  >
+                    {c.title}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={form.firstOrderOnly} onChange={(e) => set({ firstOrderOnly: e.target.checked })} className="h-4 w-4 accent-[#1D6FE0]" /> First order only
@@ -181,14 +205,15 @@ const FlashSale = () => {
       >
         <label className="min-w-[200px] flex-1 space-y-1">
           <span className="text-xs text-slate-500">Category</span>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required className={inputClass}>
-            <option value="">Choose…</option>
-            {(categoriesData?.data ?? []).map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </select>
+          <SelectField
+            value={categoryId}
+            onValueChange={setCategoryId}
+            options={(categoriesData?.data ?? []).map((c) => ({ value: c.id, label: c.title }))}
+            placeholder="Choose…"
+            required
+            aria-label="Category"
+            className={inputClass}
+          />
         </label>
         <label className="w-24 space-y-1">
           <span className="text-xs text-slate-500">% off</span>

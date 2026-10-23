@@ -19,6 +19,7 @@ import ErrorState from "@/components/shared/Feedback/ErrorState";
 import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 import Pagination from "@/components/modules/Storefront/shared/Pagination";
 import { Badge, Card, CardTitle, Stat, buttonClass, inputClass, type Tone } from "./ui";
+import { SelectField } from "@/components/ui/select-field";
 
 const PAYOUT_METHODS: { value: PayoutMethod; label: string; placeholder: string }[] = [
   { value: "bkash", label: "bKash", placeholder: "bKash number, e.g. 01700000000" },
@@ -44,18 +45,13 @@ const siteOrigin = () => (typeof window === "undefined" ? "" : window.location.o
 
 const PayoutFields = ({ value, onChange }: { value: Omit<AffiliateApplication, "code">; onChange: (value: Omit<AffiliateApplication, "code">) => void }) => (
   <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
-    <select
+    <SelectField
       value={value.payoutMethod}
-      onChange={(e) => onChange({ ...value, payoutMethod: e.target.value as PayoutMethod })}
+      onValueChange={(payoutMethod) => onChange({ ...value, payoutMethod: payoutMethod as PayoutMethod })}
+      options={PAYOUT_METHODS}
       aria-label="Payout method"
       className={inputClass}
-    >
-      {PAYOUT_METHODS.map((m) => (
-        <option key={m.value} value={m.value}>
-          {m.label}
-        </option>
-      ))}
-    </select>
+    />
     <input
       value={value.payoutDetails}
       onChange={(e) => onChange({ ...value, payoutDetails: e.target.value })}

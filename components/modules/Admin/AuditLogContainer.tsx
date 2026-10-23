@@ -9,6 +9,7 @@ import EmptyState from "@/components/shared/Feedback/EmptyState";
 import { LoadingState } from "@/components/shared/Feedback/Spinner";
 import Pagination from "@/components/modules/Storefront/shared/Pagination";
 import { Badge, Card, formatDateTime, inputClass, type Tone } from "@/components/modules/Account/ui";
+import { SelectField } from "@/components/ui/select-field";
 
 const METHOD_TONE: Record<string, Tone> = { POST: "green", PATCH: "blue", PUT: "blue", DELETE: "red" };
 
@@ -55,22 +56,17 @@ export default function AuditLogContainer() {
         title="Audit log"
         description="Every change staff make through the admin API. Passwords and secrets are redacted."
         actions={
-          <select
+          <SelectField
             value={entityType}
-            onChange={(e) => {
-              setEntityType(e.target.value);
+            onValueChange={(next) => {
+              setEntityType(next);
               setPage(1);
             }}
+            emptyLabel="Everything"
+            options={ENTITY_TYPES.map((t) => ({ value: t, label: t }))}
             aria-label="Filter by area"
             className={`${inputClass} !w-auto`}
-          >
-            <option value="">Everything</option>
-            {ENTITY_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+          />
         }
       />
       {isLoading ? (

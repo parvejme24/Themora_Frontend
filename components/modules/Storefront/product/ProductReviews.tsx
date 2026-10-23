@@ -16,6 +16,7 @@ import ErrorState from "@/components/shared/Feedback/ErrorState";
 import Spinner from "@/components/shared/Feedback/Spinner";
 import Pagination from "../shared/Pagination";
 import Stars from "../shared/Stars";
+import { SelectField } from "@/components/ui/select-field";
 
 const Avatar = ({ name, url }: { name: string; url?: string | null }) =>
   url ? (
@@ -201,16 +202,17 @@ export default function ProductReviews({ slug }: { slug: string }) {
           <p className="text-sm text-slate-600 dark:text-slate-400">
             {query.rating ? `Showing ${query.rating}-star reviews` : "All reviews"}
           </p>
-          <select
-            value={query.sort}
-            onChange={(e) => setQuery({ ...query, sort: e.target.value as ReviewQuery["sort"], page: 1 })}
+          <SelectField
+            value={query.sort ?? "newest"}
+            onValueChange={(sort) => setQuery({ ...query, sort: sort as ReviewQuery["sort"], page: 1 })}
+            options={[
+              { value: "newest", label: "Newest" },
+              { value: "highest", label: "Highest rated" },
+              { value: "lowest", label: "Lowest rated" },
+            ]}
             aria-label="Sort reviews"
-            className="h-9 rounded-full border border-slate-200 bg-white px-3 text-sm dark:border-white/10 dark:bg-white/5 dark:text-white"
-          >
-            <option value="newest">Newest</option>
-            <option value="highest">Highest rated</option>
-            <option value="lowest">Lowest rated</option>
-          </select>
+            className="h-9 rounded-full border-slate-200 bg-white dark:border-white/10 dark:bg-white/5 dark:text-white"
+          />
         </div>
         {error ? (
           <ErrorState error={error} subject="reviews" onRetry={refetch} compact className="mt-6" />

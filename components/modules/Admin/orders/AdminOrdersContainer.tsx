@@ -13,6 +13,7 @@ import { LoadingState } from "@/components/shared/Feedback/Spinner";
 import Pagination from "@/components/modules/Storefront/shared/Pagination";
 import { Badge, Card, ORDER_STATUS, formatDateTime, inputClass } from "@/components/modules/Account/ui";
 import { StatusTabs } from "../AdminUi";
+import { SelectField } from "@/components/ui/select-field";
 
 export const PROVIDER_LABEL: Record<OrderProvider, string> = {
   STRIPE: "Stripe",
@@ -68,22 +69,17 @@ export default function AdminOrdersContainer() {
             count: value ? counts[value] ?? 0 : total,
           }))}
         />
-        <select
+        <SelectField
           value={provider}
-          onChange={(e) => {
-            setProvider(e.target.value as OrderProvider | "");
+          onValueChange={(next) => {
+            setProvider(next as OrderProvider | "");
             setPage(1);
           }}
+          emptyLabel="All gateways"
+          options={Object.entries(PROVIDER_LABEL).map(([value, label]) => ({ value, label }))}
           aria-label="Payment gateway"
           className={`${inputClass} !w-auto`}
-        >
-          <option value="">All gateways</option>
-          {Object.entries(PROVIDER_LABEL).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        />
         <div className="relative ml-auto min-w-[220px] flex-1 sm:max-w-xs">
           <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
