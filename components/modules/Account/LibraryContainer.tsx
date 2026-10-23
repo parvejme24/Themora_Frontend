@@ -15,10 +15,12 @@ import ErrorState from "@/components/shared/Feedback/ErrorState";
 import EmptyState from "@/components/shared/Feedback/EmptyState";
 import Spinner, { LoadingState } from "@/components/shared/Feedback/Spinner";
 import GatewayPicker from "@/components/modules/Storefront/cart/GatewayPicker";
+import { useChargeFormatter } from "@/hooks/usePaymentConfig";
 import { Badge, Card, Thumb, buttonClass } from "./ui";
 
 const UpgradeDialog = ({ license, onClose }: { license: MyLicense | null; onClose: () => void }) => {
   const [gateway, setGateway] = useState<PaymentGateway>("stripe");
+  const { formatCharge } = useChargeFormatter(gateway);
   const upgrade = useUpgradeLicense();
   if (!license) return null;
   return (
@@ -28,7 +30,7 @@ const UpgradeDialog = ({ license, onClose }: { license: MyLicense | null; onClos
         <DialogDescription>
           Use <strong>{license.product.title}</strong> on unlimited domains and in SaaS or client projects. You only pay the difference; your licence key stays the same.
         </DialogDescription>
-        <p className="mt-2 text-3xl font-bold tabular-nums text-slate-900 dark:text-white">{formatPrice(license.upgradePrice ?? 0)}</p>
+        <p className="mt-2 text-3xl font-bold tabular-nums text-slate-900 dark:text-white">{formatCharge(license.upgradePrice ?? 0)}</p>
         <GatewayPicker value={gateway} onChange={setGateway} />
         <button
           type="button"
@@ -41,7 +43,7 @@ const UpgradeDialog = ({ license, onClose }: { license: MyLicense | null; onClos
           }
           className={`${buttonClass.primary} h-11 w-full`}
         >
-          {upgrade.isPending ? <Spinner size="sm" tone="light" /> : <FiZap className="h-4 w-4" />} Pay {formatPrice(license.upgradePrice ?? 0)}
+          {upgrade.isPending ? <Spinner size="sm" tone="light" /> : <FiZap className="h-4 w-4" />} Pay {formatCharge(license.upgradePrice ?? 0)}
         </button>
       </DialogContent>
     </Dialog>

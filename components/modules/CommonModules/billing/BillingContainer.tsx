@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMySubscription } from "@/hooks/useLibraryApi";
 import { useGetPricingPlan, usePlanCheckout, usePreviewPlanCoupon, type CouponPreview } from "@/hooks/usePricingApi";
 import { formatPrice } from "@/lib/format";
+import { useChargeFormatter } from "@/hooks/usePaymentConfig";
 import { getReferralCode } from "@/lib/referral";
 import type { PaymentGateway } from "@/types/marketplace";
 import ErrorState from "@/components/shared/Feedback/ErrorState";
@@ -27,6 +28,8 @@ export default function BillingContainer({ pricingPlanId }: { pricingPlanId: str
   const [gateway, setGateway] = useState<PaymentGateway>("stripe");
   const [couponInput, setCouponInput] = useState("");
   const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  // bKash / Nagad (SSLCommerz) charge in BDT, so the summary switches currency with the gateway
+  const { formatCharge, inBdt } = useChargeFormatter(gateway);
 
   if (isLoading || authLoading) return <LoadingState className="min-h-[70vh]" />;
   if (!plan || !plan.isActive) {
@@ -163,7 +166,7 @@ export default function BillingContainer({ pricingPlanId }: { pricingPlanId: str
                       <button
                         type="submit"
                         disabled={previewCoupon.isPending || !couponInput.trim()}
-                        className="h-10 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-white/10 dark:text-slate-200"
+                        className="h-10 rounded-xl border border-[#0F5BBD]/30 px-4 text-sm font-semibold text-[#0F5BBD] transition hover:border-[#0F5BBD] hover:bg-[#0F5BBD] hover:text-white disabled:pointer-events-none disabled:opacity-50 dark:border-[#8DB8FF]/30 dark:text-[#8DB8FF] dark:hover:border-[#8DB8FF] dark:hover:bg-[#8DB8FF] dark:hover:text-slate-900"
                       >
                         {previewCoupon.isPending ? <Spinner size="sm" /> : "Apply"}
                       </button>
@@ -179,18 +182,21 @@ export default function BillingContainer({ pricingPlanId }: { pricingPlanId: str
               <dl className="space-y-1.5 text-sm">
                 <div className="flex justify-between text-slate-600 dark:text-slate-300">
                   <dt>{plan.title}</dt>
-                  <dd className="tabular-nums">{formatPrice(plan.price)}</dd>
+                  <dd className="tabular-nums">{formatCharge(plan.price)}</dd>
                 </div>
                 {coupon && coupon.discountTotal > 0 && (
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                     <dt>Discount</dt>
-                    <dd className="tabular-nums">−{formatPrice(coupon.discountTotal)}</dd>
+                    <dd className="tabular-nums">−{formatCharge(coupon.discountTotal)}</dd>
                   </div>
                 )}
                 <div className="flex justify-between pt-1 text-base font-semibold text-slate-900 dark:text-white">
                   <dt>{isSubscription ? `Total ${INTERVAL_LABEL[plan.billingInterval]}` : "Total"}</dt>
-                  <dd className="tabular-nums">{formatPrice(total)}</dd>
+                  <dd className="tabular-nums">{formatCharge(total)}</dd>
                 </div>
+                {inBdt && (
+                  <p className="text-right text-xs text-slate-500 dark:text-slate-400">≈ {formatPrice(total)} USD · charged in Bangladeshi taka</p>
+                )}
               </dl>
 
               <GatewayPicker value={gateway} onChange={setGateway} />
@@ -208,7 +214,7 @@ export default function BillingContainer({ pricingPlanId }: { pricingPlanId: str
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30 transition hover:brightness-110 disabled:opacity-60"
               >
                 {checkout.isPending ? <Spinner size="sm" tone="light" /> : <FiLock className="h-4 w-4" />}
-                {isSubscription && gateway === "stripe" ? `Subscribe · ${formatPrice(total)}` : `Pay ${formatPrice(total)}`}
+                {isSubscription && gateway === "stripe" ? `Subscribe · ${formatCharge(total)}` : `Pay ${formatCharge(total)}`}
               </button>
             </>
           )}
