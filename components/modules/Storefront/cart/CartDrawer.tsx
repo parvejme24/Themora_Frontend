@@ -63,7 +63,7 @@ const LineItem = ({
       <Link
         href={p ? `/products/${p.slug}` : "#"}
         onClick={() => cartDrawer.close()}
-        className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-white/5"
+        className="relative h-14 w-16 shrink-0 overflow-hidden rounded-xl sm:h-16 sm:w-20 bg-slate-100 dark:bg-white/5"
       >
         {p?.imageUrl && <Image src={p.imageUrl} alt="" fill sizes="80px" className="object-cover" />}
       </Link>
@@ -157,6 +157,11 @@ export default function CartDrawer() {
     }
   }, [open, mergeFailed]);
 
+  // The "added to your cart" toast would sit on top of the drawer header
+  useEffect(() => {
+    if (open) toast.dismiss("cart-added");
+  }, [open]);
+
   const clearCart = useClearCart();
   const [confirmClear, setConfirmClear] = useState(false);
   useEffect(() => {
@@ -217,8 +222,8 @@ export default function CartDrawer() {
 
   return (
     <Drawer open={open} onOpenChange={cartDrawer.set} direction="right">
-      <DrawerContent className="flex h-full w-full flex-col p-0 sm:!max-w-md dark:bg-[#0B0F2E]">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-white/10">
+      <DrawerContent className="flex h-full w-full flex-col p-0 data-[vaul-drawer-direction=right]:w-full sm:!max-w-md dark:bg-[#0B0F2E]">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 sm:px-5 sm:py-4 dark:border-white/10">
           <DrawerTitle className="flex items-center gap-2 text-base font-semibold">
             <FiShoppingBag className="h-5 w-5" /> My Cart
             {cart.count > 0 && <span className="text-sm font-normal text-slate-500">({cart.count})</span>}
@@ -238,9 +243,11 @@ export default function CartDrawer() {
                 type="button"
                 onClick={() => setConfirmClear(true)}
                 disabled={clearCart.isPending}
+                aria-label="Clear cart"
                 className="ml-auto mr-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
               >
-                {clearCart.isPending ? <Spinner size="sm" /> : <FiTrash2 className="h-3.5 w-3.5" />} Clear cart
+                {clearCart.isPending ? <Spinner size="sm" /> : <FiTrash2 className="h-3.5 w-3.5" />}
+                <span className="hidden min-[380px]:inline">Clear cart</span>
               </button>
             ))}
           <button type="button" onClick={() => cartDrawer.close()} aria-label="Close cart" className="rounded-full p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5">
@@ -269,134 +276,139 @@ export default function CartDrawer() {
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto px-5">
-              {cart.mergeFailed && (
-                <p className="mt-4 flex items-center justify-between gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
-                  <span className="flex gap-2">
-                    <FiAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    We couldn&apos;t move your saved items to your account.
-                  </span>
-                  <button type="button" onClick={retryGuestCartMerge} className="inline-flex shrink-0 items-center gap-1 font-semibold hover:underline">
-                    <FiRefreshCw className="h-3.5 w-3.5" /> Retry
-                  </button>
-                </p>
-              )}
-              {server?.unavailable && server.unavailable.length > 0 && (
-                <p className="mt-4 flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
-                  <FiAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  {server.unavailable.map((u) => u.title).join(", ")} {server.unavailable.length === 1 ? "is" : "are"} no longer
-                  available and won&apos;t be charged.
-                </p>
-              )}
-              <ul className="divide-y divide-slate-200 dark:divide-white/10">
-                {lines.map((line) => (
-                  <LineItem
-                    key={line.productId}
-                    line={line}
-                    busy={busyId === line.productId || (cart.merging && pendingIds.has(line.productId))}
-                    onRemove={() =>
-                      pendingIds.has(line.productId)
-                        ? guestCart.remove(line.productId)
-                        : withBusy(line.productId, () => cart.removeItem(line.productId))
-                    }
-                    onLicense={(licenseType) => changeLicense(line, licenseType)}
-                  />
-                ))}
-              </ul>
-            </div>
-
-            <div className="space-y-4 border-t border-slate-200 px-5 py-4 dark:border-white/10">
-              {cart.isAuthenticated &&
-                (server?.couponCode ? (
-                  <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2 text-sm dark:bg-emerald-500/10">
-                    <span className="inline-flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-300">
-                      <FiTag className="h-4 w-4" /> {server.couponCode}
+            {/* Phones: items and summary scroll together. sm+: the list scrolls above a fixed summary */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain sm:overflow-hidden">
+              <div className="px-4 sm:min-h-0 sm:flex-1 sm:overflow-y-auto sm:px-5">
+                {cart.mergeFailed && (
+                  <p className="mt-4 flex items-center justify-between gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+                    <span className="flex gap-2">
+                      <FiAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      We couldn&apos;t move your saved items to your account.
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => removeCoupon.mutate(undefined)}
-                      disabled={removeCoupon.isPending}
-                      className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-300"
-                    >
-                      Remove
+                    <button type="button" onClick={retryGuestCartMerge} className="inline-flex shrink-0 items-center gap-1 font-semibold hover:underline">
+                      <FiRefreshCw className="h-3.5 w-3.5" /> Retry
                     </button>
-                  </div>
-                ) : (
-                  <form onSubmit={submitCoupon} className="flex gap-2">
-                    <input
-                      value={couponInput}
-                      onChange={(e) => {
-                        setCouponInput(e.target.value.toUpperCase());
-                        if (applyCoupon.error) applyCoupon.reset();
-                      }}
-                      placeholder="Coupon code"
-                      aria-label="Coupon code"
-                      className="h-10 min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm uppercase outline-none focus:border-[#1D6FE0]/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                  </p>
+                )}
+                {server?.unavailable && server.unavailable.length > 0 && (
+                  <p className="mt-4 flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+                    <FiAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    {server.unavailable.map((u) => u.title).join(", ")} {server.unavailable.length === 1 ? "is" : "are"} no longer
+                    available and won&apos;t be charged.
+                  </p>
+                )}
+                <ul className="divide-y divide-slate-200 dark:divide-white/10">
+                  {lines.map((line) => (
+                    <LineItem
+                      key={line.productId}
+                      line={line}
+                      busy={busyId === line.productId || (cart.merging && pendingIds.has(line.productId))}
+                      onRemove={() =>
+                        pendingIds.has(line.productId)
+                          ? guestCart.remove(line.productId)
+                          : withBusy(line.productId, () => cart.removeItem(line.productId))
+                      }
+                      onLicense={(licenseType) => changeLicense(line, licenseType)}
                     />
-                    <button
-                      type="submit"
-                      disabled={applyCoupon.isPending || !couponInput.trim()}
-                      className="h-10 rounded-xl border border-[#0F5BBD]/30 px-4 text-sm font-semibold text-[#0F5BBD] transition hover:border-[#0F5BBD] hover:bg-[#0F5BBD] hover:text-white disabled:pointer-events-none disabled:opacity-50 dark:border-[#8DB8FF]/30 dark:text-[#8DB8FF] dark:hover:border-[#8DB8FF] dark:hover:bg-[#8DB8FF] dark:hover:text-slate-900"
-                    >
-                      {applyCoupon.isPending ? <Spinner size="sm" /> : "Apply"}
-                    </button>
-                  </form>
-                ))}
-              {applyCoupon.error && !server?.couponCode && (
-                <p role="alert" className="-mt-2 text-xs text-rose-600 dark:text-rose-400">
-                  {applyCoupon.error.message}
-                </p>
-              )}
-              {server?.couponError && (
-                <p className="text-xs text-amber-700 dark:text-amber-300">Coupon removed: {server.couponError}</p>
-              )}
+                  ))}
+                </ul>
+              </div>
 
-              <dl className="space-y-1.5 text-sm">
-                <div className="flex justify-between text-slate-600 dark:text-slate-300">
-                  <dt>Subtotal</dt>
-                  <dd className="tabular-nums">{formatCharge(subtotal)}</dd>
-                </div>
-                {discountTotal > 0 && (
-                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
-                    <dt>Discount</dt>
-                    <dd className="tabular-nums">−{formatCharge(discountTotal)}</dd>
+              <div className="space-y-4 border-t border-slate-200 px-4 py-4 sm:px-5 dark:border-white/10">
+                {cart.isAuthenticated &&
+                  (server?.couponCode ? (
+                    <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2 text-sm dark:bg-emerald-500/10">
+                      <span className="inline-flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-300">
+                        <FiTag className="h-4 w-4" /> {server.couponCode}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeCoupon.mutate(undefined)}
+                        disabled={removeCoupon.isPending}
+                        className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-300"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={submitCoupon} className="flex gap-2">
+                      <input
+                        value={couponInput}
+                        onChange={(e) => {
+                          setCouponInput(e.target.value.toUpperCase());
+                          if (applyCoupon.error) applyCoupon.reset();
+                        }}
+                        placeholder="Coupon code"
+                        aria-label="Coupon code"
+                        className="h-10 min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm uppercase outline-none focus:border-[#1D6FE0]/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                      />
+                      <button
+                        type="submit"
+                        disabled={applyCoupon.isPending || !couponInput.trim()}
+                        className="h-10 rounded-xl border border-[#0F5BBD]/30 px-4 text-sm font-semibold text-[#0F5BBD] transition hover:border-[#0F5BBD] hover:bg-[#0F5BBD] hover:text-white disabled:pointer-events-none disabled:opacity-50 dark:border-[#8DB8FF]/30 dark:text-[#8DB8FF] dark:hover:border-[#8DB8FF] dark:hover:bg-[#8DB8FF] dark:hover:text-slate-900"
+                      >
+                        {applyCoupon.isPending ? <Spinner size="sm" /> : "Apply"}
+                      </button>
+                    </form>
+                  ))}
+                {applyCoupon.error && !server?.couponCode && (
+                  <p role="alert" className="-mt-2 text-xs text-rose-600 dark:text-rose-400">
+                    {applyCoupon.error.message}
+                  </p>
+                )}
+                {server?.couponError && (
+                  <p className="text-xs text-amber-700 dark:text-amber-300">Coupon removed: {server.couponError}</p>
+                )}
+
+                <dl className="space-y-1.5 text-sm">
+                  <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                    <dt>Subtotal</dt>
+                    <dd className="tabular-nums">{formatCharge(subtotal)}</dd>
                   </div>
-                )}
-                <div className="flex justify-between pt-1 text-base font-semibold text-slate-900 dark:text-white">
-                  <dt>Total</dt>
-                  <dd className="tabular-nums">{formatCharge(total)}</dd>
-                </div>
-                {inBdt && total > 0 && (
-                  <p className="text-right text-xs text-slate-500 dark:text-slate-400">≈ {formatPrice(total)} USD · charged in Bangladeshi taka</p>
-                )}
-              </dl>
+                  {discountTotal > 0 && (
+                    <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                      <dt>Discount</dt>
+                      <dd className="tabular-nums">−{formatCharge(discountTotal)}</dd>
+                    </div>
+                  )}
+                  <div className="flex justify-between pt-1 text-base font-semibold text-slate-900 dark:text-white">
+                    <dt>Total</dt>
+                    <dd className="tabular-nums">{formatCharge(total)}</dd>
+                  </div>
+                  {inBdt && total > 0 && (
+                    <p className="text-right text-xs text-slate-500 dark:text-slate-400">≈ {formatPrice(total)} USD · charged in Bangladeshi taka</p>
+                  )}
+                </dl>
 
-              {cart.isAuthenticated ? (
-                <>
-                  {total > 0 && <GatewayPicker value={gateway} onChange={setGateway} />}
-                  <button
-                    type="button"
-                    onClick={startCheckout}
-                    disabled={checkout.isPending || hasPending || serverLines.length === 0}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30 transition hover:brightness-110 disabled:opacity-60"
-                  >
-                    {checkout.isPending || cart.merging ? <Spinner size="sm" tone="light" /> : <FiLock className="h-4 w-4" />}
-                    {cart.merging ? "Saving your cart…" : total > 0 ? `Pay ${formatCharge(total)}` : "Get for free"}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}
-                    onClick={() => cartDrawer.close()}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30"
-                  >
-                    <FiLock className="h-4 w-4" /> Sign in to check out
-                  </Link>
+                {!cart.isAuthenticated && (
                   <p className="text-center text-xs text-slate-600 dark:text-slate-400">
                     Your cart is saved and moves to your account when you sign in. Coupons apply at checkout.
                   </p>
-                </>
+                )}
+              </div>
+            </div>
+
+            {/* Payment choice and the pay button sit at the bottom, always reachable, above the phone's home indicator */}
+            <div className="space-y-3 border-t border-slate-200 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-8px_24px_-12px_rgba(15,23,42,0.18)] sm:px-5 dark:border-white/10 dark:bg-[#0B0F2E]">
+              {cart.isAuthenticated && total > 0 && <GatewayPicker value={gateway} onChange={setGateway} />}
+              {cart.isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={startCheckout}
+                  disabled={checkout.isPending || hasPending || serverLines.length === 0}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30 transition hover:brightness-110 disabled:opacity-60"
+                >
+                  {checkout.isPending || cart.merging ? <Spinner size="sm" tone="light" /> : <FiLock className="h-4 w-4" />}
+                  {cart.merging ? "Saving your cart…" : total > 0 ? `Pay ${formatCharge(total)}` : "Get for free"}
+                </button>
+              ) : (
+                <Link
+                  href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}
+                  onClick={() => cartDrawer.close()}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] text-sm font-semibold text-white shadow-lg shadow-[#0F5BBD]/30"
+                >
+                  <FiLock className="h-4 w-4" /> Sign in to check out
+                </Link>
               )}
             </div>
           </>
