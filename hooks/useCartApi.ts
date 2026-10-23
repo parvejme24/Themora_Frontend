@@ -3,22 +3,33 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type ApiBody } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 import { useAuth } from "@/hooks/useAuth";
-import type { Cart, CheckoutResult, LicenseType } from "@/types/marketplace";
+import type { Cart, CheckoutResult, LicenseType, ProductCard } from "@/types/marketplace";
 
 export type CartItemInput = ApiBody<"/me/cart/items">;
 export type CartCheckoutInput = ApiBody<"/me/cart/checkout">;
 
 // ---------- Guest cart ----------
-// Signed-out shoppers keep { productId, licenseType } pairs in localStorage.
+// Signed-out shoppers keep { productId, licenseType } pairs in localStorage, plus a
+// snapshot of the product so the drawer renders instantly (prices refresh in the background).
 // After sign-in they are merged into the server cart (useMergeGuestCart).
+
+export type CartProductSnapshot = Pick<
+  ProductCard,
+  "id" | "slug" | "title" | "imageUrl" | "price" | "salePrice" | "saleEndsAt" | "extendedPrice" | "isFree"
+>;
+export type GuestCartItem = CartItemInput & { product?: CartProductSnapshot };
+
+const toSnapshot = ({ id, slug, title, imageUrl, price, salePrice, saleEndsAt, extendedPrice, isFree }: CartProductSnapshot) => ({
+  id, slug, title, imageUrl, price, salePrice, saleEndsAt, extendedPrice, isFree,
+});
 
 const GUEST_CART_KEY = "themora-guest-cart";
 const listeners = new Set<() => void>();
-const EMPTY: CartItemInput[] = [];
+const EMPTY: GuestCartItem[] = [];
 let cachedRaw: string | null = null;
-let cachedItems: CartItemInput[] = EMPTY;
+let cachedItems: GuestCartItem[] = EMPTY;
 
-const readGuestCart = (): CartItemInput[] => {
+const readGuestCart = (): GuestCartItem[] => {
   if (typeof window === "undefined") return EMPTY;
   let raw: string | null = null;
   try {
@@ -37,7 +48,7 @@ const readGuestCart = (): CartItemInput[] => {
   return cachedItems;
 };
 
-const writeGuestCart = (items: CartItemInput[]) => {
+const writeGuestCart = (items: GuestCartItem[]) => {
   try {
     if (items.length) localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
     else localStorage.removeItem(GUEST_CART_KEY);
@@ -58,9 +69,13 @@ const subscribe = (listener: () => void) => {
 };
 
 export const guestCart = {
-  add(productId: string, licenseType: LicenseType = "SINGLE") {
-    const items = readGuestCart().filter((item) => item.productId !== productId);
-    writeGuestCart([...items, { productId, licenseType }]);
+  add(productId: string, licenseType: LicenseType = "SINGLE", product?: CartProductSnapshot) {
+    const current = readGuestCart();
+    const existing = current.find((item) => item.productId === productId);
+    const snapshot = product ? toSnapshot(product) : existing?.product;
+    const item: GuestCartItem = { productId, licenseType, ...(snapshot && { product: snapshot }) };
+    // Changing the licence keeps the line where it is
+    writeGuestCart(existing ? current.map((i) => (i === existing ? item : i)) : [...current, item]);
   },
   remove(productId: string) {
     writeGuestCart(readGuestCart().filter((item) => item.productId !== productId));
@@ -115,31 +130,62 @@ export const useCartCheckout = () =>
       (await api.post<CheckoutResult>("/me/cart/checkout", input)).data,
   });
 
+// ---------- Guest cart merge ----------
+// Shared status so the drawer can show the merge without blocking on it
+
+export type MergeStatus = "idle" | "merging" | "error";
+let mergeStatus: MergeStatus = "idle";
+let mergeAttempt = 0;
+const mergeListeners = new Set<() => void>();
+const setMergeStatus = (status: MergeStatus) => {
+  mergeStatus = status;
+  mergeListeners.forEach((listener) => listener());
+};
+const subscribeMerge = (listener: () => void) => {
+  mergeListeners.add(listener);
+  return () => mergeListeners.delete(listener);
+};
+
+export const useMergeStatus = () => useSyncExternalStore(subscribeMerge, () => mergeStatus, () => "idle" as MergeStatus);
+
+/** Retries a failed merge */
+export const retryGuestCartMerge = () => {
+  mergeAttempt += 1;
+  setMergeStatus("idle");
+};
+
 /** Moves the guest cart into the server cart once, right after sign-in */
 export const useMergeGuestCart = () => {
   const { isAuthenticated } = useAuth();
   const guestItems = useGuestCart();
+  const status = useMergeStatus();
   const queryClient = useQueryClient();
   const merging = useRef(false);
 
   useEffect(() => {
-    if (!isAuthenticated || guestItems.length === 0 || merging.current) return;
+    // A failed merge waits for retryGuestCartMerge() instead of looping
+    if (!isAuthenticated || guestItems.length === 0 || merging.current || status === "error") return;
     merging.current = true;
+    setMergeStatus("merging");
+    const attempt = mergeAttempt;
+    const items = guestItems.slice(0, 50).map(({ productId, licenseType }) => ({ productId, licenseType }));
     // A cart fetch that started before the merge could finish after it and overwrite
-    // the merged cart with the empty one, so cancel it and refetch once the merge commits
+    // the merged cart with the empty one, so cancel it and write the merged cart directly
     queryClient
       .cancelQueries({ queryKey: queryKeys.cart.all })
-      .then(() => api.post<Cart>("/me/cart/merge", { items: guestItems.slice(0, 50) }))
+      // Generous timeout: on a slow connection a merge that is still working must not be reported as failed
+      .then(() => api.post<Cart>("/me/cart/merge", { items }, { timeout: 45_000 }))
       .then((res) => {
         guestCart.clear();
         queryClient.setQueryData(queryKeys.cart.all, res.data);
-        return queryClient.invalidateQueries({ queryKey: queryKeys.cart.all });
+        setMergeStatus("idle");
       })
       .catch(() => {
-        // Keep the guest cart so the next page load retries
+        // Keep the guest cart so a retry (or the next page load) can try again
+        if (attempt === mergeAttempt) setMergeStatus("error");
       })
       .finally(() => {
         merging.current = false;
       });
-  }, [isAuthenticated, guestItems, queryClient]);
+  }, [isAuthenticated, guestItems, status, queryClient]);
 };

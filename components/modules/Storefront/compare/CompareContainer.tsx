@@ -61,7 +61,7 @@ const AddButton = ({ product }: { product: ProductDetail }) => {
   return (
     <button
       type="button"
-      onClick={() => cart.addItem(product.id)}
+      onClick={() => cart.addItem(product.id, "SINGLE", { product })}
       disabled={inCart}
       className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ${
         inCart ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-slate-900 text-white dark:bg-white dark:text-slate-900"

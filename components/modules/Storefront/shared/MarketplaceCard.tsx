@@ -99,7 +99,7 @@ export default function MarketplaceCard({ product, priority = false }: { product
             ) : (
               <button
                 type="button"
-                onClick={() => (inCart ? undefined : cart.addItem(product.id))}
+                onClick={() => (inCart ? undefined : cart.addItem(product.id, "SINGLE", { product }))}
                 disabled={inCart}
                 aria-label={inCart ? `${product.title} is in your cart` : `Add ${product.title} to cart`}
                 className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition ${

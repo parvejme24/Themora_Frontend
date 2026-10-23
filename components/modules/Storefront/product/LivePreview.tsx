@@ -75,7 +75,7 @@ export default function LivePreview({ slug }: { slug: string }) {
         {!product.isFree && (
           <button
             type="button"
-            onClick={() => cart.addItem(product.id)}
+            onClick={() => cart.addItem(product.id, "SINGLE", { product })}
             className="inline-flex h-9 items-center gap-2 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] px-4 text-sm font-semibold text-white"
           >
             <FiShoppingCart className="h-4 w-4" />

@@ -53,7 +53,7 @@ export default function PurchasePanel({ product }: { product: ProductDetail }) {
 
   const buyNow = async () => {
     if (!inCart) {
-      const added = await cart.addItem(product.id, license, { openDrawer: false });
+      const added = await cart.addItem(product.id, license, { silent: true, product });
       if (!added) return;
     }
     cartDrawer.open();
@@ -147,7 +147,7 @@ export default function PurchasePanel({ product }: { product: ProductDetail }) {
             </button>
             <button
               type="button"
-              onClick={() => (inCart ? cartDrawer.open() : cart.addItem(product.id, license))}
+              onClick={() => (inCart ? cartDrawer.open() : cart.addItem(product.id, license, { product }))}
               disabled={cart.isAdding}
               className="flex h-12 items-center justify-center gap-2 rounded-full border border-slate-200 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
             >

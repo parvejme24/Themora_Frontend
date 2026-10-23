@@ -36,6 +36,8 @@ test.describe("storefront", () => {
     await page.goto("/products?sort=bestselling");
     const add = page.locator('article button[aria-label$=" to cart"][aria-label^="Add "]').first();
     await add.click();
+    // Adding stays on the page; the toast's "View cart" opens the drawer
+    await page.getByRole("button", { name: "View cart" }).click();
     await expect(drawer(page).locator("li")).toHaveCount(1);
     await expect(drawer(page).getByRole("link", { name: /Sign in to check out/ })).toBeVisible();
 
@@ -57,6 +59,7 @@ test.describe("storefront", () => {
     test.skip(!process.env.E2E_STRIPE, "Set E2E_STRIPE=1 once the backend has Stripe test keys");
     await signIn(page, "customer", "/products");
     await page.locator('article button[aria-label$=" to cart"][aria-label^="Add "]').first().click();
+    await openCart(page);
     await drawer(page).getByRole("button", { name: /^Pay \$/ }).click();
     await page.waitForURL(/checkout\.stripe\.com/, { timeout: 60_000 });
     await page.goBack();
