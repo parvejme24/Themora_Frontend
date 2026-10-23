@@ -20,9 +20,9 @@ import { useContext } from "react";
 import {
   useUpdateProfile,
   useUpdateAvatar,
+  useRemoveAvatar,
   useCurrentUser,
 } from "@/hooks/useAuth";
-import { useQueryClient } from "@tanstack/react-query";
 import ErrorState from "@/components/shared/Feedback/ErrorState";
 
 interface ProfileFormValues {
@@ -78,13 +78,12 @@ function getErrorMessage(err: unknown, fallback: string) {
 const ProfileEditForm: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const { user, loading: authLoading } = useContext(AuthContext) || {};
 
   const { updateProfile, isLoading: profileUpdateLoading } = useUpdateProfile();
   const { updateAvatar, isLoading: avatarUpdateLoading } = useUpdateAvatar();
+  const { removeAvatar, isLoading: avatarRemoveLoading } = useRemoveAvatar();
   const { refetch: refetchCurrentUser } = useCurrentUser();
-  const queryClient = useQueryClient();
 
   const valuesFromUser = () => ({
     fullName: user?.fullName || "",
@@ -119,10 +118,13 @@ const ProfileEditForm: React.FC = () => {
     event.target.value = "";
   };
 
-  const removeImage = () => {
-    setSelectedImage(null);
-    setPreviewUrl(null);
-    setRemoveExistingImage(true);
+  const removeImage = async () => {
+    try {
+      await removeAvatar();
+      toast.success("Profile photo removed");
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Couldn't remove the photo"));
+    }
   };
 
   const handleUpdate = async (values: ProfileFormValues) => {
@@ -139,9 +141,8 @@ const ProfileEditForm: React.FC = () => {
         postCode: values.postCode,
       };
 
+      // The hook writes the saved user into the shared cache and the session
       await updateProfile(profileData);
-      await refetchCurrentUser();
-      queryClient.invalidateQueries({ queryKey: ["getCurrentUser"] });
       form.reset(values);
       toast.success("Profile updated successfully!");
     } catch (err) {
@@ -169,23 +170,13 @@ const ProfileEditForm: React.FC = () => {
         return;
       }
 
-      // Make sure the session is still valid before uploading
-      try {
-        await refetchCurrentUser();
-      } catch {
-        toast.error("Session expired. Please log in again.");
-        return;
-      }
-
+      // The hook puts the new photo in the shared cache and the session, so the navbar,
+      // dashboard top bar and profile header switch to it right away
       await updateAvatar(selectedImage);
-      await refetchCurrentUser();
-      queryClient.invalidateQueries({ queryKey: ["getCurrentUser"] });
-      queryClient.invalidateQueries({ queryKey: ["authApi", "getCurrentUser"] });
 
       toast.success("Profile image updated successfully!");
       setSelectedImage(null);
       setPreviewUrl(null);
-      setRemoveExistingImage(false);
     } catch (err) {
       toast.error(getErrorMessage(err, "Avatar update failed!"));
     }
@@ -207,7 +198,7 @@ const ProfileEditForm: React.FC = () => {
     );
   }
 
-  const currentAvatar = previewUrl || (!removeExistingImage ? user.profile?.avatarUrl : undefined);
+  const currentAvatar = previewUrl || user.profile?.avatarUrl || undefined;
   const displayName = user.fullName || user.email.split("@")[0];
   const isDirty = form.formState.isDirty;
 
@@ -269,8 +260,8 @@ const ProfileEditForm: React.FC = () => {
                   <input type="file" accept="image/*" onChange={handleImageChange} className="sr-only" />
                 </label>
                 {currentAvatar && (
-                  <button type="button" onClick={removeImage} className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10">
-                    Remove
+                  <button type="button" onClick={removeImage} disabled={avatarRemoveLoading} className="cursor-pointer disabled:opacity-50 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10">
+                    {avatarRemoveLoading ? "Removing…" : "Remove"}
                   </button>
                 )}
               </>

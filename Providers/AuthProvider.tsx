@@ -450,7 +450,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await updateAvatarHook(file);
       
       if (result.success && result.data) {
-        return { photoUrl: result.data.avatarUrl };
+        return { photoUrl: result.data.user?.profile?.avatarUrl ?? "" };
       }
       return null;
     } catch (error) {

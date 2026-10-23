@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import NotificationBell from "@/components/modules/Account/NotificationBell";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, useCurrentUser } from "@/hooks/useAuth";
 import { UserRole } from "@/types/auth";
 import { useStaff } from "@/hooks/useAdminProductsApi";
 
@@ -87,7 +87,10 @@ function writeRecent(href: string) {
 export default function Topbar({ onMenuToggle }: { onMenuToggle: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user: sessionUser } = useAuth();
+  // The fresh account (shared with the profile page) wins, so a new photo or name shows immediately
+  const { data: currentUser } = useCurrentUser();
+  const user = currentUser?.data?.user ?? sessionUser;
   const isAdmin = user?.role === UserRole.ADMIN;
   const { isStaff } = useStaff();
   const pages = isAdmin || isStaff ? adminPages : memberPages;

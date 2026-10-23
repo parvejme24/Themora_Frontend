@@ -126,33 +126,56 @@ export const useChangePassword = () => {
   return { changePassword: run, ...state };
 };
 
-export const useUpdateProfile = () => {
+// Writes the saved user into the shared `auth/me` cache (navbar, dashboard top bar, profile page)
+// and into the NextAuth session cookie, so every avatar and name updates without a reload
+const useApplyUserUpdate = () => {
   const queryClient = useQueryClient();
+  const { update: updateSession } = useSession();
+  return (user?: IUser) => {
+    if (!user) return queryClient.invalidateQueries({ queryKey: authKeys.me });
+    queryClient.setQueryData<ApiEnvelope<{ user: IUser }>>(authKeys.me, (old) =>
+      old ? { ...old, data: { ...old.data, user } } : ({ success: true, data: { user } } as ApiEnvelope<{ user: IUser }>)
+    );
+    void updateSession({ user: { fullName: user.fullName, profile: { avatarUrl: user.profile?.avatarUrl ?? null } } });
+    // Admin user lists show avatars too
+    void queryClient.invalidateQueries({ queryKey: authKeys.users });
+  };
+};
+
+export const useUpdateProfile = () => {
+  const applyUser = useApplyUserUpdate();
   const { run, ...state } = useAction(
     (profileData: IUpdateProfile) => api.put<{ user: IUser }>("/auth/profile", profileData),
-    { onSuccess: () => queryClient.invalidateQueries({ queryKey: authKeys.me }) }
+    { onSuccess: (result) => applyUser(result.data?.user) }
   );
   return { updateProfile: run, ...state };
 };
 
 export const useUpdateAvatar = () => {
-  const queryClient = useQueryClient();
+  const applyUser = useApplyUserUpdate();
   const { run, ...state } = useAction(
     async (file: File) => {
       const formData = new FormData();
       formData.append("image", file);
       try {
-        const response = await apiClient.put<ApiEnvelope<{ avatarUrl: string }>>("/auth/profile/avatar", formData);
+        const response = await apiClient.put<ApiEnvelope<{ user: IUser }>>("/auth/profile/avatar", formData);
         return response.data;
       } catch (err: unknown) {
         const body = (err as { response?: { data?: { message?: string; error?: string } } })?.response?.data;
         throw new Error(body?.message || body?.error || "Failed to upload avatar");
       }
     },
-    // Navbar, profile page and sidebar all read the same query, so they update together
-    { onSuccess: () => queryClient.invalidateQueries({ queryKey: authKeys.me }) }
+    { onSuccess: (result) => applyUser(result.data?.user) }
   );
   return { updateAvatar: run, ...state };
+};
+
+export const useRemoveAvatar = () => {
+  const applyUser = useApplyUserUpdate();
+  const { run, ...state } = useAction(() => api.delete<{ user: IUser }>("/auth/profile/avatar"), {
+    onSuccess: (result) => applyUser(result.data?.user),
+  });
+  return { removeAvatar: () => run(undefined), ...state };
 };
 
 // ---------- Admin ----------
