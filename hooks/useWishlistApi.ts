@@ -4,12 +4,13 @@ import { queryKeys } from "@/lib/query-keys";
 import { useAuth } from "@/hooks/useAuth";
 import type { WishlistItem } from "@/types/marketplace";
 
-export const useWishlist = () => {
+/** `enabled: false` defers the fetch (e.g. until the navbar menu opens) */
+export const useWishlist = ({ enabled = true }: { enabled?: boolean } = {}) => {
   const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: queryKeys.wishlist.list(),
     queryFn: () => api.data<WishlistItem[]>("/me/wishlist"),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && enabled,
   });
 };
 

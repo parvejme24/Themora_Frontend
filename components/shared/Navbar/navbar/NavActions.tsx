@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { ArrowRight, LayoutDashboard, LogOut, Menu, User as UserIcon } from "lucide-react";
+import { ArrowRight, Heart, LayoutDashboard, LogOut, Menu, User as UserIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import CartButton from "@/components/modules/Storefront/cart/CartButton";
 import React, { useContext, useState } from "react";
 import { AuthContext } from "@/Providers/AuthProvider";
 import { useAuth, useCurrentUser } from "@/hooks/useAuth";
+import { useWishlist, useWishlistIds } from "@/hooks/useWishlistApi";
+import { effectivePrice, formatPrice } from "@/lib/format";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -32,6 +34,11 @@ export const NavActions = ({ isOpen, setIsOpen }: NavActionsProps) => {
   const user = currentUserData?.data?.user || nextAuthUser || authContext?.user;
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  // Count comes from the ids the product-card hearts already load; the list only when the menu opens
+  const { data: savedIds } = useWishlistIds();
+  const { data: savedItems, isLoading: savedLoading } = useWishlist({ enabled: dropdownOpen });
+  const savedCount = savedIds?.size ?? 0;
+  const recentSaved = [...(savedItems ?? [])].sort((a, b) => b.addedAt.localeCompare(a.addedAt)).slice(0, 3);
 
 
   const getPhotoUrl = () => {
@@ -129,6 +136,39 @@ export const NavActions = ({ isOpen, setIsOpen }: NavActionsProps) => {
             <DropdownMenuItem onClick={() => router.push("/dashboard/profile")} className="cursor-pointer gap-2.5 rounded-lg px-3 py-2">
               <UserIcon className="h-4 w-4 text-slate-400" /> Profile
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/dashboard/wishlist")} className="cursor-pointer gap-2.5 rounded-lg px-3 py-2">
+              <Heart className="h-4 w-4 text-slate-400" /> Saved items
+              {savedCount > 0 && (
+                <span className="ml-auto rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-rose-600 dark:bg-rose-500/15 dark:text-rose-300">
+                  {savedCount}
+                </span>
+              )}
+            </DropdownMenuItem>
+            {savedCount === 0 ? (
+              <p className="px-3 pb-2 pt-0.5 text-xs text-slate-500 dark:text-slate-400">Tap the heart on any product to save it here.</p>
+            ) : savedLoading && !savedItems ? (
+              <div className="space-y-1.5 px-3 pb-2">
+                {Array.from({ length: Math.min(savedCount, 3) }).map((_, i) => (
+                  <div key={i} className="h-9 animate-pulse rounded-lg bg-slate-100 dark:bg-white/[0.06]" />
+                ))}
+              </div>
+            ) : (
+              recentSaved.map((item) => (
+                <DropdownMenuItem
+                  key={item.id}
+                  onClick={() => router.push(`/products/${item.slug}`)}
+                  className="cursor-pointer gap-2.5 rounded-lg py-1.5 pl-9 pr-3"
+                >
+                  <span className="relative h-8 w-10 shrink-0 overflow-hidden rounded-md bg-slate-100 dark:bg-white/5">
+                    {item.imageUrl && <Image src={item.imageUrl} alt="" fill sizes="40px" className="object-cover" />}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-xs text-slate-700 dark:text-slate-200">{item.title}</span>
+                  <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                    {item.isFree ? "Free" : formatPrice(effectivePrice(item))}
+                  </span>
+                </DropdownMenuItem>
+              ))
+            )}
             <DropdownMenuSeparator className="my-1.5" />
             <DropdownMenuItem
               className="cursor-pointer gap-2.5 rounded-lg px-3 py-2 text-red-600 focus:text-red-600 dark:text-red-400"
