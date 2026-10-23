@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import Spinner from "@/components/shared/Feedback/Spinner";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
@@ -294,34 +295,12 @@ export default function UsersContainer() {
 
       {/* Toolbar */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-        <div className="flex w-fit rounded-full border border-slate-200/80 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Status">
-          {tabs.map((tab) => {
-            const TabIcon = tab.icon;
-            const isSelected = status === tab.value;
-            return (
-              <button
-                key={tab.value}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                onClick={() => { setStatus(tab.value); setPage(1); }}
-                className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm font-medium transition ${
-                  isSelected
-                    ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
-                    : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-                }`}
-              >
-                <TabIcon className="h-3.5 w-3.5" />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span className={`rounded-full px-1.5 py-0.2 text-[11px] font-semibold ${isSelected ? "bg-white/20 text-white dark:bg-slate-900/10 dark:text-slate-900" : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"}`}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <AnimatedTabs
+          ariaLabel="Status"
+          value={status}
+          onChange={(value) => { setStatus(value); setPage(1); }}
+          options={tabs.map((tab) => ({ value: tab.value, label: tab.label, count: tab.count, icon: <tab.icon className="h-3.5 w-3.5" /> }))}
+        />
         <div className="flex flex-1 flex-col gap-2 sm:flex-row lg:justify-end">
           <div className="relative min-w-0 flex-1 sm:max-w-sm">
             <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />

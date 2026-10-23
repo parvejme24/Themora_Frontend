@@ -1,5 +1,7 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiCheck, FiChevronRight, FiDownload, FiLayers, FiRefreshCw, FiShoppingBag } from "react-icons/fi";
@@ -119,10 +121,10 @@ export default function ProductDetailContainer({ slug, initialProduct }: { slug:
     product.pages > 1 && { label: "Pages / screens", value: String(product.pages) },
   ].filter(Boolean) as { label: string; value: string }[];
 
-  const tabs: { value: Tab; label: string }[] = [
+  const tabs: { value: Tab; label: string; count?: number }[] = [
     { value: "overview", label: "Overview" },
     { value: "changelog", label: "Changelog" },
-    { value: "reviews", label: `Reviews (${product.reviewCount})` },
+    { value: "reviews", label: "Reviews", count: product.reviewCount },
   ];
 
   return (
@@ -170,29 +172,24 @@ export default function ProductDetailContainer({ slug, initialProduct }: { slug:
           <div className="min-w-0">
             <ProductGallery title={product.title} images={images} videoUrl={product.videoUrl} />
 
-            <div id="reviews" className="mt-10 scroll-mt-24 border-b border-slate-200 dark:border-white/10" role="tablist">
-              {tabs.map((t) => (
-                <button
-                  key={t.value}
-                  type="button"
-                  role="tab"
-                  aria-selected={tab === t.value}
-                  onClick={() => setTab(t.value)}
-                  className={`-mb-px mr-6 border-b-2 pb-3 text-sm font-semibold transition ${
-                    tab === t.value
-                      ? "border-[#1D6FE0] text-slate-900 dark:border-[#8DB8FF] dark:text-white"
-                      : "border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+            <div id="reviews" className="mt-10 scroll-mt-24">
+              <AnimatedTabs ariaLabel="Product details" value={tab} onChange={setTab} options={tabs} />
             </div>
-            <div className="pt-8" role="tabpanel">
-              {tab === "overview" && <Overview product={product} />}
-              {tab === "changelog" && <Changelog slug={slug} />}
-              {tab === "reviews" && <ProductReviews slug={slug} />}
-            </div>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={tab}
+                className="pt-8"
+                role="tabpanel"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {tab === "overview" && <Overview product={product} />}
+                {tab === "changelog" && <Changelog slug={slug} />}
+                {tab === "reviews" && <ProductReviews slug={slug} />}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">

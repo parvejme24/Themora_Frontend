@@ -92,19 +92,29 @@ export default function AnalyticsContainer() {
     return { labels: rows.map((r) => shortDate(r.date)), revenue: rows.map((r) => r.revenue), orders: rows.map((r) => r.orders) };
   }, [data]);
 
-  if (isLoading) return <LoadingState className="min-h-[50vh]" />;
-  if (!data) return <ErrorState error={error} subject="analytics" onRetry={refetch} />;
+  // The header and range tabs stay put while data loads
+  const header = (
+    <PageHeader
+      title="Analytics"
+      description="Paid orders only; refunds are listed separately."
+      actions={<StatusTabs ariaLabel="Date range" value={days} onChange={setDays} options={RANGES.map((r) => ({ value: r.value, label: r.label }))} />}
+    />
+  );
+  if (isLoading || !data) {
+    return (
+      <div className="space-y-6">
+        {header}
+        {isLoading ? <LoadingState className="min-h-[50vh]" /> : <ErrorState error={error} subject="analytics" onRetry={refetch} />}
+      </div>
+    );
+  }
 
   const t = data.totals;
   const change = t.revenueChange;
 
   return (
     <div className={`space-y-6 transition-opacity ${isFetching ? "opacity-70" : ""}`}>
-      <PageHeader
-        title="Analytics"
-        description="Paid orders only; refunds are listed separately."
-        actions={<StatusTabs value={days} onChange={setDays} options={RANGES.map((r) => ({ value: r.value, label: r.label }))} />}
-      />
+      {header}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat

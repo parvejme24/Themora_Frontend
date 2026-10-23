@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -138,16 +139,15 @@ export default function BlogContainer() {
       {/* Toolbar */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Status">
-            {tabs.map((tab) => (
-              <button key={tab.value} type="button" role="tab" aria-selected={status === tab.value} onClick={() => { setStatus(tab.value); setPage(1); }} className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm transition ${status === tab.value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}>
-                {tab.label}{tab.count !== undefined && <span className="text-xs opacity-60">{tab.count}</span>}
-              </button>
-            ))}
-          </div>
+          <AnimatedTabs
+            ariaLabel="Status"
+            value={status}
+            onChange={(value) => { setStatus(value); setPage(1); }}
+            options={tabs.map((tab) => ({ value: tab.value, label: tab.label, count: tab.count }))}
+          />
           <div className="ml-auto flex shrink-0 rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="group" aria-label="View">
             {([["grid", FiGrid], ["list", FiList]] as const).map(([value, Icon]) => (
-              <button key={value} type="button" onClick={() => setView(value)} aria-pressed={view === value} aria-label={`${value} view`} className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition ${view === value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"}`}>
+              <button key={value} type="button" onClick={() => setView(value)} aria-pressed={view === value} aria-label={`${value} view`} className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition ${view === value ? "bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] text-white shadow-sm shadow-[#0F5BBD]/30" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"}`}>
                 <Icon className="h-4 w-4" />
               </button>
             ))}

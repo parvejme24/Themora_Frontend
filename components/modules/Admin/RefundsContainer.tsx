@@ -48,7 +48,7 @@ const RefundCard = ({ request }: { request: AdminRefundRequest }) => {
           </p>
           <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
             Order <span className="font-mono">{request.order.orderNumber}</span> · paid {request.order.paidAt ? formatDate(request.order.paidAt) : "—"} via{" "}
-            {PROVIDER[request.order.provider ?? ""] ?? "unknown"} · requested {timeAgo(request.createdAt)}
+            {PROVIDER[request.order.provider ?? ""] ?? "legacy checkout"} · requested {timeAgo(request.createdAt)}
           </p>
         </div>
         <div className="flex items-center gap-2">

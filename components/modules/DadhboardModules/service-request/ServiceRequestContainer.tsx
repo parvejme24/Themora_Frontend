@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -165,13 +166,16 @@ export default function ServiceRequestContainer() {
 
       {/* Toolbar */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div className="flex w-fit rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Reply status">
-          {([["all", "All"], ["open", "Awaiting reply"], ["replied", "Replied"]] as const).map(([value, label]) => (
-            <button key={value} type="button" role="tab" aria-selected={tab === value} onClick={() => setTab(value)} className={`inline-flex h-8 cursor-pointer items-center rounded-full px-3 text-sm transition ${tab === value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}>
-              {label}
-            </button>
-          ))}
-        </div>
+        <AnimatedTabs
+          ariaLabel="Reply status"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "all" as const, label: "All" },
+            { value: "open" as const, label: "Awaiting reply" },
+            { value: "replied" as const, label: "Replied" },
+          ]}
+        />
         <div className="relative min-w-0 flex-1 sm:ml-auto sm:max-w-sm">
           <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
           <input type="search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search name, email, company…" aria-label="Search requests" className="h-10 w-full rounded-full border border-slate-200 bg-white pl-10 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1D6FE0] focus:ring-[3px] focus:ring-[#1D6FE0]/15 dark:border-white/10 dark:bg-white/[0.03] dark:text-white" />

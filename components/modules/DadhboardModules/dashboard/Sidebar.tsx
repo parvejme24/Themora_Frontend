@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3, Bell, BookOpen, History, RotateCcw, Star, ChevronDown, Heart, Share2, ShieldCheck, ChevronRight, CreditCard, FolderKanban, LayoutDashboard,
+  BarChart3, Bell, BookOpen, History, RotateCcw, Star, Heart, Share2, ShieldCheck, ChevronRight, CreditCard, FolderKanban, LayoutDashboard,
   Layers3, LifeBuoy, Mail, PackageCheck, PanelLeftClose, ShoppingBag, Tags, UsersRound, X,
 } from "lucide-react";
 import { ThemoraMark } from "@/components/shared/Logo/ThemoraLogo";
@@ -85,6 +86,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
     ? staffNav.filter(allowed).map((item) => (isGroup(item) ? { ...item, children: item.children.filter(allowed) } : item))
     : userNav;
   const [expanded, setExpanded] = useState<string[]>([]);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     setExpanded((current) => {
@@ -136,15 +138,39 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
                   <button type="button" aria-expanded={open} onClick={() => setExpanded((current) => open ? current.filter((label) => label !== item.label) : [...current, item.label])} className={`flex min-h-10 w-full items-center gap-3 rounded-full px-3.5 text-left text-sm font-medium transition ${groupActive ? "text-slate-900 dark:text-white" : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white"}`}>
                     <GroupIcon size={17} aria-hidden="true" className={groupActive ? "text-[#1D6FE0] dark:text-[#8DB8FF]" : undefined} />
                     <span className="flex-1">{item.label}</span>
-                    {open ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronRight size={15} aria-hidden="true" />}
+                    <motion.span aria-hidden="true" animate={{ rotate: open ? 90 : 0 }} transition={{ duration: reduceMotion ? 0 : 0.2 }} className="flex">
+                      <ChevronRight size={15} />
+                    </motion.span>
                   </button>
-                  {open && <div className="ml-[23px] mt-1 space-y-1 border-l border-slate-200 pl-3 dark:border-white/10">
-                    {item.children.map((child) => {
-                      const ChildIcon = child.icon;
-                      const active = isActive(pathname, child.href);
-                      return <Link key={child.href} href={child.href} onClick={onClose} aria-current={active ? "page" : undefined} className={`flex min-h-9 items-center gap-2.5 rounded-full px-3 text-[13px] transition ${active ? activePill : idleLink}`}><ChildIcon size={15} aria-hidden="true" className={active ? "text-[#1D6FE0] dark:text-[#8DB8FF]" : undefined} />{child.label}</Link>;
-                    })}
-                  </div>}
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.div
+                        key="children"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="ml-[23px] mt-1 space-y-1 border-l border-slate-200 pl-3 dark:border-white/10">
+                          {item.children.map((child, index) => {
+                            const ChildIcon = child.icon;
+                            const active = isActive(pathname, child.href);
+                            return (
+                              <motion.div
+                                key={child.href}
+                                initial={{ opacity: 0, x: -6 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: reduceMotion ? 0 : 0.2, delay: reduceMotion ? 0 : 0.04 * index }}
+                              >
+                                <Link href={child.href} onClick={onClose} aria-current={active ? "page" : undefined} className={`flex min-h-9 items-center gap-2.5 rounded-full px-3 text-[13px] transition ${active ? activePill : idleLink}`}><ChildIcon size={15} aria-hidden="true" className={active ? "text-[#1D6FE0] dark:text-[#8DB8FF]" : undefined} />{child.label}</Link>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             }

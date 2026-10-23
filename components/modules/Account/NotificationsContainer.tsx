@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import React, { useState } from "react";
 import Link from "next/link";
 import { FiBell, FiCheck } from "react-icons/fi";
@@ -60,27 +61,18 @@ export default function NotificationsContainer() {
           ) : undefined
         }
       />
-      <div className="flex gap-2">
-        {[
-          { value: false, label: "All" },
-          { value: true, label: `Unread${data?.unreadCount ? ` (${data.unreadCount})` : ""}` },
-        ].map((tab) => (
-          <button
-            key={String(tab.value)}
-            type="button"
-            aria-pressed={unreadOnly === tab.value}
-            onClick={() => {
-              setUnreadOnly(tab.value);
-              setPage(1);
-            }}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-              unreadOnly === tab.value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <AnimatedTabs
+        ariaLabel="Show"
+        value={unreadOnly ? "unread" : "all"}
+        onChange={(value) => {
+          setUnreadOnly(value === "unread");
+          setPage(1);
+        }}
+        options={[
+          { value: "all", label: "All" },
+          { value: "unread", label: "Unread", count: data?.unreadCount || undefined },
+        ]}
+      />
       {isLoading ? (
         <LoadingState className="min-h-[30vh]" />
       ) : error ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiDollarSign, FiPlus, FiRefreshCw } from "react-icons/fi";
@@ -42,13 +43,15 @@ export default function DashboardPricingList() {
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex rounded-full border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Plan status">
-          {([["active", "Active", active.length], ["inactive", "Inactive", inactive.length]] as const).map(([value, label, count]) => (
-            <button key={value} type="button" role="tab" aria-selected={tab === value} onClick={() => setTab(value)} className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm transition ${tab === value ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}>
-              {label}<span className="text-xs opacity-60">{isLoading ? "…" : count}</span>
-            </button>
-          ))}
-        </div>
+        <AnimatedTabs
+          ariaLabel="Plan status"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "active" as const, label: "Active", count: isLoading ? undefined : active.length },
+            { value: "inactive" as const, label: "Inactive", count: isLoading ? undefined : inactive.length },
+          ]}
+        />
         {!isLoading && tab === "active" && recommendedCount > 1 && (
           <p className="text-sm text-amber-600 dark:text-amber-400">
             {[recommendedCount > 1 && `${recommendedCount} plans are marked recommended`].filter(Boolean).join(" · ")}

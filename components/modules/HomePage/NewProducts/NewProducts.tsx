@@ -13,6 +13,7 @@ import MarketplaceCard, { MarketplaceCardSkeleton } from "@/components/modules/S
 import SectionHeading from "../shared/SectionHeading";
 import Reveal, { EASE_OUT } from "../shared/Reveal";
 import ErrorState from "@/components/shared/Feedback/ErrorState";
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 
 // Each tab is a storefront query; "See all" opens the same view on /products
 const TABS: { key: string; label: string; query: ProductQuery; href: string }[] = [
@@ -81,36 +82,12 @@ export default function NewProducts() {
 
         {/* Tabs */}
         <Reveal delay={0.1} className="mt-10">
-          <div className="-mx-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
-            <div
-              role="tablist"
-              className="inline-flex gap-1 rounded-full border border-slate-200 bg-white/80 p-1 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5"
-            >
-              {TABS.map((tab) => {
-                const selected = tab.key === activeKey;
-                return (
-                  <button
-                    key={tab.key}
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => setActiveKey(tab.key)}
-                    className={`relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors sm:px-5 ${
-                      selected ? "text-white" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-                    }`}
-                  >
-                    {selected && (
-                      <motion.span
-                        layoutId="new-products-tab"
-                        className="absolute inset-0 rounded-full bg-gradient-to-r from-[#0F5BBD] to-[#0F35A7] shadow-md shadow-[#0F5BBD]/30"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <AnimatedTabs
+            ariaLabel="Product lists"
+            value={activeKey}
+            onChange={setActiveKey}
+            options={TABS.map((tab) => ({ value: tab.key, label: tab.label }))}
+          />
         </Reveal>
 
         <div className="mt-8">

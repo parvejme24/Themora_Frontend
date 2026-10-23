@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedTabs from "@/components/shared/Tabs/AnimatedTabs";
 import React, { useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
@@ -180,35 +181,16 @@ export default function NewsletterContainer() {
 
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex w-fit rounded-full border border-slate-200/80 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]" role="tablist" aria-label="Status">
-          {[
-            { value: "all" as const, label: "All", icon: FiMail },
-            { value: "active" as const, label: "Active", icon: FiCheckCircle },
-            { value: "inactive" as const, label: "Unsubscribed", icon: FiUserMinus },
-          ].map(({ value, label, icon: TabIcon }) => {
-            const isSelected = tab === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                onClick={() => { setTab(value); setPage(1); }}
-                className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm font-medium transition ${
-                  isSelected
-                    ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
-                    : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-                }`}
-              >
-                <TabIcon className="h-3.5 w-3.5" />
-                <span>{label}</span>
-                <span className={`rounded-full px-1.5 py-0.2 text-[11px] font-semibold ${isSelected ? "bg-white/20 text-white dark:bg-slate-900/10 dark:text-slate-900" : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400"}`}>
-                  {counts[value]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <AnimatedTabs
+          ariaLabel="Status"
+          value={tab}
+          onChange={(value) => { setTab(value); setPage(1); }}
+          options={[
+            { value: "all" as const, label: "All", icon: <FiMail className="h-3.5 w-3.5" />, count: counts.all },
+            { value: "active" as const, label: "Active", icon: <FiCheckCircle className="h-3.5 w-3.5" />, count: counts.active },
+            { value: "inactive" as const, label: "Unsubscribed", icon: <FiUserMinus className="h-3.5 w-3.5" />, count: counts.inactive },
+          ]}
+        />
         <div className="relative min-w-0 flex-1 sm:ml-auto sm:max-w-sm">
           <FiSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
           <input
