@@ -45,15 +45,22 @@ async function callBackend(path: string, body: Record<string, unknown>): Promise
   return { ok: true, session: json.data };
 }
 
+// The session lives in a cookie sent with every request; browsers and Node reject headers
+// over ~16 KB (HTTP 431). Keep only a short photo link, never an embedded data: image.
+const MAX_AVATAR_URL = 1024;
+const cookieSafeAvatar = (url?: string | null) =>
+  url && /^https?:\/\//.test(url) && url.length <= MAX_AVATAR_URL ? url : undefined;
+
 function toNextAuthUser({ user, nextAuthSecret, expiresAt }: BackendSession): User {
   return {
     id: user.id,
     email: user.email,
     name: user.fullName,
     fullName: user.fullName,
-    image: user.profile?.avatarUrl ?? undefined,
+    image: cookieSafeAvatar(user.profile?.avatarUrl),
     role: user.role,
-    profile: user.profile,
+    // The rest of the profile is read from /auth/me, not stored in the cookie
+    profile: { avatarUrl: cookieSafeAvatar(user.profile?.avatarUrl) ?? null },
     nextAuthSecret,
     expiresAt,
   };
@@ -128,18 +135,27 @@ const authOptions: NextAuthOptions = {
       Object.assign(user, toNextAuthUser(result.session));
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // useSession().update() after a profile / photo change, so the session stays current without signing in again
+      if (trigger === "update" && session?.user) {
+        const next = session.user as { fullName?: string; profile?: BackendSession["user"]["profile"] };
+        if (next.fullName) token.fullName = token.name = next.fullName;
+        if (next.profile !== undefined) token.image = cookieSafeAvatar(next.profile?.avatarUrl);
+      }
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.fullName = user.fullName;
         token.email = user.email;
-        token.image = user.image;
-        token.profile = user.profile;
+        token.image = cookieSafeAvatar(user.image);
         token.role = user.role;
         token.nextAuthSecret = user.nextAuthSecret;
         token.expiresAt = user.expiresAt;
       }
+      // Rebuilt on every call, so a cookie written by an older version (whole profile, data: image) shrinks
+      token.image = cookieSafeAvatar(token.image as string | undefined);
+      token.profile = { avatarUrl: (token.image as string | undefined) ?? null };
+      delete token.picture;
       return token;
     },
     async session({ session, token }) {
