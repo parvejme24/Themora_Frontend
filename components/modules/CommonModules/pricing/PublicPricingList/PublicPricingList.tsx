@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { FiCheck, FiLock, FiRefreshCw, FiZap } from "react-icons/fi";
 import PricingCard from "./PricingCard/PricingCard";
 import AllAccessSection from "./AllAccessSection";
+import PricingNotice from "./PricingNotice";
 import { useGetPricingPlans } from "@/hooks/usePricingApi";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -15,10 +16,11 @@ const trust = [
 ];
 
 export default function PublicPricingList() {
-  const { data: allPlans = [], isLoading, isError } = useGetPricingPlans();
+  const { data: allPlans = [], isLoading, isError, refetch, isFetching } = useGetPricingPlans();
   // One-time plans fill the cards and comparison table; subscriptions get their own section
   const plans = allPlans.filter((plan) => plan.billingInterval === "ONE_TIME");
   const subscriptions = allPlans.filter((plan) => plan.billingInterval !== "ONE_TIME");
+  const notice = isError ? "error" : !isLoading && allPlans.length === 0 ? "empty" : null;
   const compareRows = [
     { label: "Website licences", values: plans.map((plan) => plan.websiteLimit ?? "Unlimited") },
     { label: "Access to all templates", values: plans.map((plan) => plan.features.some((feature) => /all templates/i.test(feature))) },
@@ -182,12 +184,8 @@ export default function PublicPricingList() {
               })}
             </>
           )}
-          {isError && (
-            <p className="col-span-full py-12 text-center text-sm text-rose-600">
-              Pricing plans are temporarily unavailable.
-            </p>
-          )}
-          {!isLoading &&
+          {notice && <PricingNotice kind={notice} onRetry={() => refetch()} retrying={isFetching} />}
+          {!isLoading && !notice &&
             plans.map((item, i) => (
               <motion.div
                 key={item.id}
@@ -202,7 +200,8 @@ export default function PublicPricingList() {
         </div>
       </section>
 
-      {/* Comparison */}
+      {/* Comparison (only when there are one-time plans to compare) */}
+      {(isLoading || (!notice && plans.length > 0)) && (
       <section className="py-16 sm:py-20">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1D6FE0] dark:text-[#8DB8FF]">Compare</p>
@@ -264,6 +263,7 @@ export default function PublicPricingList() {
           </table>
         </motion.div>
       </section>
+      )}
     </>
   );
 }
